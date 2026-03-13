@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LearnVid — AI Lesson Video Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Clash+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --bg:#07090f;
+  --s1:#0c0f1a;
+  --s2:#111827;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.12);
+  --a1:#7c6cff;
+  --a2:#ff6b6b;
+  --a3:#06d6a0;
+  --a4:#ffd166;
+  --text:#dde2f0;
+  --muted:#4b5563;
+  --muted2:#6b7280;
+}
+
+body {
+  background:var(--bg);
+  color:var(--text);
+  font-family:'DM Sans',sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ── SCREEN MANAGER ── */
+.screen { display:none; min-height:100vh; }
+.screen.active { display:flex; flex-direction:column; align-items:center; }
+
+/* ── HOME SCREEN ── */
+#home {
+  justify-content:center;
+  padding:60px 20px;
+  position:relative;
+}
+
+.bg-orbs {
+  position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;
+}
+.orb {
+  position:absolute;border-radius:50%;filter:blur(120px);opacity:0.12;
+}
+.orb1{width:600px;height:600px;background:var(--a1);top:-200px;left:-200px;}
+.orb2{width:500px;height:500px;background:var(--a2);bottom:-150px;right:-150px;}
+.orb3{width:400px;height:400px;background:var(--a3);top:40%;left:60%;}
+
+.home-inner {
+  position:relative;z-index:1;
+  width:100%;max-width:700px;
+  display:flex;flex-direction:column;align-items:center;
+  gap:32px;
+}
+
+.logo {
+  display:flex;align-items:center;gap:10px;
+  font-family:'Clash Display',sans-serif;font-size:22px;font-weight:700;
+  letter-spacing:-0.5px;
+}
+.logo-icon {
+  width:36px;height:36px;border-radius:10px;
+  background:var(--a1);display:flex;align-items:center;justify-content:center;
+  font-size:18px;
+}
+
+.hero-label {
+  font-size:12px;font-weight:600;letter-spacing:2px;text-transform:uppercase;
+  color:var(--a1);
+  padding:6px 16px;border-radius:999px;
+  border:1px solid rgba(124,108,255,0.25);
+  background:rgba(124,108,255,0.07);
+}
+
+.hero-title {
+  font-family:'Clash Display',sans-serif;
+  font-size:clamp(38px,7vw,68px);
+  font-weight:700;line-height:1.08;
+  letter-spacing:-2px;
+  text-align:center;
+}
+.hero-title span { color:var(--a1); }
+
+.hero-sub {
+  font-size:18px;color:var(--muted2);text-align:center;
+  line-height:1.6;max-width:480px;font-weight:300;
+}
+
+/* Input card */
+.input-card {
+  width:100%;
+  background:var(--s1);
+  border:1px solid var(--border2);
+  border-radius:20px;
+  padding:28px;
+  display:flex;flex-direction:column;gap:20px;
+}
+
+.input-row {
+  display:flex;gap:12px;
+  background:var(--s2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:6px 6px 6px 20px;
+  align-items:center;
+  transition:border-color 0.2s;
+}
+.input-row:focus-within { border-color:var(--a1); }
+
+#topicInput {
+  flex:1;background:transparent;border:none;outline:none;
+  font-family:'DM Sans',sans-serif;font-size:16px;font-weight:400;
+  color:var(--text);padding:10px 0;
+}
+#topicInput::placeholder { color:var(--muted); }
+
+.gen-btn {
+  background:var(--a1);color:#fff;border:none;
+  border-radius:8px;padding:12px 24px;
+  font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;
+  cursor:pointer;transition:all 0.2s;white-space:nowrap;
+  letter-spacing:0.2px;
+}
+.gen-btn:hover { background:#8e7fff;transform:translateY(-1px); }
+.gen-btn:active { transform:translateY(0); }
+
+.options-row {
+  display:flex;gap:12px;flex-wrap:wrap;
+}
+
+.opt-group { display:flex;flex-direction:column;gap:6px;flex:1;min-width:140px; }
+.opt-label { font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted); }
+
+.opt-select {
+  background:var(--s2);border:1px solid var(--border);
+  border-radius:8px;padding:10px 14px;
+  color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;
+  outline:none;cursor:pointer;
+  transition:border-color 0.2s;
+}
+.opt-select:focus { border-color:var(--a1); }
+.opt-select option { background:var(--s2); }
+
+.suggestions {
+  display:flex;flex-wrap:wrap;gap:8px;
+}
+.sug-label { font-size:12px;color:var(--muted);width:100%;margin-bottom:2px; }
+.sug-chip {
+  padding:7px 14px;border-radius:999px;font-size:13px;font-weight:500;
+  border:1px solid var(--border);background:transparent;color:var(--muted2);
+  cursor:pointer;transition:all 0.15s;font-family:'DM Sans',sans-serif;
+}
+.sug-chip:hover { border-color:var(--a1);color:var(--a1);background:rgba(124,108,255,0.07); }
+
+/* ── GENERATING SCREEN ── */
+#generating {
+  justify-content:center;padding:60px 20px;
+}
+
+.gen-card {
+  background:var(--s1);border:1px solid var(--border2);
+  border-radius:24px;padding:48px 40px;
+  width:100%;max-width:520px;
+  display:flex;flex-direction:column;align-items:center;gap:32px;
+  position:relative;z-index:1;
+}
+
+.gen-spinner {
+  width:64px;height:64px;border-radius:50%;
+  border:3px solid var(--border2);
+  border-top-color:var(--a1);
+  animation:spin 0.9s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.gen-topic-display {
+  font-family:'Clash Display',sans-serif;
+  font-size:28px;font-weight:700;letter-spacing:-0.5px;
+  text-align:center;color:var(--text);
+}
+
+.gen-steps { width:100%;display:flex;flex-direction:column;gap:12px; }
+
+.gen-step {
+  display:flex;align-items:center;gap:14px;
+  padding:12px 16px;border-radius:10px;
+  background:var(--s2);border:1px solid var(--border);
+  font-size:14px;font-weight:500;color:var(--muted2);
+  transition:all 0.3s;
+}
+.gen-step.done { color:var(--text);border-color:rgba(6,214,160,0.2);background:rgba(6,214,160,0.05); }
+.gen-step.active { color:var(--a1);border-color:rgba(124,108,255,0.3);background:rgba(124,108,255,0.07); }
+
+.step-icon {
+  width:22px;height:22px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;flex-shrink:0;
+  background:var(--s1);border:1px solid var(--border);
+  color:var(--muted);
+}
+.gen-step.done .step-icon { background:rgba(6,214,160,0.15);border-color:var(--a3);color:var(--a3); }
+.gen-step.active .step-icon { background:rgba(124,108,255,0.15);border-color:var(--a1);color:var(--a1);animation:pulse 1s infinite; }
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+.gen-eta { font-size:13px;color:var(--muted);text-align:center; }
+.gen-eta span { color:var(--a3);font-weight:600; }
+
+/* ── PLAYER SCREEN ── */
+#player {
+  padding:0;min-height:100vh;justify-content:flex-start;
+}
+
+.player-topbar {
+  width:100%;padding:14px 24px;
+  display:flex;align-items:center;gap:16px;
+  background:rgba(7,9,15,0.9);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(12px);
+  position:sticky;top:0;z-index:100;
+}
+
+.back-btn {
+  background:transparent;border:1px solid var(--border);
+  color:var(--muted2);padding:8px 14px;border-radius:8px;
+  cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;
+  transition:all 0.2s;
+}
+.back-btn:hover { border-color:var(--border2);color:var(--text); }
+
+.topbar-topic {
+  font-family:'Clash Display',sans-serif;font-size:18px;font-weight:700;
+  letter-spacing:-0.3px;flex:1;
+}
+
+.topbar-badge {
+  font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+  padding:5px 12px;border-radius:999px;
+}
+.badge-beginner { background:rgba(6,214,160,0.1);color:var(--a3);border:1px solid rgba(6,214,160,0.2); }
+.badge-intermediate { background:rgba(255,209,102,0.1);color:var(--a4);border:1px solid rgba(255,209,102,0.2); }
+.badge-advanced { background:rgba(255,107,107,0.1);color:var(--a2);border:1px solid rgba(255,107,107,0.2); }
+
+.player-body {
+  width:100%;max-width:1100px;
+  margin:0 auto;
+  padding:24px 20px;
+  display:flex;flex-direction:column;gap:20px;
+}
+
+.canvas-wrap {
+  width:100%;
+  background:#000;
+  border-radius:16px;overflow:hidden;
+  border:1px solid var(--border2);
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  position:relative;
+}
+
+canvas#lc {
+  display:block;width:100%;aspect-ratio:16/9;
+  background:#000;
+}
+
+.player-controls {
+  display:flex;flex-direction:column;gap:14px;
+}
+
+.progress-wrap {
+  width:100%;height:5px;background:rgba(255,255,255,0.07);
+  border-radius:3px;cursor:pointer;position:relative;
+}
+.progress-fill {
+  height:100%;background:var(--a1);border-radius:3px;width:0%;
+  transition:width 0.1s linear;position:relative;
+}
+.progress-fill::after {
+  content:'';position:absolute;right:-7px;top:-4.5px;
+  width:14px;height:14px;border-radius:50%;
+  background:var(--a1);box-shadow:0 0 10px var(--a1);
+}
+
+.slide-dots {
+  display:flex;gap:6px;justify-content:center;
+}
+.slide-dot {
+  width:6px;height:6px;border-radius:50%;
+  background:var(--border2);transition:all 0.3s;cursor:pointer;
+}
+.slide-dot.active { background:var(--a1);transform:scale(1.4); }
+.slide-dot.done { background:rgba(124,108,255,0.4); }
+
+.ctrl-row {
+  display:flex;align-items:center;gap:10px;
+}
+
+.ctrl-btn {
+  background:var(--s2);border:1px solid var(--border);
+  color:var(--text);padding:10px 20px;border-radius:10px;
+  cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;
+  transition:all 0.2s;
+}
+.ctrl-btn:hover { border-color:var(--border2);background:rgba(255,255,255,0.06); }
+.ctrl-btn.primary { background:var(--a1);border-color:var(--a1);color:#fff; }
+.ctrl-btn.primary:hover { background:#8e7fff; }
+
+.slide-label-row {
+  display:flex;gap:8px;flex-wrap:wrap;
+}
+.slide-chip {
+  padding:5px 12px;border-radius:999px;font-size:12px;font-weight:500;
+  border:1px solid var(--border);background:transparent;color:var(--muted2);
+  cursor:pointer;transition:all 0.15s;font-family:'DM Sans',sans-serif;
+}
+.slide-chip.active { background:var(--a1);border-color:var(--a1);color:#fff; }
+.slide-chip:hover:not(.active) { border-color:var(--a1);color:var(--a1); }
+
+.time-display { margin-left:auto;font-size:13px;color:var(--muted);font-weight:500; }
+
+.export-bar {
+  display:flex;align-items:center;gap:12px;
+  padding:14px 18px;
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:12px;
+}
+.export-bar-label { font-size:13px;color:var(--muted);margin-right:4px; }
+.rec-status {
+  display:flex;align-items:center;gap:6px;
+  font-size:12px;color:var(--muted);
+  padding:5px 12px;border-radius:999px;
+  background:var(--s2);border:1px solid var(--border);
+}
+.rec-dot { width:7px;height:7px;border-radius:50%;background:var(--muted); }
+.rec-dot.live { background:#ef4444;animation:pulse 1s infinite; }
+.rec-dot.saved { background:var(--a3); }
+
+/* slide info panel */
+.info-panel {
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;
+}
+.info-tile {
+  background:var(--s1);border:1px solid var(--border);
+  border-radius:12px;padding:14px 18px;
+}
+.info-tile .it-label { font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-bottom:5px; }
+.info-tile .it-val { font-family:'Clash Display',sans-serif;font-size:26px;font-weight:700; }
+.info-tile .it-unit { font-size:13px;color:var(--muted);font-family:'DM Sans',sans-serif;font-weight:400; }
+</style>
+</head>
+<body>
+
+<div class="bg-orbs">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+</div>
+
+<!-- ── HOME ── -->
+<div id="home" class="screen active">
+  <div class="home-inner">
+    <div class="logo">
+      <div class="logo-icon">▶</div>
+      LearnVid
+    </div>
+
+    <div class="hero-label">AI-Powered Education</div>
+
+    <h1 class="hero-title">
+      Turn any topic into<br>
+      a <span>lesson video</span>
+    </h1>
+
+    <p class="hero-sub">
+      Type a topic. Get a fully animated educational video with narration scripts, visuals, and quiz — in seconds.
+    </p>
+
+    <div class="input-card">
+      <div class="input-row">
+        <input id="topicInput" type="text"
+          placeholder="e.g. How does gravity work?"
+          onkeydown="if(event.key==='Enter')generate()"/>
+        <button class="gen-btn" onclick="generate()">Generate Video →</button>
+      </div>
+
+      <div class="options-row">
+        <div class="opt-group">
+          <div class="opt-label">Difficulty</div>
+          <select class="opt-select" id="diffSelect">
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+        </div>
+        <div class="opt-group">
+          <div class="opt-label">Duration</div>
+          <select class="opt-select" id="durSelect">
+            <option value="short">Short (~3 min)</option>
+            <option value="medium" selected>Medium (~5 min)</option>
+            <option value="long">Long (~8 min)</option>
+          </select>
+        </div>
+        <div class="opt-group">
+          <div class="opt-label">Style</div>
+          <select class="opt-select" id="styleSelect">
+            <option value="visual">Visual & Animated</option>
+            <option value="minimal">Clean & Minimal</option>
+            <option value="dark">Dark Cinematic</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="suggestions">
+        <span class="sug-label">Try these:</span>
+        <button class="sug-chip" onclick="setSug('Quantum Entanglement')">Quantum Entanglement</button>
+        <button class="sug-chip" onclick="setSug('How DNA replicates')">How DNA replicates</button>
+        <button class="sug-chip" onclick="setSug('Black Holes')">Black Holes</button>
+        <button class="sug-chip" onclick="setSug('Photosynthesis')">Photosynthesis</button>
+        <button class="sug-chip" onclick="setSug('Neural Networks')">Neural Networks</button>
+        <button class="sug-chip" onclick="setSug('The Water Cycle')">The Water Cycle</button>
+        <button class="sug-chip" onclick="setSug('Gravity')">Gravity</button>
+        <button class="sug-chip" onclick="setSug('Electricity')">Electricity</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── GENERATING ── -->
+<div id="generating" class="screen">
+  <div class="bg-orbs">
+    <div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div>
+  </div>
+  <div class="gen-card">
+    <div class="gen-spinner"></div>
+    <div class="gen-topic-display" id="genTopicDisplay">Topic</div>
+    <div class="gen-steps" id="genSteps"></div>
+    <div class="gen-eta">Estimated time: <span id="genEta">8s</span></div>
+  </div>
+</div>
+
+<!-- ── PLAYER ── -->
+<div id="player" class="screen">
+  <div class="player-topbar">
+    <button class="back-btn" onclick="goHome()">← New Topic</button>
+    <div class="topbar-topic" id="playerTopicLabel">Topic</div>
+    <div class="topbar-badge" id="diffBadge">Beginner</div>
+  </div>
+
+  <div class="player-body">
+    <div class="canvas-wrap">
+      <canvas id="lc" width="1280" height="720"></canvas>
+    </div>
+
+    <div class="player-controls">
+      <div class="progress-wrap" id="progWrap">
+        <div class="progress-fill" id="progFill"></div>
+      </div>
+
+      <div class="slide-dots" id="slideDots"></div>
+
+      <div class="ctrl-row">
+        <button class="ctrl-btn primary" id="playBtn" onclick="togglePlay()">▶ Play</button>
+        <button class="ctrl-btn" onclick="restartLesson()">↺</button>
+        <div class="slide-label-row" id="slideChips"></div>
+        <div class="time-display" id="timeDisplay">0:00 / 0:00</div>
+      </div>
+
+      <div class="export-bar">
+        <span class="export-bar-label">Export:</span>
+        <button class="ctrl-btn" style="padding:8px 16px;font-size:13px" onclick="recordVideo()">⏺ Save as .webm</button>
+        <div class="rec-status"><div class="rec-dot" id="recDot"></div><span id="recLabel">Idle</span></div>
+        <span style="margin-left:auto;font-size:12px;color:var(--muted)">Opens in any browser or VLC</span>
+      </div>
+    </div>
+
+    <div class="info-panel">
+      <div class="info-tile"><div class="it-label">Slides</div><div class="it-val" id="infoSlides">0</div></div>
+      <div class="info-tile"><div class="it-label">Duration</div><div class="it-val" id="infoDur">0<span class="it-unit">s</span></div></div>
+      <div class="info-tile"><div class="it-label">Resolution</div><div class="it-val">1280<span class="it-unit">×720</span></div></div>
+      <div class="info-tile"><div class="it-label">FPS</div><div class="it-val">60<span class="it-unit">fps</span></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  CANVAS + RENDER ENGINE
+// ══════════════════════════════════════════════════════
+const C = document.getElementById('lc');
+const ctx = C.getContext('2d');
+const W=1280, H=720;
+
+// ── helpers ──
+const lerp=(a,b,t)=>a+(b-a)*t;
+const clamp=(v,mn,mx)=>Math.max(mn,Math.min(mx,v));
+const easeOut=t=>1-Math.pow(1-t,3);
+const easeIn=t=>t*t*t;
+const easeInOut=t=>t<.5?4*t*t*t:(1-Math.pow(-2*t+2,3)/2);
+const easeOutBack=t=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2)};
+const easeOutBounce=t=>{const n1=7.5625,d1=2.75;if(t<1/d1)return n1*t*t;if(t<2/d1)return n1*(t-=1.5/d1)*t+.75;if(t<2.5/d1)return n1*(t-=2.25/d1)*t+.9375;return n1*(t-=2.625/d1)*t+.984375};
+
+function clearBg(color='#07090f'){ctx.fillStyle=color;ctx.fillRect(0,0,W,H);}
+function drawDotGrid(alpha=0.025){
+  ctx.save();
+  for(let x=40;x<W;x+=60)for(let y=40;y<H;y+=60){
+    ctx.beginPath();ctx.arc(x,y,1.5,0,Math.PI*2);
+    ctx.fillStyle=`rgba(255,255,255,${alpha})`;ctx.fill();
+  }
+  ctx.restore();
+}
+function radialGlow(x,y,r,hex,a=0.12){
+  const g=ctx.createRadialGradient(x,y,0,x,y,r);
+  g.addColorStop(0,hex2rgba(hex,a));g.addColorStop(1,'transparent');
+  ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2);
+}
+function hex2rgba(hex,a){
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+function rRect(x,y,w,h,r,fill,stroke,sw=1.5){
+  ctx.beginPath();ctx.roundRect(x,y,w,h,r);
+  if(fill){ctx.fillStyle=fill;ctx.fill();}
+  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=sw;ctx.stroke();}
+}
+function txt(str,x,y,font,color,align='left',alpha=1){
+  ctx.save();ctx.globalAlpha=alpha;ctx.font=font;ctx.fillStyle=color;ctx.textAlign=align;ctx.fillText(str,x,y);ctx.restore();
+}
+function typewrite(str,x,y,font,color,p,align='left'){
+  txt(str.substring(0,Math.floor(str.length*p)),x,y,font,color,align);
+}
+function slideIn(t,delay,dur=0.6){return easeOut(clamp((t-delay)/dur,0,1));}
+
+// Palette
+const PAL={
+  bg:'#07090f',s1:'#0c0f1a',s2:'#111827',
+  a1:'#7c6cff',a2:'#ff6b6b',a3:'#06d6a0',a4:'#ffd166',a5:'#60a5fa',
+  wh:'#dde2f0',mu:'#4b5563',mu2:'#6b7280'
+};
+
+// ══════════════════════════════════════════════════════
+//  LESSON GENERATION (AI-driven from topic)
+// ══════════════════════════════════════════════════════
+
+// This generates a full lesson from any topic using
+// a smart template engine + topic-specific content
+function generateLessonFromTopic(topic, difficulty, duration) {
+  const t = topic.trim();
+  const slideCount = duration==='short'?5:duration==='long'?8:6;
+
+  // Generate topic-specific content
+  const content = buildTopicContent(t, difficulty);
+
+  const slides = [];
+
+  // Always: title
+  slides.push({
+    type:'title', duration:5500,
+    data:{ title: t.toUpperCase(), subtitle: content.tagline, color: content.color }
+  });
+
+  // Concept slides
+  content.concepts.slice(0, slideCount-3).forEach((c,i)=>{
+    slides.push({
+      type: i%2===0 ? 'concept' : 'visual',
+      duration: 7000,
+      data: c
+    });
+  });
+
+  // Key fact / formula
+  slides.push({ type:'fact', duration:7500, data: content.keyFact });
+
+  // Demo / analogy
+  slides.push({ type:'analogy', duration:7000, data: content.analogy });
+
+  // Always: summary
+  slides.push({
+    type:'summary', duration:6000,
+    data:{ topic: t, points: content.summaryPoints, color: content.color }
+  });
+
+  return {
+    topic: t,
+    difficulty,
+    slides,
+    totalDuration: slides.reduce((a,s)=>a+s.duration,0)
+  };
+}
+
+// ── Topic content builder — generates rich content for any topic ──
+function buildTopicContent(topic, difficulty) {
+  const t = topic.toLowerCase();
+
+  // Detect topic category and assign color + content
+  if(t.includes('gravity') || t.includes('force') || t.includes('newton')){
+    return physicsContent(topic, 'gravity', difficulty);
+  } else if(t.includes('dna') || t.includes('cell') || t.includes('photosynthesis') || t.includes('biology') || t.includes('evolution')){
+    return biologyContent(topic, difficulty);
+  } else if(t.includes('quantum') || t.includes('atom') || t.includes('electron') || t.includes('wave')){
+    return quantumContent(topic, difficulty);
+  } else if(t.includes('black hole') || t.includes('space') || t.includes('planet') || t.includes('star') || t.includes('galaxy') || t.includes('cosmos')){
+    return spaceContent(topic, difficulty);
+  } else if(t.includes('neural') || t.includes('ai') || t.includes('machine learning') || t.includes('deep learning') || t.includes('algorithm')){
+    return aiContent(topic, difficulty);
+  } else if(t.includes('water') || t.includes('cycle') || t.includes('weather') || t.includes('climate') || t.includes('atmosphere')){
+    return earthContent(topic, difficulty);
+  } else if(t.includes('electricity') || t.includes('circuit') || t.includes('current') || t.includes('voltage') || t.includes('magnetic')){
+    return electricityContent(topic, difficulty);
+  } else {
+    return genericContent(topic, difficulty);
+  }
+}
+
+function physicsContent(topic, subtype, diff){
+  return {
+    tagline:'Understand the fundamental force of nature',
+    color: PAL.a1,
+    concepts:[
+      { heading:'What is Gravity?', body:'Gravity is a natural force that attracts objects with mass toward each other. Every object in the universe pulls every other object — from apples to galaxies.', icon:'🌍', color:PAL.a1 },
+      { heading:'How Strong Is It?', body:"The strength depends on two things: the mass of the objects and the distance between them. Double the distance — the force becomes four times weaker (inverse square law).", icon:'⚖️', color:PAL.a3 },
+      { heading:'Gravity vs Weight', body:'Mass is how much matter you have. Weight is the force of gravity acting on that mass. On the Moon, your mass stays the same — but your weight is 1/6 of Earth.', icon:'🚀', color:PAL.a4 },
+    ],
+    keyFact:{
+      formula:"F  =  G × m₁ × m₂ / r²",
+      label:"Newton's Law of Universal Gravitation",
+      vars:["F = gravitational force","G = gravitational constant","m₁, m₂ = masses","r² = distance squared"],
+      color: PAL.a2
+    },
+    analogy:{
+      title:'The Trampoline Model',
+      body:'Einstein showed gravity isn\'t just a force — it\'s a curvature in spacetime. Massive objects create a "dent" in space, like a bowling ball on a trampoline. Other objects fall into that dent.',
+      type:'trampoline', color: PAL.a5
+    },
+    summaryPoints:['All objects with mass attract each other','Greater mass = stronger gravity','Greater distance = weaker gravity (1/r²)',"F = Gm₁m₂/r² — Newton's equation",'Einstein: gravity curves spacetime']
+  };
+}
+
+function biologyContent(topic, diff){
+  const isBio = topic.toLowerCase().includes('photosynthesis');
+  return {
+    tagline: isBio ? 'How plants turn sunlight into food' : 'The blueprint of life',
+    color: PAL.a3,
+    concepts:[
+      { heading: isBio ? 'What is Photosynthesis?' : 'What is ' + topic + '?',
+        body: isBio ? 'Photosynthesis is the process plants use to convert sunlight, water, and CO₂ into glucose and oxygen. It powers nearly all life on Earth.' : topic + ' is a fundamental biological process that powers living organisms and enables life as we know it.',
+        icon:'🌿', color:PAL.a3 },
+      { heading: isBio ? 'The Equation' : 'Key Process',
+        body: isBio ? '6CO₂ + 6H₂O + light energy → C₆H₁₂O₆ + 6O₂. Carbon dioxide and water, powered by sunlight, become sugar and oxygen.' : 'The process involves precise molecular interactions that have been refined by billions of years of evolution.',
+        icon:'⚗️', color:PAL.a4 },
+      { heading:'Why It Matters',
+        body: isBio ? 'Without photosynthesis, there would be no oxygen in the atmosphere and no food for animals. Plants are the foundation of all food chains.' : topic + ' is central to understanding how life works at the molecular level.',
+        icon:'🌱', color:PAL.a1 },
+    ],
+    keyFact:{
+      formula: isBio ? '6CO₂ + 6H₂O + light → C₆H₁₂O₆ + 6O₂' : 'DNA → mRNA → Protein',
+      label: isBio ? 'The Photosynthesis Equation' : 'The Central Dogma of Biology',
+      vars: isBio ? ['CO₂ = carbon dioxide','H₂O = water','C₆H₁₂O₆ = glucose (sugar)','O₂ = oxygen released'] : ['DNA stores the genetic code','mRNA carries the message','Ribosomes build proteins','Proteins do the work'],
+      color: PAL.a3
+    },
+    analogy:{
+      title: isBio ? 'Plants as Solar Panels' : 'DNA as a Blueprint',
+      body: isBio ? 'Think of a plant as a solar panel factory. The leaves are the panels, absorbing sunlight. The chlorophyll molecules are the converters, turning light into chemical energy stored as sugar.' : 'DNA is like the master blueprint of a building. Each gene is a set of instructions for building one specific protein — the workers that carry out every function in your body.',
+      type:'orbit', color: PAL.a3
+    },
+    summaryPoints: isBio
+      ? ['Plants use sunlight, CO₂, and water','Chlorophyll absorbs light energy','Glucose is produced for energy','Oxygen is released as a byproduct','Foundation of all life on Earth']
+      : [topic + ' is essential to living organisms','Molecular processes drive all life functions','Evolution has refined these processes','Understanding it unlocks medicine and biology','Life is chemistry at its most elegant']
+  };
+}
+
+function quantumContent(topic, diff){
+  return {
+    tagline:'Where reality gets strange',
+    color: PAL.a2,
+    concepts:[
+      { heading:'The Quantum World', body: topic + ' exists at the scale of atoms and particles — where the rules of everyday physics break down completely. Particles can be in two places at once.', icon:'⚛️', color:PAL.a2 },
+      { heading:'Wave-Particle Duality', body:'Every quantum particle behaves as both a wave and a particle depending on how you observe it. The act of measurement itself changes the outcome.', icon:'🌊', color:PAL.a1 },
+      { heading:'Superposition', body:'A quantum system exists in multiple states simultaneously until measured. This is the foundation of quantum computing — qubits can be 0 and 1 at the same time.', icon:'🎲', color:PAL.a3 },
+    ],
+    keyFact:{
+      formula:'ΔxΔp  ≥  ℏ/2',
+      label:"Heisenberg's Uncertainty Principle",
+      vars:['Δx = uncertainty in position','Δp = uncertainty in momentum','ℏ = reduced Planck constant','The more precisely you know one, the less you know the other'],
+      color: PAL.a2
+    },
+    analogy:{
+      title:'Schrödinger\'s Cat',
+      body:'A cat in a sealed box with a quantum trigger is both alive and dead until you open the box. This thought experiment reveals the deep strangeness of quantum superposition — reality only "collapses" when observed.',
+      type:'particles', color: PAL.a2
+    },
+    summaryPoints:['Quantum physics governs atoms and particles','Wave-particle duality: everything is both','Superposition: multiple states at once','Heisenberg: you can\'t know everything','Observation changes quantum outcomes']
+  };
+}
+
+function spaceContent(topic, diff){
+  return {
+    tagline:'The universe at its most extreme',
+    color:'#818cf8',
+    concepts:[
+      { heading:'What are ' + topic + '?', body: topic + ' are among the most fascinating objects in the cosmos. They represent the extremes of physical law, where gravity and energy reach unimaginable scales.', icon:'🌌', color:'#818cf8' },
+      { heading:'Formation', body:'These cosmic phenomena form from the remnants of massive stellar processes. Stars many times larger than our Sun end their lives in explosive supernovae, leaving behind extraordinary objects.', icon:'💥', color:PAL.a2 },
+      { heading:'Effect on Spacetime', body:'The extreme mass of these objects warps spacetime so severely that even light cannot escape from within the event horizon — the point of no return.', icon:'🕳️', color:PAL.a4 },
+    ],
+    keyFact:{
+      formula:'Rs  =  2GM / c²',
+      label:'Schwarzschild Radius (Event Horizon)',
+      vars:['Rs = Schwarzschild radius','G = gravitational constant','M = mass of the object','c = speed of light'],
+      color: '#818cf8'
+    },
+    analogy:{
+      title:'Spacetime as a Fabric',
+      body:'Imagine spacetime as a stretched rubber sheet. A massive object like a black hole creates an infinitely deep funnel. Anything that comes close enough gets pulled in — including light itself.',
+      type:'orbit', color: '#818cf8'
+    },
+    summaryPoints:[topic+' are extreme cosmic objects','Formed from collapsed massive stars','Gravity so strong light cannot escape','Described by the Schwarzschild radius','They warp time and space around them']
+  };
+}
+
+function aiContent(topic, diff){
+  return {
+    tagline:'Teaching machines to think',
+    color: PAL.a1,
+    concepts:[
+      { heading:'What are ' + topic + '?', body: topic + ' are computational systems inspired by the structure of the human brain. They learn patterns from data rather than being explicitly programmed with rules.', icon:'🧠', color:PAL.a1 },
+      { heading:'How They Learn', body:'Training involves feeding the network labeled data. It makes predictions, measures how wrong it is (loss), then adjusts its internal weights through backpropagation.', icon:'📊', color:PAL.a3 },
+      { heading:'Layers of Abstraction', body:'Each layer in a neural network learns increasingly abstract features. Early layers detect edges — deeper layers recognize faces, objects, concepts. Depth = understanding.', icon:'🔢', color:PAL.a4 },
+    ],
+    keyFact:{
+      formula:'output  =  σ(W·x  +  b)',
+      label:'The Neuron Activation Function',
+      vars:['W = weight matrix (learned)','x = input vector','b = bias term','σ = activation function (ReLU, sigmoid)'],
+      color: PAL.a1
+    },
+    analogy:{
+      title:'A Network of Decisions',
+      body:'Think of a neural network like a committee of voters. Each neuron votes on the answer based on what it sees. The network learns which votes to trust more — adjusting weights until it gets things right.',
+      type:'network', color: PAL.a1
+    },
+    summaryPoints:[topic+' learn from examples, not rules','Layers extract increasingly complex features','Backpropagation adjusts weights during training','More data + more layers = better performance','Powering everything from translation to art']
+  };
+}
+
+function earthContent(topic, diff){
+  return {
+    tagline:'Nature\'s endless engine',
+    color: PAL.a3,
+    concepts:[
+      { heading:'What is ' + topic + '?', body: topic + ' is one of Earth\'s most important natural systems. It continuously cycles water and energy between the oceans, atmosphere, and land — making life possible.', icon:'💧', color:PAL.a3 },
+      { heading:'The Key Stages', body:'Evaporation lifts water into the atmosphere. Condensation forms clouds. Precipitation returns water as rain or snow. Runoff and infiltration return it to the ocean.', icon:'☁️', color:PAL.a5 },
+      { heading:'Energy Driver', body:"The Sun drives the entire cycle. Solar energy evaporates water; gravity brings it back down. Without the Sun's energy input, the water cycle would stop.", icon:'☀️', color:PAL.a4 },
+    ],
+    keyFact:{
+      formula:'Evaporation → Condensation → Precipitation → Collection',
+      label:'The ' + topic + ' — Four Core Stages',
+      vars:['Evaporation: water to vapor','Condensation: vapor to clouds','Precipitation: clouds to rain/snow','Collection: water returns to ocean'],
+      color: PAL.a3
+    },
+    analogy:{
+      title:'Nature\'s Recycling System',
+      body:'The water cycle is nature\'s recycling system. The same water has been cycling through Earth for 4.5 billion years. The water you drink may have once flowed through a dinosaur. Nothing is ever truly new — just recycled.',
+      type:'orbit', color: PAL.a3
+    },
+    summaryPoints:[topic+' continuously moves water around Earth','The Sun provides the energy to drive it','Four key stages: evaporation, condensation, precipitation, collection','It regulates temperature and distributes fresh water','Life on Earth depends entirely on this cycle']
+  };
+}
+
+function electricityContent(topic, diff){
+  return {
+    tagline:'The invisible force powering modern life',
+    color: PAL.a4,
+    concepts:[
+      { heading:'What is ' + topic + '?', body: topic + ' is the flow of electric charge through a conductor. It powers everything from your phone to entire cities — all from the movement of tiny electrons.', icon:'⚡', color:PAL.a4 },
+      { heading:'How Current Flows', body:'Electrons carry negative charge. When a voltage difference exists between two points, electrons flow from high energy to low — creating electric current measured in Amperes.', icon:'🔌', color:PAL.a2 },
+      { heading:'Voltage, Current, Resistance', body:"Ohm's Law governs all circuits: Voltage drives current, resistance opposes it. Double the voltage — double the current. Double the resistance — half the current.", icon:'🔧', color:PAL.a1 },
+    ],
+    keyFact:{
+      formula:'V  =  I  ×  R',
+      label:"Ohm's Law — The Foundation of Circuits",
+      vars:['V = Voltage (Volts) — the pressure','I = Current (Amperes) — the flow','R = Resistance (Ohms) — the opposition','P = V×I = Power consumed'],
+      color: PAL.a4
+    },
+    analogy:{
+      title:'Water in a Pipe',
+      body:'Electricity is like water flowing through pipes. Voltage is the water pressure. Current is the flow rate. Resistance is the pipe diameter. A narrow pipe (high resistance) slows the flow — just like a resistor limits current.',
+      type:'particles', color: PAL.a4
+    },
+    summaryPoints:[topic+' is the flow of electrons through conductors','Voltage drives current; resistance opposes it',"Ohm's Law: V = I × R",'Series circuits share current; parallel share voltage','Powers all of modern technology']
+  };
+}
+
+function genericContent(topic, diff){
+  return {
+    tagline:'A deep dive into ' + topic,
+    color: PAL.a1,
+    concepts:[
+      { heading:'Introduction to ' + topic, body: topic + ' is a fascinating subject that has shaped human understanding across science, technology, and society. Understanding it opens doors to deeper knowledge.', icon:'📚', color:PAL.a1 },
+      { heading:'Core Principles', body:'Every great subject rests on foundational principles. For ' + topic + ', these principles explain how and why things work the way they do — from the simplest observations to complex phenomena.', icon:'🔬', color:PAL.a3 },
+      { heading:'Real-World Applications', body: topic + ' has profound applications in everyday life. From technology to medicine to engineering, this knowledge shapes the world around us in ways we often take for granted.', icon:'🌍', color:PAL.a4 },
+    ],
+    keyFact:{
+      formula:'Observation → Hypothesis → Experiment → Conclusion',
+      label:'The Scientific Method Applied to ' + topic,
+      vars:['Observe the phenomenon','Form a testable hypothesis','Design and run experiments','Analyze results and draw conclusions'],
+      color: PAL.a1
+    },
+    analogy:{
+      title:'Building Blocks',
+      body:'Understanding ' + topic + ' is like constructing a building. Every concept is a brick that builds on the ones below. Master the foundation and the entire structure becomes clear — skip it and everything wobbles.',
+      type:'orbit', color: PAL.a1
+    },
+    summaryPoints:[topic + ' is a foundational area of knowledge','Core principles explain all observed phenomena','Real-world applications are vast and growing','Building on basics leads to advanced understanding','Curiosity and critical thinking are key tools']
+  };
+}
+
+// ══════════════════════════════════════════════════════
+//  SLIDE RENDERERS
+// ══════════════════════════════════════════════════════
+
+function renderTitle(t, data){
+  clearBg();
+  drawDotGrid(0.03);
+  radialGlow(W/2,H/2,550,data.color, 0.10 + Math.sin(t*1.5)*0.02);
+
+  // Animated rings
+  ctx.save();ctx.translate(W/2,H/2);
+  for(let i=0;i<4;i++){
+    ctx.beginPath();ctx.arc(0,0,160+i*90,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(255,255,255,${0.03-i*0.005})`;ctx.lineWidth=1;ctx.stroke();
+    const a=t*(0.3+i*0.1)+i*1.5;
+    ctx.beginPath();ctx.arc(Math.cos(a)*(160+i*90),Math.sin(a)*(160+i*90),5-i,0,Math.PI*2);
+    const dotColors=[data.color,PAL.a3,PAL.a2,PAL.a4];
+    ctx.fillStyle=dotColors[i];ctx.fill();
+  }
+  ctx.restore();
+
+  // Title
+  const ta=slideIn(t,0.2);
+  ctx.save();ctx.globalAlpha=ta;ctx.translate(0,(1-ta)*40);
+  txt(data.title,W/2,H/2-80,'bold 88px Clash Display, sans-serif',PAL.wh,'center');
+  ctx.restore();
+
+  // Subtitle
+  const sa=slideIn(t,0.6);
+  ctx.save();ctx.globalAlpha=sa;
+  // Pill background
+  const sm=ctx.measureText(data.subtitle).width;
+  ctx.font='500 28px DM Sans, sans-serif';
+  const sw=ctx.measureText(data.subtitle).width+40;
+  rRect(W/2-sw/2,H/2+20,sw,46,23,hex2rgba(data.color,0.15),hex2rgba(data.color,0.35));
+  txt(data.subtitle,W/2,H/2+50,'500 26px DM Sans, sans-serif',PAL.wh,'center');
+  ctx.restore();
+
+  // Bottom
+  const ba=slideIn(t,1.0);
+  txt('▶  Auto-playing lesson  ·  AI Generated',W/2,H-60,'400 18px DM Sans',PAL.mu,'center',ba);
+}
+
+function renderConcept(t, data){
+  clearBg();
+  drawDotGrid(0.02);
+  radialGlow(160,H/2,400,data.color||PAL.a1,0.08);
+
+  // Label
+  txt('CONCEPT','bold 11px DM Sans',60,55,PAL.mu,'left',slideIn(t,0));
+  txt('CONCEPT',60,62,'700 11px DM Sans',data.color||PAL.a1,'left',slideIn(t,0));
+
+  // Heading
+  const ha=slideIn(t,0.2);
+  ctx.save();ctx.globalAlpha=ha;ctx.translate((1-ha)*-30,0);
+  txt(data.heading,60,140,'bold 60px Clash Display, sans-serif',PAL.wh,'left');
+  ctx.restore();
+
+  // Underline
+  const uw=Math.min(1,Math.max(0,(t-0.6)/0.5));
+  rRect(60,158,500*uw,3,2,data.color||PAL.a1);
+
+  // Body text — word wrap
+  const lines=wrapText(ctx,data.body,'400 27px DM Sans',620);
+  lines.forEach((line,i)=>{
+    const la=slideIn(t,0.8+i*0.15);
+    ctx.save();ctx.globalAlpha=la;ctx.translate((1-la)*-20,0);
+    txt(line,60,230+i*46,'400 27px DM Sans',i===0?PAL.wh:PAL.mu2);
+    ctx.restore();
+  });
+
+  // Icon big (right side)
+  const ia=slideIn(t,0.5);
+  ctx.save();ctx.globalAlpha=ia;
+  ctx.font='160px serif';
+  ctx.textAlign='center';
+  ctx.fillText(data.icon||'📖',W-200,H/2+60);
+  ctx.restore();
+}
+
+function renderVisual(t, data){
+  clearBg();
+  drawDotGrid(0.018);
+  radialGlow(W*0.7,H*0.4,500,data.color||PAL.a3,0.09);
+
+  // Label pill
+  const la=slideIn(t,0);
+  ctx.save();ctx.globalAlpha=la;
+  rRect(60,30,120,32,16,hex2rgba(data.color||PAL.a3,0.12),hex2rgba(data.color||PAL.a3,0.3));
+  txt('VISUAL',68,52,'700 11px DM Sans',data.color||PAL.a3,'left');
+  ctx.restore();
+
+  // Heading
+  const ha=slideIn(t,0.2);
+  ctx.save();ctx.globalAlpha=ha;ctx.translate(0,(1-ha)*25);
+  txt(data.heading,60,130,'bold 56px Clash Display, sans-serif',PAL.wh,'left');
+  ctx.restore();
+
+  // Body
+  const lines=wrapText(ctx,data.body,'400 25px DM Sans',540);
+  lines.forEach((line,i)=>{
+    const ba2=slideIn(t,0.7+i*0.18);
+    txt(line,60,210+i*44,'400 25px DM Sans',i===0?PAL.wh:PAL.mu2,'left',ba2);
+  });
+
+  // Animated visual element
+  const va=slideIn(t,0.5);
+  ctx.save();ctx.globalAlpha=va;
+  // Draw animated hex grid as visual element
+  const cx=850,cy=H/2+40;
+  for(let row=0;row<4;row++){
+    for(let col=0;col<4;col++){
+      const hx=cx+(col-1.5)*90+(row%2)*45;
+      const hy=cy+(row-1.5)*78;
+      const delay2=row*0.1+col*0.12;
+      const ha2=slideIn(t,0.5+delay2);
+      ctx.save();ctx.globalAlpha=va*ha2;
+      drawHex(hx,hy,34,hex2rgba(data.color||PAL.a3,0.12),hex2rgba(data.color||PAL.a3,0.4));
+      if(Math.random()<0.001){// just for static seed
+        ctx.fillStyle=data.color||PAL.a3;ctx.globalAlpha=va*ha2*0.6;
+        ctx.font='14px DM Sans';ctx.textAlign='center';
+      }
+      ctx.restore();
+    }
+  }
+  ctx.restore();
+}
+
+function drawHex(cx,cy,r,fill,stroke){
+  ctx.beginPath();
+  for(let i=0;i<6;i++){
+    const a=Math.PI/180*(60*i-30);
+    const x=cx+r*Math.cos(a),y=cy+r*Math.sin(a);
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  }
+  ctx.closePath();
+  if(fill){ctx.fillStyle=fill;ctx.fill();}
+  if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1.5;ctx.stroke();}
+}
+
+function renderFact(t, data){
+  clearBg();
+  drawDotGrid(0.025);
+  radialGlow(W/2,250,400,data.color||PAL.a2,0.10);
+
+  const la=slideIn(t,0);
+  rRect(60,30,160,32,16,hex2rgba(data.color||PAL.a2,0.12),hex2rgba(data.color||PAL.a2,0.3));
+  txt('KEY FORMULA',68,52,'700 11px DM Sans',data.color||PAL.a2,'left',la);
+
+  // Label
+  const ha=slideIn(t,0.2);
+  ctx.save();ctx.globalAlpha=ha;ctx.translate(0,(1-ha)*25);
+  txt(data.label,60,130,'600 30px DM Sans',PAL.mu2,'left');
+  ctx.restore();
+
+  // Formula box
+  const fa=slideIn(t,0.5);
+  ctx.save();ctx.globalAlpha=fa;
+  rRect(60,155,W-120,110,16,hex2rgba(data.color||PAL.a2,0.07),hex2rgba(data.color||PAL.a2,0.25),1.5);
+  const fp=Math.min(1,Math.max(0,(t-0.7)/1.5));
+  typewrite(data.formula,W/2,230,'bold 48px monospace',PAL.wh,fp,'center');
+  ctx.restore();
+
+  // Vars
+  data.vars.forEach((v,i)=>{
+    const va=slideIn(t,1.0+i*0.25);
+    ctx.save();ctx.globalAlpha=va;
+    rRect(60,290+i*68,W-120,52,10,hex2rgba(PAL.wh,0.02),hex2rgba(PAL.wh,0.06));
+    rRect(60,290+i*68,5,52,3,data.color||PAL.a2);
+    txt(v,80,323+i*68,'400 22px DM Sans',PAL.mu2);
+    ctx.restore();
+  });
+}
+
+function renderAnalogy(t, data){
+  clearBg();
+  drawDotGrid(0.02);
+  radialGlow(W*0.65,H*0.5,500,data.color||PAL.a5,0.08);
+
+  const la=slideIn(t,0);
+  rRect(60,30,140,32,16,hex2rgba(data.color||PAL.a5,0.12),hex2rgba(data.color||PAL.a5,0.3));
+  txt('ANALOGY',68,52,'700 11px DM Sans',data.color||PAL.a5,'left',la);
+
+  const ha=slideIn(t,0.2);
+  ctx.save();ctx.globalAlpha=ha;ctx.translate(0,(1-ha)*25);
+  txt(data.title,60,130,'bold 58px Clash Display, sans-serif',PAL.wh,'left');
+  ctx.restore();
+
+  const lines=wrapText(ctx,data.body,'400 26px DM Sans',580);
+  lines.forEach((line,i)=>{
+    const ba2=slideIn(t,0.7+i*0.18);
+    txt(line,60,210+i*46,'400 26px DM Sans',i===0?PAL.wh:PAL.mu2,'left',ba2);
+  });
+
+  // Animated illustration (type-based)
+  const ia=slideIn(t,0.5);
+  ctx.save();ctx.globalAlpha=ia;
+  if(data.type==='trampoline') drawTrampolineAnim(t);
+  else if(data.type==='particles') drawParticleAnim(t, data.color);
+  else if(data.type==='network') drawNetworkAnim(t, data.color);
+  else drawOrbitAnim(t, data.color);
+  ctx.restore();
+}
+
+function drawTrampolineAnim(t){
+  const cx=850,cy=H/2+40;
+  // Frame
+  ctx.beginPath();ctx.ellipse(cx,cy,200,30,0,0,Math.PI*2);
+  ctx.strokeStyle='rgba(255,255,255,0.2)';ctx.lineWidth=3;ctx.stroke();
+  // Sag
+  const sag=70*slideIn(t,0.8,0.8);
+  ctx.beginPath();ctx.moveTo(cx-200,cy);
+  ctx.bezierCurveTo(cx-80,cy+sag*0.3,cx+80,cy+sag,cx+200,cy);
+  ctx.strokeStyle=hex2rgba(PAL.a1,0.5);ctx.lineWidth=2;ctx.setLineDash([7,5]);ctx.stroke();ctx.setLineDash([]);
+  // Lines
+  for(let i=-3;i<=3;i++){
+    const ys=sag*Math.exp(-Math.pow(i*0.45,2));
+    ctx.beginPath();ctx.moveTo(cx+i*58,cy-30);ctx.lineTo(cx+i*58,cy+ys);
+    ctx.strokeStyle='rgba(124,108,255,0.2)';ctx.lineWidth=1;ctx.setLineDash([4,4]);ctx.stroke();ctx.setLineDash([]);
+  }
+  // Earth ball
+  const ba2=slideIn(t,1.0,0.7);
+  ctx.beginPath();ctx.arc(cx,cy+sag*0.75-28,36*ba2,0,Math.PI*2);
+  ctx.fillStyle='#1a3a5c';ctx.fill();
+  ctx.strokeStyle=PAL.a3;ctx.lineWidth=2;ctx.stroke();
+  txt('Earth',cx,cy+sag*0.75-20,'bold 18px DM Sans',PAL.wh,'center',ba2);
+  // Moon rolling
+  const mp=Math.min(1,Math.max(0,(t-1.8)/1.2));
+  const mx=cx-280+mp*160, my=cy-15-mp*mp*55;
+  ctx.beginPath();ctx.arc(mx,my,16,0,Math.PI*2);
+  ctx.fillStyle='#2d3748';ctx.fill();ctx.strokeStyle=PAL.a3;ctx.lineWidth=2;ctx.stroke();
+  txt('Moon',mx,my+6,'600 13px DM Sans',PAL.wh,'center',Math.min(1,mp*3));
+}
+
+function drawOrbitAnim(t, color){
+  const cx=850,cy=H/2+20;
+  // Sun glow
+  radialGlow(cx,cy,100,color||PAL.a1,0.3);
+  ctx.beginPath();ctx.arc(cx,cy,35,0,Math.PI*2);
+  ctx.fillStyle='#fbbf24';ctx.fill();
+  txt('☀',cx,cy+12,'36px serif',PAL.wh,'center');
+
+  const planets=[
+    {r:100,s:1.6,sz:14,c:'#3b82f6'},
+    {r:165,s:1.0,sz:11,c:'#ef4444'},
+    {r:230,s:0.6,sz:17,c:color||PAL.a3},
+  ];
+  planets.forEach(p=>{
+    ctx.beginPath();ctx.arc(cx,cy,p.r,0,Math.PI*2);
+    ctx.strokeStyle='rgba(255,255,255,0.07)';ctx.lineWidth=1;ctx.stroke();
+    const a=t*p.s;
+    const px2=cx+Math.cos(a)*p.r,py2=cy+Math.sin(a)*p.r;
+    // Trail
+    for(let i=1;i<=10;i++){
+      const ta2=a-i*0.09;
+      ctx.beginPath();ctx.arc(cx+Math.cos(ta2)*p.r,cy+Math.sin(ta2)*p.r,p.sz*(0.5-i*0.03),0,Math.PI*2);
+      ctx.fillStyle=p.c;ctx.globalAlpha*=(0.25-i*0.02);ctx.fill();ctx.globalAlpha=1;
+    }
+    ctx.beginPath();ctx.arc(px2,py2,p.sz,0,Math.PI*2);
+    ctx.fillStyle=p.c;ctx.fill();
+  });
+}
+
+function drawParticleAnim(t, color){
+  const cx=850,cy=H/2;
+  for(let i=0;i<20;i++){
+    const seed=i*137.5;
+    const angle=seed+t*(0.5+i*0.03);
+    const r=60+i*12;
+    const x=cx+Math.cos(angle)*r*(0.8+Math.sin(t+i)*0.2);
+    const y=cy+Math.sin(angle*0.7)*r*0.6;
+    ctx.beginPath();ctx.arc(x,y,3+i%3,0,Math.PI*2);
+    ctx.fillStyle=color||PAL.a4;ctx.globalAlpha=0.4+Math.sin(t+i)*0.3;ctx.fill();ctx.globalAlpha=1;
+  }
+  // Center
+  ctx.beginPath();ctx.arc(cx,cy,28,0,Math.PI*2);
+  ctx.fillStyle=hex2rgba(color||PAL.a4,0.15);ctx.fill();
+  ctx.strokeStyle=color||PAL.a4;ctx.lineWidth=2;ctx.stroke();
+  txt('⚡',cx,cy+12,'36px serif',PAL.wh,'center');
+}
+
+function drawNetworkAnim(t, color){
+  const cx=830,cy=H/2;
+  const nodes=[
+    {x:cx-160,y:cy,label:'Input'},{x:cx-60,y:cy-80,label:''},{x:cx-60,y:cy+80,label:''},
+    {x:cx+60,y:cy-80,label:''},{x:cx+60,y:cy+80,label:''},{x:cx+160,y:cy,label:'Output'},
+  ];
+  const edges=[[0,1],[0,2],[1,3],[1,4],[2,3],[2,4],[3,5],[4,5]];
+  edges.forEach(([a2,b])=>{
+    const pulse=(Math.sin(t*2+a2+b)*0.5+0.5);
+    ctx.beginPath();ctx.moveTo(nodes[a2].x,nodes[a2].y);ctx.lineTo(nodes[b].x,nodes[b].y);
+    ctx.strokeStyle=color||PAL.a1;ctx.lineWidth=1+pulse;ctx.globalAlpha=0.2+pulse*0.4;ctx.stroke();ctx.globalAlpha=1;
+  });
+  nodes.forEach((n,i)=>{
+    ctx.beginPath();ctx.arc(n.x,n.y,20,0,Math.PI*2);
+    ctx.fillStyle=i===0||i===5?color||PAL.a1:'#1f2937';ctx.fill();
+    ctx.strokeStyle=color||PAL.a1;ctx.lineWidth=1.5;ctx.stroke();
+    if(n.label)txt(n.label,n.x,n.y+5,'600 13px DM Sans',PAL.wh,'center');
+  });
+}
+
+function renderSummary(t, data){
+  clearBg();
+  drawDotGrid(0.025);
+  radialGlow(W/2,H/2,650,data.color||PAL.a1,0.07);
+
+  const ha=slideIn(t,0.1);
+  ctx.save();ctx.globalAlpha=ha;ctx.translate(0,(1-ha)*25);
+  txt('Key Takeaways',W/2,110,'bold 68px Clash Display, sans-serif',PAL.wh,'center');
+  ctx.restore();
+
+  data.points.forEach((pt,i)=>{
+    const pa=slideIn(t,0.5+i*0.28,0.5);
+    const y=185+i*88;
+    ctx.save();ctx.globalAlpha=pa;
+    ctx.translate((1-easeOut(Math.min(1,Math.max(0,(t-0.5-i*0.28)/0.5))))*-50,0);
+    rRect(80,y-42,W-160,64,12,'rgba(255,255,255,0.02)','rgba(255,255,255,0.07)');
+    rRect(80,y-42,5,64,3,data.color||PAL.a1);
+
+    // Number
+    txt(String(i+1).padStart(2,'0'),108,y+6,'700 20px Clash Display',data.color||PAL.a1);
+
+    // Text
+    txt(pt,145,y+6,'500 24px DM Sans',PAL.wh);
+    ctx.restore();
+  });
+
+  // CTA
+  const ca=slideIn(t,2.2);
+  ctx.save();ctx.globalAlpha=ca;
+  const btw=320;
+  rRect(W/2-btw/2,H-100,btw,56,28,data.color||PAL.a1);
+  txt('Continue to Quiz  →',W/2,H-65,'700 20px DM Sans',PAL.wh,'center');
+  ctx.restore();
+}
+
+// ── text wrap ──
+function wrapText(ctx, text, font, maxW){
+  ctx.font=font;
+  const words=text.split(' ');
+  const lines=[];let cur='';
+  words.forEach(w=>{
+    const test=cur?cur+' '+w:w;
+    if(ctx.measureText(test).width>maxW&&cur){lines.push(cur);cur=w;}
+    else cur=test;
+  });
+  if(cur)lines.push(cur);
+  return lines;
+}
+
+// ══════════════════════════════════════════════════════
+//  PLAYER ENGINE
+// ══════════════════════════════════════════════════════
+let lesson=null;
+let playing=false;
+let lessonStart=0;
+let rafId=null;
+let currentSlideIdx=-1;
+
+function renderSlide(slide, t){
+  switch(slide.type){
+    case 'title':   renderTitle(t, slide.data); break;
+    case 'concept': renderConcept(t, slide.data); break;
+    case 'visual':  renderVisual(t, slide.data); break;
+    case 'fact':    renderFact(t, slide.data); break;
+    case 'analogy': renderAnalogy(t, slide.data); break;
+    case 'summary': renderSummary(t, slide.data); break;
+    default:        renderConcept(t, slide.data);
+  }
+}
+
+function getSlideAtTime(elapsed){
+  let acc=0;
+  for(let i=0;i<lesson.slides.length;i++){
+    const d=lesson.slides[i].duration;
+    if(elapsed<acc+d) return{idx:i, localT:(elapsed-acc)/d*(d/1000)};
+    acc+=d;
+  }
+  return{idx:lesson.slides.length-1, localT:lesson.slides[lesson.slides.length-1].duration/1000};
+}
+
+function playerLoop(){
+  if(!playing)return;
+  const elapsed=performance.now()-lessonStart;
+  const{idx,localT}=getSlideAtTime(elapsed);
+
+  if(idx!==currentSlideIdx){
+    currentSlideIdx=idx;
+    updateSlideUI(idx);
+  }
+
+  renderSlide(lesson.slides[idx], localT);
+
+  // Progress
+  const pct=Math.min(elapsed/lesson.totalDuration,1)*100;
+  document.getElementById('progFill').style.width=pct+'%';
+
+  // Time
+  const cur=Math.floor(elapsed/1000);
+  const tot=Math.floor(lesson.totalDuration/1000);
+  document.getElementById('timeDisplay').textContent=`${fmt(cur)} / ${fmt(tot)}`;
+
+  if(elapsed>=lesson.totalDuration){
+    playing=false;
+    document.getElementById('playBtn').textContent='↺ Replay';
+    return;
+  }
+  rafId=requestAnimationFrame(playerLoop);
+}
+
+function fmt(s){return`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;}
+
+function updateSlideUI(idx){
+  document.querySelectorAll('.slide-dot').forEach((d,i)=>{
+    d.classList.toggle('active',i===idx);
+    d.classList.toggle('done',i<idx);
+  });
+  document.querySelectorAll('.slide-chip').forEach((c,i)=>{
+    c.classList.toggle('active',i===idx);
+  });
+  document.getElementById('infoSlides').textContent=`${idx+1}/${lesson.slides.length}`;
+}
+
+function togglePlay(){
+  if(!lesson)return;
+  if(playing){
+    playing=false;
+    cancelAnimationFrame(rafId);
+    document.getElementById('playBtn').textContent='▶ Play';
+  } else {
+    if(performance.now()-lessonStart>=lesson.totalDuration){
+      lessonStart=performance.now();
+    }
+    playing=true;
+    document.getElementById('playBtn').textContent='⏸ Pause';
+    playerLoop();
+  }
+}
+
+function restartLesson(){
+  playing=false;
+  cancelAnimationFrame(rafId);
+  lessonStart=performance.now();
+  playing=true;
+  document.getElementById('playBtn').textContent='⏸ Pause';
+  playerLoop();
+}
+
+function jumpToSlide(idx){
+  cancelAnimationFrame(rafId);
+  const offset=lesson.slides.slice(0,idx).reduce((a,s)=>a+s.duration,0);
+  lessonStart=performance.now()-offset;
+  playing=true;
+  document.getElementById('playBtn').textContent='⏸ Pause';
+  playerLoop();
+}
+
+// ══════════════════════════════════════════════════════
+//  SCREEN FLOW
+// ══════════════════════════════════════════════════════
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function setSug(t){ document.getElementById('topicInput').value=t; }
+
+function generate(){
+  const topic=document.getElementById('topicInput').value.trim();
+  if(!topic){ document.getElementById('topicInput').focus(); return; }
+
+  const diff=document.getElementById('diffSelect').value;
+  const dur=document.getElementById('durSelect').value;
+
+  // Show generating screen
+  show('generating');
+  document.getElementById('genTopicDisplay').textContent=topic;
+
+  const steps=[
+    {label:'Analysing topic structure', time:600},
+    {label:'Writing lesson script', time:1400},
+    {label:'Building slide content', time:2300},
+    {label:'Generating visual elements', time:3400},
+    {label:'Assembling lesson player', time:4500},
+    {label:'Ready!', time:5200},
+  ];
+
+  // Build step elements
+  const stepsEl=document.getElementById('genSteps');
+  stepsEl.innerHTML='';
+  steps.forEach((s,i)=>{
+    stepsEl.innerHTML+=`
+      <div class="gen-step" id="gs${i}">
+        <div class="step-icon" id="gsi${i}">○</div>
+        <span>${s.label}</span>
+      </div>`;
+  });
+
+  // Animate steps
+  steps.forEach((s,i)=>{
+    setTimeout(()=>{
+      document.getElementById(`gs${i}`).classList.add('active');
+      document.getElementById(`gsi${i}`).textContent='◉';
+      if(i>0){
+        document.getElementById(`gs${i-1}`).classList.remove('active');
+        document.getElementById(`gs${i-1}`).classList.add('done');
+        document.getElementById(`gsi${i-1}`).textContent='✓';
+      }
+      document.getElementById('genEta').textContent=`${Math.max(1,Math.ceil((5200-s.time)/1000))}s`;
+    }, s.time);
+  });
+
+  // Build lesson + launch player
+  setTimeout(()=>{
+    lesson=generateLessonFromTopic(topic, diff, dur);
+    setupPlayer(topic, diff);
+    show('player');
+
+    // Auto start
+    lessonStart=performance.now();
+    playing=true;
+    document.getElementById('playBtn').textContent='⏸ Pause';
+    requestAnimationFrame(playerLoop);
+  }, 5600);
+}
+
+function setupPlayer(topic, diff){
+  document.getElementById('playerTopicLabel').textContent=topic;
+
+  const badge=document.getElementById('diffBadge');
+  badge.textContent=diff.charAt(0).toUpperCase()+diff.slice(1);
+  badge.className='topbar-badge badge-'+diff;
+
+  // Dots
+  const dots=document.getElementById('slideDots');
+  dots.innerHTML=lesson.slides.map((_,i)=>`<div class="slide-dot" onclick="jumpToSlide(${i})"></div>`).join('');
+
+  // Chips
+  const chips=document.getElementById('slideChips');
+  const names=lesson.slides.map(s=>s.type.charAt(0).toUpperCase()+s.type.slice(1));
+  chips.innerHTML=names.map((n,i)=>`<button class="slide-chip" onclick="jumpToSlide(${i})">${n}</button>`).join('');
+
+  // Info
+  document.getElementById('infoSlides').textContent=`0/${lesson.slides.length}`;
+  document.getElementById('infoDur').innerHTML=`${Math.round(lesson.totalDuration/1000)}<span class="it-unit">s</span>`;
+
+  currentSlideIdx=-1;
+  document.getElementById('progFill').style.width='0%';
+}
+
+function goHome(){
+  playing=false;
+  cancelAnimationFrame(rafId);
+  clearBg();
+  show('home');
+}
+
+// ── Recording ──
+let mediaRec=null, recChunks=[];
+
+function recordVideo(){
+  if(mediaRec&&mediaRec.state==='recording')return;
+  recChunks=[];
+  const stream=C.captureStream(60);
+  mediaRec=new MediaRecorder(stream,{mimeType:'video/webm;codecs=vp9'});
+  mediaRec.ondataavailable=e=>recChunks.push(e.data);
+  mediaRec.onstop=()=>{
+    const blob=new Blob(recChunks,{type:'video/webm'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=`lesson_${Date.now()}.webm`;a.click();
+    document.getElementById('recDot').className='rec-dot saved';
+    document.getElementById('recLabel').textContent='Saved!';
+  };
+  mediaRec.start();
+  document.getElementById('recDot').className='rec-dot live';
+  document.getElementById('recLabel').textContent='Recording...';
+  setTimeout(()=>{if(mediaRec.state==='recording')mediaRec.stop();},lesson.totalDuration+800);
+  restartLesson();
+}
+</script>
+</body>
+</html>
