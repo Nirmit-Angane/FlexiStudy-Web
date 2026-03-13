@@ -219,12 +219,12 @@ export default function LandingPage() {
       </AnimatePresence>
 
       {/* --- Navigation --- */}
-      <header className="ds-header justify-between px-6 lg:px-12">
+      <header className="ds-header justify-between">
         <div className="ds-logo">
           <div className="ds-logo-icon">
             <BookOpen size={18} />
           </div>
-          <span className="font-bold text-xl tracking-tight">FlexiStudy</span>
+          <span className="font-bold text-lg sm:text-xl tracking-tight">FlexiStudy</span>
         </div>
 
         <nav className="ds-nav hidden md:flex">
@@ -233,11 +233,11 @@ export default function LandingPage() {
           <a href="#testimonials">Testimonials</a>
         </nav>
 
-        <div className="flex items-center gap-4">
-          <Link href="/login" className="btn btn-ghost btn-sm font-semibold">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <Link href="/login" className="btn btn-ghost btn-sm font-semibold hidden sm:inline-flex">
             Log In
           </Link>
-          <Link href="/login" className="btn btn-primary btn-sm px-5">
+          <Link href="/login" className="btn btn-primary btn-sm px-3 sm:px-5">
             Get Started
           </Link>
         </div>
@@ -246,21 +246,21 @@ export default function LandingPage() {
       <main className="flex-1">
         {/* --- Hero Section --- */}
         <section className="ds-hero overflow-hidden">
-          <div className="ds-container grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="ds-container grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12 items-center">
             <div className="animate-in fade-in slide-in-from-left duration-1000">
               <div className="ds-hero-eyebrow">
                 <span className="ds-hero-dot" />
                 Empowering the future of learning
               </div>
-              <h1 className="text-4xl lg:text-6xl font-extrabold leading-tight mb-6">
+              <h1 className="text-3xl sm:text-4xl lg:text-6xl font-extrabold leading-tight mb-4 sm:mb-6">
                 Master any skill with <span>Adaptive Learning.</span>
               </h1>
-              <p className="text-lg text-text-secondary mb-8 leading-relaxed">
+              <p className="text-base sm:text-lg text-text-secondary mb-6 sm:mb-8 leading-relaxed">
                 FlexiStudy uses AI-driven technology to personalize your education.
-                Whether it's complex science or creative arts, we adapt to YOUR pace,
+                Whether it&apos;s complex science or creative arts, we adapt to YOUR pace,
                 style, and goals.
               </p>
-              <div className="flex flex-wrap gap-4">
+              <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
                 <Link href="/login" className="btn btn-primary btn-xl group">
                   Start Learning Free
                   <ArrowRight className="ml-2 group-hover:translate-x-1 transition-transform" size={20} />
@@ -270,10 +270,10 @@ export default function LandingPage() {
                 </Link>
               </div>
 
-              <div className="mt-10 flex items-center gap-6">
+              <div className="mt-8 sm:mt-10 flex items-center gap-4 sm:gap-6">
                 <div className="flex -space-x-3">
                   {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-bg-elevated flex items-center justify-center overflow-hidden">
+                    <div key={i} className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-white bg-bg-elevated flex items-center justify-center overflow-hidden">
                       <Image
                         src={`https://i.pravatar.cc/100?img=${i + 10}`}
                         alt="User"
@@ -283,7 +283,7 @@ export default function LandingPage() {
                     </div>
                   ))}
                 </div>
-                <div className="text-sm">
+                <div className="text-xs sm:text-sm">
                   <div className="flex items-center text-yellow-500 mb-0.5">
                     {[1, 2, 3, 4, 5].map((s) => <Star key={s} size={14} fill="currentColor" />)}
                   </div>
@@ -293,7 +293,7 @@ export default function LandingPage() {
             </div>
 
             <div className="relative animate-in fade-in slide-in-from-right duration-1000">
-              <div className="relative z-10 rounded-2xl overflow-hidden shadow-2xl border-8 border-white/20">
+              <div className="relative z-10 rounded-2xl overflow-hidden shadow-2xl border-4 sm:border-8 border-white/20">
                 <Image
                   src="/hero.png"
                   alt="FlexiStudy Dashboard"
@@ -304,28 +304,28 @@ export default function LandingPage() {
                 />
               </div>
               {/* Decorative Blobs */}
-              <div className="absolute -top-20 -right-20 w-64 h-64 bg-brand-primary/10 rounded-full blur-3xl -z-10" />
-              <div className="absolute -bottom-20 -left-20 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl -z-10" />
+              <div className="absolute -top-10 -right-10 sm:-top-20 sm:-right-20 w-40 sm:w-64 h-40 sm:h-64 bg-brand-primary/10 rounded-full blur-3xl -z-10" />
+              <div className="absolute -bottom-10 -left-10 sm:-bottom-20 sm:-left-20 w-52 sm:w-80 h-52 sm:h-80 bg-blue-500/10 rounded-full blur-3xl -z-10" />
             </div>
           </div>
         </section>
 
         {/* --- Stats Section --- */}
-        <section id="how-it-works" className="py-12 bg-white border-y border-border-default">
+        <section id="how-it-works" className="py-8 sm:py-12 bg-white border-y border-border-default">
           <div className="ds-container">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8">
               {[
                 { label: "Active Learners", value: "48K+", icon: Users, color: "text-brand-primary" },
                 { label: "Courses Available", value: "200+", icon: BookOpen, color: "text-blue-500" },
                 { label: "Success Rate", value: "94%", icon: Zap, color: "text-amber-500" },
                 { label: "AI Interactions", value: "1.2M", icon: Brain, color: "text-purple-500" }
               ].map((stat, idx) => (
-                <div key={idx} className="flex flex-col items-center text-center p-6 rounded-xl hover:bg-bg-page transition-colors">
-                  <div className={`p-3 rounded-lg mb-4 bg-bg-elevated ${stat.color}`}>
-                    <stat.icon size={24} />
+                <div key={idx} className="flex flex-col items-center text-center p-3 sm:p-6 rounded-xl hover:bg-bg-page transition-colors">
+                  <div className={`p-2 sm:p-3 rounded-lg mb-2 sm:mb-4 bg-bg-elevated ${stat.color}`}>
+                    <stat.icon size={20} className="sm:w-6 sm:h-6" />
                   </div>
-                  <div className="text-3xl font-extrabold text-text-primary mb-1">{stat.value}</div>
-                  <div className="text-sm text-text-muted font-semibold uppercase tracking-wider">{stat.label}</div>
+                  <div className="text-2xl sm:text-3xl font-extrabold text-text-primary mb-1">{stat.value}</div>
+                  <div className="text-xs sm:text-sm text-text-muted font-semibold uppercase tracking-wider">{stat.label}</div>
                 </div>
               ))}
             </div>
@@ -333,16 +333,16 @@ export default function LandingPage() {
         </section>
 
         {/* --- Features --- */}
-        <section id="features" className="ds-section py-24 bg-bg-page">
-          <div className="ds-container text-center mb-16">
+        <section id="features" className="ds-section py-12 sm:py-16 md:py-24 bg-bg-page">
+          <div className="ds-container text-center mb-8 sm:mb-12 md:mb-16">
             <div className="ds-section-label justify-center">Tailored for you</div>
-            <h2 className="ds-section-title text-4xl mb-4">Why choose FlexiStudy?</h2>
+            <h2 className="ds-section-title text-2xl sm:text-3xl md:text-4xl mb-3 sm:mb-4">Why choose FlexiStudy?</h2>
             <p className="ds-section-desc mx-auto">
               Traditional education is one-size-fits-all. We believe learning should be active, engaging, and personal.
             </p>
           </div>
 
-          <div className="ds-container grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="ds-container grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
             {[
               {
                 title: "Personalized Roadmap",
@@ -363,15 +363,15 @@ export default function LandingPage() {
                 color: "bg-blue-100 text-blue-600"
               }
             ].map((feature, idx) => (
-              <Link href="/login" key={idx} className="card p-8 hover:-translate-y-2 transition-transform duration-300">
-                <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-6 shadow-sm ${feature.color}`}>
-                  <feature.icon size={28} />
+              <Link href="/login" key={idx} className="card p-5 sm:p-6 md:p-8 hover:-translate-y-2 transition-transform duration-300">
+                <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl flex items-center justify-center mb-4 sm:mb-6 shadow-sm ${feature.color}`}>
+                  <feature.icon size={24} className="sm:w-7 sm:h-7" />
                 </div>
-                <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
-                <p className="text-text-secondary leading-relaxed">
+                <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3">{feature.title}</h3>
+                <p className="text-sm sm:text-base text-text-secondary leading-relaxed">
                   {feature.desc}
                 </p>
-                <div className="mt-6 flex items-center text-brand-primary font-bold text-sm group">
+                <div className="mt-4 sm:mt-6 flex items-center text-brand-primary font-bold text-sm group">
                   Learn more <ArrowRight size={16} className="ml-1 group-hover:translate-x-1 transition-transform" />
                 </div>
               </Link>
@@ -380,21 +380,21 @@ export default function LandingPage() {
         </section>
 
         {/* --- CTA Section --- */}
-        <section id="testimonials" className="ds-container py-24">
-          <div className="bg-brand-primary rounded-3xl p-12 lg:p-20 text-center relative overflow-hidden shadow-2xl">
+        <section id="testimonials" className="ds-container py-12 sm:py-16 md:py-24">
+          <div className="bg-brand-primary rounded-2xl sm:rounded-3xl p-6 sm:p-10 lg:p-20 text-center relative overflow-hidden shadow-2xl">
             {/* Decoration */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-32 -mt-32" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/5 rounded-full blur-2xl -ml-24 -mb-24" />
+            <div className="absolute top-0 right-0 w-40 sm:w-64 h-40 sm:h-64 bg-white/10 rounded-full blur-3xl -mr-20 sm:-mr-32 -mt-20 sm:-mt-32" />
+            <div className="absolute bottom-0 left-0 w-32 sm:w-48 h-32 sm:h-48 bg-black/5 rounded-full blur-2xl -ml-16 sm:-ml-24 -mb-16 sm:-mb-24" />
 
             <div className="relative z-10 max-w-2xl mx-auto">
-              <h2 className="text-white text-3xl lg:text-5xl font-extrabold mb-6 leading-tight">
+              <h2 className="text-white text-2xl sm:text-3xl lg:text-5xl font-extrabold mb-4 sm:mb-6 leading-tight">
                 Ready to transform your learning experience?
               </h2>
-              <p className="text-white/80 text-lg mb-10">
+              <p className="text-white/80 text-base sm:text-lg mb-6 sm:mb-10">
                 Join thousands of students who are already mastering new skills with FlexiStudy.
                 Start your 14-day free trial today.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
                 <Link href="/login" className="bg-white text-brand-primary btn btn-xl font-bold hover:bg-bg-elevated transition-colors">
                   Get Started for Free
                 </Link>
@@ -402,7 +402,7 @@ export default function LandingPage() {
                   Contact Sales
                 </Link>
               </div>
-              <div className="mt-8 flex items-center justify-center gap-6 text-white/60 text-sm font-medium">
+              <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-white/60 text-xs sm:text-sm font-medium">
                 <div className="flex items-center gap-1.5"><CheckCircle2 size={16} /> No credit card required</div>
                 <div className="flex items-center gap-1.5"><CheckCircle2 size={16} /> Cancel anytime</div>
               </div>
@@ -412,16 +412,16 @@ export default function LandingPage() {
       </main>
 
       {/* --- Footer --- */}
-      <footer className="bg-bg-dark text-white py-16">
-        <div className="ds-container grid grid-cols-1 md:grid-cols-4 gap-12">
-          <div className="col-span-1 md:col-span-1">
-            <div className="flex items-center gap-2 mb-6">
+      <footer className="bg-bg-dark text-white py-10 sm:py-16">
+        <div className="ds-container grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-8 sm:gap-12">
+          <div className="col-span-2 sm:col-span-2 md:col-span-1">
+            <div className="flex items-center gap-2 mb-4 sm:mb-6">
               <div className="ds-logo-icon">
                 <BookOpen size={16} />
               </div>
-              <span className="font-bold text-xl tracking-tight">FlexiStudy</span>
+              <span className="font-bold text-lg sm:text-xl tracking-tight">FlexiStudy</span>
             </div>
-            <p className="text-text-muted text-sm leading-relaxed mb-6">
+            <p className="text-text-muted text-sm leading-relaxed mb-4 sm:mb-6">
               Making high-quality education accessible and personalized for everyone, everywhere.
             </p>
             <div className="flex gap-4">
@@ -433,8 +433,8 @@ export default function LandingPage() {
           </div>
 
           <div>
-            <h4 className="font-bold mb-6">Product</h4>
-            <ul className="space-y-4 text-sm text-text-muted">
+            <h4 className="font-bold mb-4 sm:mb-6 text-sm sm:text-base">Product</h4>
+            <ul className="space-y-3 sm:space-y-4 text-sm text-text-muted">
               <li><Link href="/login" className="hover:text-white transition-colors">Explore Courses</Link></li>
               <li><Link href="/login" className="hover:text-white transition-colors">Adaptive AI</Link></li>
               <li><Link href="/login" className="hover:text-white transition-colors">Flashcards</Link></li>
@@ -443,8 +443,8 @@ export default function LandingPage() {
           </div>
 
           <div>
-            <h4 className="font-bold mb-6">Company</h4>
-            <ul className="space-y-4 text-sm text-text-muted">
+            <h4 className="font-bold mb-4 sm:mb-6 text-sm sm:text-base">Company</h4>
+            <ul className="space-y-3 sm:space-y-4 text-sm text-text-muted">
               <li><Link href="/login" className="hover:text-white transition-colors">About Us</Link></li>
               <li><Link href="/login" className="hover:text-white transition-colors">Careers</Link></li>
               <li><Link href="/login" className="hover:text-white transition-colors">Blog</Link></li>
@@ -452,25 +452,25 @@ export default function LandingPage() {
             </ul>
           </div>
 
-          <div>
-            <h4 className="font-bold mb-6">Newsletter</h4>
+          <div className="col-span-2 sm:col-span-2 md:col-span-1">
+            <h4 className="font-bold mb-4 sm:mb-6 text-sm sm:text-base">Newsletter</h4>
             <p className="text-sm text-text-muted mb-4">Stay updated with the latest in EdTech.</p>
             <div className="flex gap-2">
               <input
                 type="email"
                 placeholder="Email address"
-                className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm flex-1 focus:outline-none focus:border-brand-primary"
+                className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm flex-1 min-w-0 focus:outline-none focus:border-brand-primary"
               />
-              <button className="bg-brand-primary p-2 rounded-lg hover:bg-brand-primary-dark transition-colors">
+              <button className="bg-brand-primary p-2 rounded-lg hover:bg-brand-primary-dark transition-colors shrink-0">
                 <ArrowRight size={20} />
               </button>
             </div>
           </div>
         </div>
 
-        <div className="ds-container mt-16 pt-8 border-top border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-text-muted font-medium">
+        <div className="ds-container mt-10 sm:mt-16 pt-6 sm:pt-8 border-top border-white/5 flex flex-col md:flex-row justify-between items-center gap-3 sm:gap-4 text-xs text-text-muted font-medium">
           <p>© 2024 FlexiStudy Inc. All rights reserved.</p>
-          <div className="flex gap-8">
+          <div className="flex gap-4 sm:gap-8 flex-wrap justify-center">
             <Link href="/login" className="hover:text-white">Terms of Service</Link>
             <Link href="/login" className="hover:text-white">Privacy Policy</Link>
             <Link href="/login" className="hover:text-white">Cookies</Link>

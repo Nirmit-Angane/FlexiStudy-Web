@@ -445,8 +445,14 @@
 }
 
 .ds-nav {
-  display: flex;
+  display: none;
   gap: var(--space-1);
+}
+
+@media (min-width: 768px) {
+  .ds-nav {
+    display: flex;
+  }
 }
 
 .ds-nav a {
@@ -1793,4 +1799,88 @@
   height: 1px;
   background: var(--border-subtle);
   margin: var(--space-8) 0;
+}
+
+/* ============================================================
+   LANDING PAGE — RESPONSIVE BREAKPOINTS
+   ============================================================ */
+
+/* ── Mobile (320px – 767px) ─────────────────────────────── */
+@media (max-width: 767px) {
+  .ds-container {
+    padding: 0 var(--space-4);
+  }
+
+  .ds-header {
+    padding: 0 var(--space-4);
+    height: 54px;
+  }
+
+  .ds-hero {
+    padding: var(--space-10) 0 var(--space-8);
+  }
+
+  .ds-hero h1 {
+    font-size: var(--text-3xl);
+    margin-bottom: var(--space-3);
+  }
+
+  .ds-hero p {
+    font-size: var(--text-base);
+    margin-bottom: var(--space-6);
+  }
+
+  .ds-hero-eyebrow {
+    font-size: 10px;
+  }
+
+  .ds-section-title {
+    font-size: var(--text-2xl);
+  }
+
+  .ds-section-desc {
+    font-size: var(--text-sm);
+    margin-bottom: var(--space-6);
+  }
+
+  .btn-xl {
+    font-size: var(--text-base);
+    padding: 14px 24px;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .btn-sm {
+    font-size: var(--text-xs);
+    padding: 6px 10px;
+  }
+
+  /* Hide Log In on mobile — only show Get Started */
+  .ds-header .btn-ghost {
+    display: none;
+  }
+}
+
+/* ── Tablet (768px – 1199px) ────────────────────────────── */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .ds-container {
+    padding: 0 var(--space-6);
+  }
+
+  .ds-hero {
+    padding: var(--space-12) 0 var(--space-10);
+  }
+
+  .ds-hero h1 {
+    font-size: var(--text-4xl);
+  }
+
+  .ds-section-title {
+    font-size: var(--text-3xl);
+  }
+
+  .btn-xl {
+    font-size: var(--text-base);
+    padding: 14px 28px;
+  }
 }
