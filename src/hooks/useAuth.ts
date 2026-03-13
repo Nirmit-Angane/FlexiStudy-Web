@@ -78,5 +78,13 @@ export function useAuth() {
     return () => unsubscribe();
   }, []);
 
-  return { user, profile, lessons, loading };
+  const logout = async () => {
+    try {
+      await auth.signOut();
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
+
+  return { user, profile, lessons, loading, logout };
 }

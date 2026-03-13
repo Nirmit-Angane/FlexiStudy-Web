@@ -20,83 +20,89 @@ export async function POST(req: NextRequest) {
       Kinesthetic: "Use step-by-step processes, hands-on examples, real-world applications, and action verbs. Focus on what the learner can DO with this knowledge.",
     };
 
-    const prompt = `You are an expert educational content creator. Generate a structured 5-slide video lesson about: "${topic}"
+    const prompt = `You are LearnVid, an expert educational content creator. Generate a structured JSON lesson plan for an animated educational video about: "${topic}"
 
 Learning style: ${style}
 Style guidance: ${styleInstructions[style] || styleInstructions.Visual}
 
-Return ONLY valid JSON (no markdown, no backticks, no explanation) in this exact format:
+CRITICAL CONSTRAINTS:
+- Video MUST be under 1 minute (60 seconds total)
+- Use 5-7 slides maximum
+- Each slide: 6-12 seconds
+- Total estimated duration must be between 40-60 seconds
+
+PHASE 1 — THEME SELECTION:
+Select theme based on topic:
+- Space/Astronomy → SPACE
+- Biology/Nature → NATURE
+- Chemistry → CHEMISTRY
+- Physics → PHYSICS
+- Mathematics → MATH
+- Technology/AI → TECH
+- Medicine/Health → MEDICAL
+- Default → DEFAULT
+
+PHASE 2 — CONTENT & NARRATION:
+Write audioScript in natural SPOKEN English.
+- Use contractions, rhetorical questions, casual phrasing.
+- MAXIMUM 35 words per slide for audioScript.
+
+Return ONLY valid JSON matching this exact schema (no markdown, no backticks):
 {
-  "topic": "concise topic title (max 6 words)",
-  "summary": "one sentence describing what the student will learn",
+  "meta": {
+    "topic": "${topic}",
+    "topicCategory": "Science|Math|Tech|etc",
+    "difficulty": 1,
+    "difficultyLabel": "Beginner",
+    "duration": "short",
+    "totalSlides": number,
+    "estimatedDurationSeconds": number
+  },
+  "theme": {
+    "name": "THEME_NAME",
+    "bgColor": "#hex",
+    "primaryColor": "#hex",
+    "secondaryColor": "#hex",
+    "accentColor": "#hex",
+    "textColor": "#e2e8f0",
+    "glowColor": "#hex",
+    "particleStyle": "stars|dots|molecules|network|leaves|bubbles|grid",
+    "fontMood": "scientific|elegant|technical|organic|bold"
+  },
   "slides": [
     {
-      "id": 1,
-      "type": "intro",
-      "headline": "engaging slide headline (max 8 words)",
-      "body": "2-3 sentence explanation that's clear and memorable",
-      "emoji": "single relevant emoji",
-      "points": null,
-      "tag": "INTRODUCTION",
-      "accentColor": "#3D8B71",
-      "bg": "linear-gradient(135deg,#0f1a14,#0d1f18)"
-    },
-    {
-      "id": 2,
-      "type": "concept",
-      "headline": "core concept headline",
-      "body": "clear explanation of the main concept",
-      "emoji": "relevant emoji",
-      "points": ["key point one", "key point two", "key point three"],
-      "tag": "CORE CONCEPT",
-      "accentColor": "#4A7FC1",
-      "bg": "linear-gradient(135deg,#0d1520,#0a1628)"
-    },
-    {
-      "id": 3,
-      "type": "deep-dive",
-      "headline": "deeper explanation headline",
-      "body": "more detailed explanation with analogy or example",
-      "emoji": "relevant emoji",
-      "points": ["detail one", "detail two", "detail three"],
-      "tag": "DEEP DIVE",
-      "accentColor": "#A06CB0",
-      "bg": "linear-gradient(135deg,#160d20,#1a0d24)"
-    },
-    {
-      "id": 4,
-      "type": "example",
-      "headline": "real-world example headline",
-      "body": "concrete real-world example or application",
-      "emoji": "relevant emoji",
-      "points": ["example point one", "example point two", "example point three"],
-      "tag": "REAL WORLD",
-      "accentColor": "#F5A623",
-      "bg": "linear-gradient(135deg,#1f1505,#201408)"
-    },
-    {
-      "id": 5,
-      "type": "summary",
-      "headline": "key takeaway headline",
-      "body": "memorable summary that reinforces the main lesson",
-      "emoji": "relevant emoji",
-      "points": ["takeaway one", "takeaway two", "takeaway three"],
-      "tag": "KEY TAKEAWAYS",
-      "accentColor": "#2E9E6B",
-      "bg": "linear-gradient(135deg,#081a10,#061510)"
+      "slideId": number,
+      "type": "title|hook|realworld|concept|visual|formula|analogy|summary",
+      "durationSeconds": number,
+      "content": {
+        "heading": "string",
+        "subheading": "string",
+        "body": "string",
+        "detail": "string",
+        "formula": "string",
+        "icon": "emoji",
+        "layout": "center|leftText_rightVisual|top_bottom",
+        "funFact": "string"
+      },
+      "images": [],
+      "animation": {
+        "entrance": "fadeSlideUp|slideFromRight|zoomIn",
+        "mainEffect": "typewriter|pulseGlow|staggerList|orbitSpin",
+        "exitStyle": "fadeOut|slideLeft|dissolve"
+      },
+      "audioScript": "Spoken narration text.",
+      "audioDurationSeconds": number
     }
-  ]
-}
-
-Rules:
-- Headlines must be punchy and under 8 words
-- Body text must be engaging and educational, not dry
-- Emoji must be genuinely relevant (not generic like 📚)
-- Points must be concise (under 12 words each)
-- accentColor must be a valid hex color that matches the slide mood
-- bg must be a dark gradient CSS string
-- Tailor ALL content specifically to the learning style: ${style}
-- Make it genuinely educational and memorable`;
+  ],
+  "quiz": [],
+  "notes": {
+    "keyPoints": [],
+    "glossary": {},
+    "funFacts": [],
+    "summary": "string",
+    "furtherReading": []
+  }
+}`;
 
     const chatCompletion = await groq.chat.completions.create({
       messages: [{ role: "user", content: prompt }],

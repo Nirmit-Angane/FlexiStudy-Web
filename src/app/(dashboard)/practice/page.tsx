@@ -1,40 +1,18 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
+import { CanvasPlayer } from "@/components/interactive/CanvasPlayer";
+import { LessonJSON } from "@/lib/types";
 import {
-  Sparkles, Play, Check, Loader2, X, Maximize2,
-  ArrowLeft, BookOpen, Zap, RotateCcw, Volume2, VolumeX,
+  Sparkles, Loader2, X, Maximize2,
+  ArrowLeft, BookOpen, Zap, RotateCcw,
   Lightbulb, Eye, Headphones, Hand, Clock, Star,
-  TrendingUp, CheckCircle2, ChevronLeft, ChevronRight,
+  TrendingUp, CheckCircle2, Check,
 } from "lucide-react";
 
 /* ─────────────────────────────────────────────────────────────
-   TYPES
- ───────────────────────────────────────────────────────────── */
-interface Slide {
-  id: number;
-  type: string;
-  headline: string;
-  body: string;
-  emoji: string;
-  points: string[] | null;
-  tag: string;
-  accentColor: string;
-  bg: string;
-}
-
-interface LessonData {
-  topic: string;
-  summary: string;
-  slides: Slide[];
-}
-
-/* ─────────────────────────────────────────────────────────────
    CONSTANTS
- ───────────────────────────────────────────────────────────── */
-const SLIDE_DURATION = 9;
-const TOTAL_DURATION = 45;
-
+   ───────────────────────────────────────────────────────────── */
 const LEARNING_STYLES = [
   {
     key: "Visual",
@@ -80,393 +58,6 @@ const EXAMPLE_TOPICS = [
 ];
 
 /* ─────────────────────────────────────────────────────────────
-   BUILD NARRATION SCRIPT from lesson data
- ───────────────────────────────────────────────────────────── */
-function buildNarrationScript(lesson: LessonData): string {
-  return lesson.slides
-    .map(s => {
-      const pts = s.points?.join(". ") ?? "";
-      return `${s.headline}. ${s.body}${pts ? " " + pts : ""}`;
-    })
-    .join(" ... ");
-}
-
-/* ─────────────────────────────────────────────────────────────
-   VIDEO PLAYER COMPONENT
- ───────────────────────────────────────────────────────────── */
-function VideoPlayer({
-  lesson,
-  compact = false,
-}: {
-  lesson: LessonData;
-  compact?: boolean;
-}) {
-  const [playing, setPlaying] = useState(false);
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [slideProgress, setSlideProgress] = useState(0);
-  const [totalProgress, setTotalProgress] = useState(0);
-  const [muted, setMuted] = useState(false);
-  const [textVisible, setTextVisible] = useState(false);
-  const [pointsVisible, setPointsVisible] = useState<boolean[]>([]);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
-  const muteRef = useRef(false); // keep muted state accessible in callbacks
-
-  const slides = lesson.slides || [];
-  const slide = slides[currentSlide] || ({} as Slide);
-  const elapsed = Math.round((totalProgress / 100) * TOTAL_DURATION);
-  const fmtTime = (sec: number) =>
-    `${String(Math.floor(sec / 60)).padStart(2, "0")}:${String(sec % 60).padStart(2, "0")}`;
-
-  // Keep muteRef in sync
-  useEffect(() => { muteRef.current = muted; }, [muted]);
-
-  /* ── Speech Synthesis helpers ── */
-  const speak = useCallback((text: string) => {
-    if (typeof window === "undefined") return;
-    window.speechSynthesis.cancel();
-    const utter = new SpeechSynthesisUtterance(text);
-
-    // Voice selection: prioritize high-quality voices
-    const voices = window.speechSynthesis.getVoices();
-    const voicePreferences = ["Google US English", "Samantha", "Microsoft Zira", "Zira"];
-    const preferredVoice = voices.find(v =>
-      voicePreferences.some(pref => v.name.includes(pref))
-    );
-
-    if (preferredVoice) {
-      utter.voice = preferredVoice;
-    }
-
-    utter.rate = 0.9;
-    utter.pitch = 1;
-    utter.volume = muteRef.current ? 0 : 1;
-    utteranceRef.current = utter;
-    window.speechSynthesis.speak(utter);
-  }, []);
-
-
-  const stopSpeech = useCallback(() => {
-    if (typeof window === "undefined") return;
-    window.speechSynthesis.cancel();
-    utteranceRef.current = null;
-  }, []);
-
-  // Update volume without restarting when mute toggled
-  useEffect(() => {
-    if (utteranceRef.current) {
-      utteranceRef.current.volume = muted ? 0 : 1;
-    }
-  }, [muted]);
-
-  /* ── Slide animation ── */
-  const animateSlide = useCallback((idx: number) => {
-    setTextVisible(false);
-    setPointsVisible([]);
-    setTimeout(() => setTextVisible(true), 280);
-    const pts = slides[idx]?.points;
-    if (pts?.length) {
-      pts.forEach((_, i) =>
-        setTimeout(() =>
-          setPointsVisible(prev => {
-            const next = [...prev];
-            next[i] = true;
-            return next;
-          }), 480 + i * 240)
-      );
-    }
-  }, [slides]);
-
-  // Animate first slide on mount
-  useEffect(() => { animateSlide(0); }, []); // eslint-disable-line
-
-  /* ── Auto-play ticker ── */
-  useEffect(() => {
-    if (playing) {
-      // Speak current slide text
-      speak(`${slide.headline}. ${slide.body} ${slide.points?.join(". ") ?? ""}`);
-
-      intervalRef.current = setInterval(() => {
-        setSlideProgress(sp => {
-          const next = sp + (100 / (SLIDE_DURATION * 10));
-          setTotalProgress(tp => Math.min(tp + (100 / (TOTAL_DURATION * 10)), 100));
-
-          if (next >= 100) {
-            setCurrentSlide(cs => {
-              const nxt = cs + 1;
-              if (nxt >= slides.length) {
-                setPlaying(false);
-                stopSpeech();
-                if (intervalRef.current) clearInterval(intervalRef.current);
-                return cs;
-              }
-              animateSlide(nxt);
-              // speak next slide
-              const ns = slides[nxt];
-              speak(`${ns.headline}. ${ns.body} ${ns.points?.join(". ") ?? ""}`);
-              return nxt;
-            });
-            return 0;
-          }
-          return next;
-        });
-      }, 100);
-    } else {
-      stopSpeech();
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    }
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [playing]); // eslint-disable-line
-
-  // Stop speech on unmount
-  useEffect(() => () => stopSpeech(), [stopSpeech]);
-
-  const handlePlayPause = () => {
-    if (totalProgress >= 100) {
-      setCurrentSlide(0);
-      setSlideProgress(0);
-      setTotalProgress(0);
-      animateSlide(0);
-      setPlaying(true);
-    } else {
-      setPlaying(p => !p);
-    }
-  };
-
-  const goToSlide = (idx: number) => {
-    const clamped = Math.max(0, Math.min(idx, slides.length - 1));
-    setCurrentSlide(clamped);
-    setSlideProgress(0);
-    setTotalProgress((clamped / slides.length) * 100);
-    animateSlide(clamped);
-    stopSpeech();
-    if (playing) {
-      const ns = slides[clamped];
-      speak(`${ns.headline}. ${ns.body} ${ns.points?.join(". ") ?? ""}`);
-    }
-  };
-
-  const handleTimelineClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    const tgt = Math.floor(pct * slides.length);
-    goToSlide(Math.min(tgt, slides.length - 1));
-  };
-
-  const progress = (currentSlide / slides.length) * 100 + (slideProgress / slides.length);
-
-  return (
-    <div style={{
-      background: "#0B0E17",
-      borderRadius: compact ? "var(--radius-lg, 12px)" : "var(--radius-xl, 16px)",
-      overflow: "hidden",
-      width: "100%",
-      border: "1px solid rgba(255,255,255,0.07)",
-      boxShadow: compact ? "0 8px 30px rgba(0,0,0,0.3)" : "0 32px 80px rgba(0,0,0,0.55)",
-      display: "flex",
-      flexDirection: "column",
-    }}>
-
-      {/* ── SLIDE CANVAS ── */}
-      <div style={{
-        aspectRatio: "16/9",
-        position: "relative",
-        background: slide.bg || "linear-gradient(135deg,#0f1520,#0a1020)",
-        overflow: "hidden",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: compact ? "20px 24px" : "40px 56px",
-        transition: "background 0.6s ease",
-      }}>
-        {/* Ambient glow blobs */}
-        <div style={{
-          position: "absolute", top: -80, right: -80, width: 300, height: 300,
-          borderRadius: "50%",
-          background: slide.accentColor ? `${slide.accentColor}22` : "rgba(61,139,113,0.15)",
-          filter: "blur(70px)", pointerEvents: "none",
-          transition: "background 0.6s ease",
-        }} />
-        <div style={{
-          position: "absolute", bottom: -60, left: -60, width: 220, height: 220,
-          borderRadius: "50%",
-          background: slide.accentColor ? `${slide.accentColor}14` : "rgba(74,127,193,0.12)",
-          filter: "blur(60px)", pointerEvents: "none",
-        }} />
-        {/* Grid texture */}
-        <div style={{
-          position: "absolute", inset: 0, pointerEvents: "none",
-          backgroundImage: "radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
-        }} />
-
-        {/* Status badge */}
-        <div style={{
-          position: "absolute", top: 14, left: 14,
-          display: "flex", alignItems: "center", gap: 6,
-          background: "rgba(0,0,0,0.35)", borderRadius: "999px",
-          padding: "4px 10px", border: "1px solid rgba(255,255,255,0.07)",
-          backdropFilter: "blur(8px)",
-        }}>
-          <span style={{
-            width: 6, height: 6, borderRadius: "50%",
-            background: playing ? "#56C99A" : "rgba(255,255,255,0.3)",
-            display: "inline-block",
-            boxShadow: playing ? "0 0 6px #56C99A" : "none",
-            transition: "all 0.3s",
-          }} />
-          <span style={{ fontSize: 9, fontWeight: 800, color: "rgba(255,255,255,0.5)", letterSpacing: "0.1em" }}>
-            {playing ? "PLAYING" : totalProgress >= 100 ? "COMPLETE" : "PAUSED"} · {currentSlide + 1}/{slides.length}
-          </span>
-        </div>
-
-        {/* Timer */}
-        <div style={{
-          position: "absolute", top: 14, right: 14,
-          display: "flex", alignItems: "center", gap: 5,
-          background: "rgba(0,0,0,0.35)", borderRadius: "999px",
-          padding: "4px 10px", border: "1px solid rgba(255,255,255,0.07)",
-          backdropFilter: "blur(8px)",
-        }}>
-          <Clock size={10} color="rgba(255,255,255,0.4)" />
-          <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.55)" }}>
-            {fmtTime(elapsed)} / {fmtTime(TOTAL_DURATION)}
-          </span>
-        </div>
-
-        {/* Slide content */}
-        <div style={{
-          display: "flex", flexDirection: "column", alignItems: "center",
-          maxWidth: compact ? 460 : 640, width: "100%", textAlign: "center",
-          opacity: textVisible ? 1 : 0,
-          transform: textVisible ? "translateY(0)" : "translateY(20px)",
-          transition: "opacity 0.4s ease, transform 0.4s ease",
-        }}>
-          {slide.emoji && (
-            <div style={{ fontSize: compact ? 36 : 58, lineHeight: 1, marginBottom: compact ? 12 : 20, filter: "drop-shadow(0 4px 20px rgba(0,0,0,0.5))" }}>
-              {slide.emoji}
-            </div>
-          )}
-          {slide.tag && (
-            <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: slide.accentColor || "rgba(255,255,255,0.5)", marginBottom: compact ? 6 : 10 }}>
-              {slide.tag}
-            </span>
-          )}
-          <h2 style={{ fontFamily: "var(--font-display, 'Plus Jakarta Sans', sans-serif)", fontSize: compact ? "1.1rem" : "1.75rem", fontWeight: 800, color: "#FFFFFF", lineHeight: 1.25, marginBottom: compact ? 8 : 14, textShadow: "0 2px 20px rgba(0,0,0,0.6)" }}>
-            {slide.headline}
-          </h2>
-          {slide.body && (
-            <p style={{ fontSize: compact ? 11 : 14, color: "rgba(255,255,255,0.68)", lineHeight: 1.6, maxWidth: 500, marginBottom: slide.points?.length ? (compact ? 12 : 20) : 0 }}>
-              {slide.body}
-            </p>
-          )}
-          {slide.points && slide.points.length > 0 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: compact ? 6 : 10, alignSelf: "flex-start", width: "100%", textAlign: "left" }}>
-              {slide.points.map((pt, i) => (
-                <div key={i} style={{
-                  display: "flex", alignItems: "flex-start", gap: compact ? 8 : 10,
-                  opacity: pointsVisible[i] ? 1 : 0,
-                  transform: pointsVisible[i] ? "translateX(0)" : "translateX(-12px)",
-                  transition: "opacity 0.35s ease, transform 0.35s ease",
-                }}>
-                  <div style={{ width: compact ? 16 : 20, height: compact ? 16 : 20, borderRadius: "50%", background: slide.accentColor || "#3D8B71", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
-                    <CheckCircle2 size={compact ? 10 : 12} color="#fff" />
-                  </div>
-                  <span style={{ fontSize: compact ? 11 : 14, color: "rgba(255,255,255,0.8)", lineHeight: 1.6 }}>{pt}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Inner slide progress bar */}
-        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 2, background: "rgba(255,255,255,0.06)" }}>
-          <div style={{ height: "100%", width: `${slideProgress}%`, background: slide.accentColor || "#3D8B71", transition: playing ? "none" : "width 0.3s ease" }} />
-        </div>
-      </div>
-
-      {/* ── CONTROLS ── */}
-      <div style={{ background: "#0d1020", padding: compact ? "12px 16px" : "16px 24px", display: "flex", flexDirection: "column", gap: compact ? 8 : 12 }}>
-        {/* Timeline scrubber */}
-        <div style={{ position: "relative", cursor: "pointer" }} onClick={handleTimelineClick}>
-          <div style={{ height: 4, background: "rgba(255,255,255,0.08)", borderRadius: "999px", overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${progress}%`, background: "linear-gradient(90deg, #3D8B71, #56C99A)", borderRadius: "999px", transition: playing ? "none" : "width 0.3s ease" }} />
-          </div>
-          {slides.map((_, i) => (
-            <div key={i} style={{ position: "absolute", top: -1, left: `${(i / slides.length) * 100}%`, width: 2, height: 6, background: "rgba(255,255,255,0.12)", transform: "translateX(-50%)", borderRadius: 1, pointerEvents: "none" }} />
-          ))}
-        </div>
-
-        {/* Buttons */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            {/* Prev */}
-            <button onClick={() => goToSlide(currentSlide - 1)} disabled={currentSlide === 0}
-              style={{ width: 30, height: 30, borderRadius: "6px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "center", cursor: currentSlide === 0 ? "not-allowed" : "pointer", opacity: currentSlide === 0 ? 0.3 : 1 }}>
-              <ChevronLeft size={14} color="rgba(255,255,255,0.6)" />
-            </button>
-
-            {/* Play / Pause / Replay */}
-            <button onClick={handlePlayPause}
-              style={{ width: compact ? 38 : 46, height: compact ? 38 : 46, borderRadius: "50%", background: "#3D8B71", border: "none", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 4px 16px rgba(61,139,113,0.4)", transition: "transform 150ms ease, box-shadow 150ms ease" }}
-              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1.08)"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; }}>
-              {totalProgress >= 100
-                ? <RotateCcw size={compact ? 14 : 16} color="#fff" />
-                : playing
-                  ? <div style={{ display: "flex", gap: 3 }}>
-                    <div style={{ width: compact ? 3 : 4, height: compact ? 10 : 12, background: "#fff", borderRadius: 2 }} />
-                    <div style={{ width: compact ? 3 : 4, height: compact ? 10 : 12, background: "#fff", borderRadius: 2 }} />
-                  </div>
-                  : <Play size={compact ? 14 : 16} fill="#fff" color="#fff" style={{ marginLeft: 2 }} />
-              }
-            </button>
-
-            {/* Next */}
-            <button onClick={() => goToSlide(currentSlide + 1)} disabled={currentSlide === slides.length - 1}
-              style={{ width: 30, height: 30, borderRadius: "6px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.07)", display: "flex", alignItems: "center", justifyContent: "center", cursor: currentSlide === slides.length - 1 ? "not-allowed" : "pointer", opacity: currentSlide === slides.length - 1 ? 0.3 : 1 }}>
-              <ChevronRight size={14} color="rgba(255,255,255,0.6)" />
-            </button>
-
-            {/* Mute toggle */}
-            <button onClick={() => setMuted(m => !m)}
-              style={{ width: 30, height: 30, borderRadius: "6px", background: muted ? "rgba(224,82,82,0.15)" : "rgba(255,255,255,0.06)", border: `1px solid ${muted ? "rgba(224,82,82,0.3)" : "rgba(255,255,255,0.07)"}`, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all 200ms" }}>
-              {muted
-                ? <VolumeX size={13} color="#E05252" />
-                : <Volume2 size={13} color="rgba(255,255,255,0.5)" />
-              }
-            </button>
-
-            {!compact && (
-              <div style={{ marginLeft: 4 }}>
-                <p style={{ fontFamily: "var(--font-display, sans-serif)", fontSize: 14, fontWeight: 700, color: "rgba(255,255,255,0.85)", lineHeight: 1.2 }}>
-                  {lesson.topic}
-                </p>
-                <p style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 2 }}>
-                  {slides.length} slides · {TOTAL_DURATION}s
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Slide dots */}
-          <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
-            {slides.map((_, i) => (
-              <button key={i} onClick={() => goToSlide(i)}
-                style={{ width: currentSlide === i ? (compact ? 16 : 20) : (compact ? 6 : 8), height: compact ? 6 : 8, borderRadius: "999px", background: currentSlide === i ? (slides[i]?.accentColor || "#56C99A") : i < currentSlide ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.15)", border: "none", cursor: "pointer", padding: 0, transition: "all 250ms ease" }}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────
    MAIN PRACTICE PAGE
  ───────────────────────────────────────────────────────────── */
 export default function PracticePage() {
@@ -474,7 +65,7 @@ export default function PracticePage() {
   const [style, setStyle] = useState("Visual");
   const [isGenerating, setIsGenerating] = useState(false);
   const [genStep, setGenStep] = useState(0);
-  const [lessonData, setLessonData] = useState<LessonData | null>(null);
+  const [lessonData, setLessonData] = useState<LessonJSON | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [error, setError] = useState("");
   const charCount = topic.length;
@@ -591,7 +182,7 @@ export default function PracticePage() {
               <span style={{ padding: "3px 10px", background: "rgba(61,139,113,0.18)", border: "1px solid rgba(61,139,113,0.28)", borderRadius: "999px", fontSize: 11, fontWeight: 700, color: "#56C99A", letterSpacing: "0.08em", textTransform: "uppercase" }}>
                 {style}
               </span>
-              <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 13 }}>{lessonData.topic}</span>
+              <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 13 }}>{lessonData?.meta?.topic || "Untitled Lesson"}</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <span style={{ fontSize: 11, color: "rgba(255,255,255,0.25)" }}>ESC to exit</span>
@@ -606,7 +197,7 @@ export default function PracticePage() {
           {/* Fullscreen player */}
           <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: 24, minHeight: 0 }}>
             <div style={{ width: "100%", maxWidth: 1100 }}>
-              <VideoPlayer lesson={lessonData} compact={false} />
+              <CanvasPlayer data={lessonData} />
             </div>
           </div>
         </div>
@@ -805,28 +396,26 @@ export default function PracticePage() {
 
             {/* ── LESSON READY VIEW ── */}
             {!isGenerating && lessonData && (
-              <div className="a3" style={{ display: "flex", flexDirection: "column", gap: "var(--space-4, 16px)" }}>
-                {/* Success banner */}
-                <div style={{ background: "linear-gradient(135deg, #EAF6F1, rgba(234,246,241,0.4))", border: "1px solid rgba(46,158,107,0.2)", borderRadius: "12px", padding: "16px 20px", display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: "8px", background: "#2E9E6B", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <CheckCircle2 size={18} color="#fff" />
+              <div className="a2" style={{ display: "flex", flexDirection: "column", gap: 32 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div>
+                    <button onClick={() => setLessonData(null)} style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--brand-primary, #3D8B71)", fontWeight: 700, fontSize: 12, background: "none", border: "none", cursor: "pointer", padding: 0, marginBottom: 8 }} className="action-btn">
+                      <ArrowLeft size={14} /> Back to dashboard
+                    </button>
+                    <h2 style={{ fontFamily: "var(--font-display, sans-serif)", fontSize: "1.5rem", fontWeight: 800, color: "var(--text-primary, #1C1F27)" }}>
+                      {lessonData?.meta?.topic || "Untitled Lesson"}
+                    </h2>
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 13, fontWeight: 700, color: "#1E7A52" }}>Lesson ready! 🎉</p>
-                    <p style={{ fontSize: 11, color: "var(--text-muted, #9DA3B0)", marginTop: 2 }}>
-                      Your {style} lesson on "{lessonData.topic}" is ready to watch.
-                    </p>
+                  <div style={{ display: "flex", gap: 12 }}>
+                    <button onClick={() => setIsFullscreen(true)} style={{ background: "var(--brand-primary, #3D8B71)", color: "#fff", border: "none", borderRadius: "10px", padding: "10px 18px", display: "flex", alignItems: "center", gap: 8, fontWeight: 700, fontSize: 13, cursor: "pointer", boxShadow: "0 4px 14px rgba(61,139,113,0.3)" }} className="action-btn">
+                      <Maximize2 size={16} /> Fullscreen
+                    </button>
                   </div>
-                  <button onClick={() => setIsFullscreen(true)}
-                    style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 6, fontSize: 12, padding: "8px 14px", background: "var(--brand-primary, #3D8B71)", color: "#fff", border: "none", borderRadius: "8px", fontWeight: 700, cursor: "pointer", transition: "all 150ms" }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "#2E6B57"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "var(--brand-primary, #3D8B71)"; }}>
-                    <Maximize2 size={12} /> Watch Fullscreen
-                  </button>
                 </div>
 
-                {/* Inline player */}
-                <VideoPlayer lesson={lessonData} compact={true} />
+                <div style={{ width: "100%", maxWidth: 860, margin: "0 auto" }}>
+                  <CanvasPlayer data={lessonData} />
+                </div>
 
                 {/* Meta row */}
                 <div style={{ background: "var(--bg-surface, #fff)", borderRadius: "12px", border: "1px solid var(--border-default, #E8E4DC)", padding: "16px 20px", display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, boxShadow: "0 1px 3px rgba(28,31,39,0.06)" }}>
@@ -843,23 +432,6 @@ export default function PracticePage() {
                       </div>
                     </div>
                   ))}
-                </div>
-
-                {/* Slide overview */}
-                <div style={{ background: "var(--bg-surface, #fff)", borderRadius: "12px", border: "1px solid var(--border-default, #E8E4DC)", padding: "20px", boxShadow: "0 1px 3px rgba(28,31,39,0.06)" }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: "var(--text-muted, #9DA3B0)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>Slide Overview</p>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    {lessonData.slides.map((sl, i) => (
-                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", background: "var(--bg-elevated, #F4F2EE)", borderRadius: "8px", borderLeft: `3px solid ${sl.accentColor || "var(--brand-primary, #3D8B71)"}` }}>
-                        <span style={{ fontSize: 16, flexShrink: 0 }}>{sl.emoji}</span>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ fontSize: 12, fontWeight: 700, color: "var(--text-primary, #1C1F27)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sl.headline}</p>
-                          <p style={{ fontSize: 10, color: "var(--text-muted, #9DA3B0)", marginTop: 1, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>{sl.tag}</p>
-                        </div>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: "var(--text-muted, #9DA3B0)", flexShrink: 0 }}>{i * SLIDE_DURATION}s</span>
-                      </div>
-                    ))}
-                  </div>
                 </div>
 
                 {/* Actions */}
