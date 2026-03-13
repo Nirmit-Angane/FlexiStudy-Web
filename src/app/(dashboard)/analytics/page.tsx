@@ -112,7 +112,7 @@ export default function AnalyticsPage() {
                 <YAxis domain={[0, 5]} ticks={[1,2,3,4,5]} tick={{ fontSize: 12, fill: "var(--text-muted)" }} axisLine={false} tickLine={false} />
                 <RechartsTooltip 
                   contentStyle={{ borderRadius: '8px', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-md)' }}
-                  formatter={(value: any, name: string, props: any) => [
+                  formatter={(value: any, name: any, props: any) => [
                     `${value}/5 (${props.payload.style})`, 
                     'Score'
                   ]}
