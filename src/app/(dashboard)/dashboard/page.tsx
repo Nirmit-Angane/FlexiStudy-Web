@@ -12,6 +12,7 @@ import {
   Volume2, BarChart2, MessageSquare, Trophy, Sparkles,
 } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
 
 /* ─── Mock data ──────────────────────────────────────────── */
 const mockUser = { displayName: "Alex Johnson", streakCount: 7 };
@@ -70,9 +71,17 @@ function XPTooltip({ active, payload }: { active?: boolean; payload?: any[] }) {
 
 /* ─── Component ──────────────────────────────────────────── */
 export default function DashboardPage() {
+  const { user, profile, loading } = useAuth();
   const [selectedStyle, setSelectedStyle] = useState("visual");
   const [chartRange, setChartRange] = useState("7D");
-  const firstName = mockUser.displayName.split(" ")[0];
+
+  if (loading) return null; // Or a skeleton
+
+  const displayName = profile?.displayName || user?.displayName || "Learner";
+  const firstName = displayName.split(" ")[0];
+  const userXP = profile?.xp || 0;
+  const userStreak = profile?.streak || 0;
+  const photoURL = profile?.photoURL || user?.photoURL || `https://api.dicebear.com/7.x/notionists/svg?seed=${displayName}&backgroundColor=e6ecea`;
 
   return (
     <>
@@ -130,7 +139,9 @@ export default function DashboardPage() {
               <span style={{ position: "absolute", top: 8, right: 8, width: 8, height: 8, borderRadius: "50%", background: "var(--error)", border: "2px solid var(--bg-page)", display: "block" }} className="live-dot" />
             </div>
             {/* Avatar */}
-            <div className="avatar avatar-md" style={{ cursor: "pointer" }}>AJ</div>
+            <div className="avatar avatar-md" style={{ cursor: "pointer", overflow: "hidden" }}>
+              <img src={photoURL} alt="Avatar" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </div>
           </div>
         </div>
 
@@ -152,7 +163,7 @@ export default function DashboardPage() {
             <div>
               <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.14)", borderRadius: "var(--radius-full)", padding: "5px 14px", marginBottom: "var(--space-4)", backdropFilter: "blur(8px)" }}>
                 <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#5BFF9F", display: "inline-block" }} className="live-dot" />
-                <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.9)", letterSpacing: "0.08em" }}>ON A ROLL — {mockUser.streakCount} DAY STREAK</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.9)", letterSpacing: "0.08em" }}>ON A ROLL — {userStreak} DAY STREAK</span>
               </div>
               <h2 style={{ fontFamily: "var(--font-display)", fontSize: "var(--text-3xl)", fontWeight: 800, color: "#fff", lineHeight: "var(--leading-tight)", marginBottom: "var(--space-3)" }}>
                 Your next lesson awaits ✨
@@ -175,8 +186,8 @@ export default function DashboardPage() {
             {/* Hero stat chips */}
             <div style={{ display: "flex", gap: "var(--space-3)" }}>
               {[
-                { emoji: "🔥", val: "7", lbl: "Day Streak" },
-                { emoji: "⭐", val: "2,450", lbl: "Total XP" },
+                { emoji: "🔥", val: userStreak.toString(), lbl: "Day Streak" },
+                { emoji: "⭐", val: userXP.toLocaleString(), lbl: "Total XP" },
                 { emoji: "📚", val: "3", lbl: "Active Courses" },
               ].map((s, i) => (
                 <div key={i} style={{ background: "rgba(255,255,255,0.1)", borderRadius: "var(--radius-lg)", padding: "var(--space-4) var(--space-5)", textAlign: "center", border: "1px solid rgba(255,255,255,0.16)", backdropFilter: "blur(12px)", minWidth: 76 }}>
@@ -382,7 +393,7 @@ export default function DashboardPage() {
               </div>
               <div style={{ fontSize: 10, fontWeight: 800, color: "#E84B2A", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>🔥 Current Streak</div>
               <div style={{ fontFamily: "var(--font-display)", fontSize: "var(--text-4xl)", fontWeight: 800, color: "var(--text-primary)", lineHeight: 1, display: "flex", alignItems: "baseline", gap: 8 }}>
-                7 <span style={{ fontSize: "var(--text-xl)", color: "var(--text-secondary)" }}>days</span>
+                {userStreak} <span style={{ fontSize: "var(--text-xl)", color: "var(--text-secondary)" }}>days</span>
               </div>
               <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4, fontWeight: 500 }}>Personal best: <strong style={{ color: "var(--text-secondary)" }}>12 days</strong></div>
               {/* Day checkboxes */}

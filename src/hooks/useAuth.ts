@@ -11,6 +11,11 @@ export interface UserProfile {
   displayName?: string;
   createdAt?: string;
   learningGoals?: string[];
+  xp?: number;
+  streak?: number;
+  photoURL?: string;
+  level?: number;
+  role?: string;
 }
 
 export function useAuth() {
