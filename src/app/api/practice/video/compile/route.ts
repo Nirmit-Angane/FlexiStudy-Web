@@ -63,7 +63,7 @@ Return ONLY a JSON object with a "scenes" array containing exactly 6 objects.
 Schema for each scene in the array:
 {
   "type": "TextScene" | "ComparisonScene" | "CodeScene" | "TerminalScene",
-  "duration": number (milliseconds, all 6 must add up to exactly 60000),
+  "duration": number (milliseconds, each should be around 10000ms),
   "data": {
        // IF TextScene: { "heading": "string", "body": "string", "color": "#hex" }
        // IF CodeScene: { "code": "string", "language": "string", "description": "string" }
@@ -86,10 +86,39 @@ ${script}
     });
 
     const parsed = JSON.parse(completion.choices[0]?.message?.content || '{"scenes":[]}');
-    return parsed.scenes;
+    let scenes = Array.isArray(parsed.scenes) ? parsed.scenes : [];
+    
+    // Ensure exactly 6 scenes
+    if (scenes.length === 0) {
+      scenes = [
+        { type: "TextScene", duration: 10000, data: { heading: "Introduction", body: `Let's learn about ${topic}.`, color: "#3D8B71" } },
+        { type: "TextScene", duration: 10000, data: { heading: "Core Concept", body: "Diving deeper into the mechanics.", color: "#4A7FC1" } },
+        { type: "TextScene", duration: 10000, data: { heading: "Development", body: "How it applies in real world scenarios.", color: "#C4714A" } },
+        { type: "TextScene", duration: 10000, data: { heading: "Example", body: "A practical illustration of the topic.", color: "#F5A623" } },
+        { type: "TextScene", duration: 10000, data: { heading: "Key Takeaway", body: "The most important thing to remember.", color: "#A06CB0" } },
+        { type: "TextScene", duration: 10000, data: { heading: "Summary", body: "Wrapping up our lesson.", color: "#3D8B71" } },
+      ];
+    } else if (scenes.length < 6) {
+      while (scenes.length < 6) {
+        scenes.push({ ...scenes[scenes.length - 1], duration: 10000 });
+      }
+    } else if (scenes.length > 6) {
+      scenes = scenes.slice(0, 6);
+    }
+
+    // Normalize durations to 60000ms total
+    const total = scenes.reduce((acc: number, s: any) => acc + (s.duration || 10000), 0);
+    scenes = scenes.map((s: any) => ({
+      ...s,
+      duration: Math.round(((s.duration || 10000) / total) * 60000)
+    }));
+
+    return scenes;
   } catch (e) {
     console.error("Scene generation error:", e);
-    return [];
+    return [
+      { type: "TextScene", duration: 60000, data: { heading: topic, body: "Informational session starting...", color: "#3D8B71" } }
+    ];
   }
 }
 

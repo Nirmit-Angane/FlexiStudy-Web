@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CodeQuest — Kenney City RPG</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Rajdhani:wght@400;500;600;700&family=Bebas+Neue&display=swap');
+:root{
+  --bg:#06090f;--bg1:#0a0f1a;--bg2:#0e1420;--bg3:#141b28;
+  --b1:#1e2a3d;--b2:#283549;
+  --amber:#F59E0B;--amber2:#FCD34D;--adim:rgba(245,158,11,.1);--abrd:rgba(245,158,11,.28);
+  --cyan:#22D3EE;--red:#EF4444;--green:#10B981;
+  --t1:#CBD5E1;--t2:#94A3B8;--t3:#475569;--w:#F1F5F9;
+  --mono:'JetBrains Mono',monospace;--sans:'Rajdhani',sans-serif;--disp:'Bebas Neue',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;background:var(--bg);font-family:var(--sans);color:var(--t1);overflow:hidden}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.025) 2px,rgba(0,0,0,.025) 4px);pointer-events:none;z-index:9990}
+
+/* ── HUD ── */
+#hud{position:fixed;top:0;left:0;right:0;height:48px;background:var(--bg1);border-bottom:1px solid var(--b1);display:flex;align-items:stretch;z-index:200;box-shadow:0 2px 20px rgba(0,0,0,.5)}
+#hud::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,var(--amber),transparent)}
+.logo{display:flex;align-items:center;padding:0 20px 0 18px;border-right:1px solid var(--b1);gap:8px;flex-shrink:0}
+.logo-hex{width:22px;height:22px;background:var(--amber);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);flex-shrink:0;animation:hexPulse 3s ease-in-out infinite}
+@keyframes hexPulse{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.4)}50%{box-shadow:0 0 0 6px rgba(245,158,11,0)}}
+.logo-txt{font-family:var(--disp);font-size:20px;letter-spacing:3px;color:var(--w);line-height:1}
+.logo-txt em{color:var(--amber);font-style:normal}
+.hseg{display:flex;align-items:center;padding:0 16px;border-right:1px solid var(--b1);gap:8px;flex-shrink:0}
+.hlbl{font-family:var(--mono);font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:2px;color:var(--t3)}
+.hval{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--w)}
+.hval.a{color:var(--amber)}.hval.c{color:var(--cyan)}
+.xpseg{display:flex;align-items:center;gap:10px;padding:0 16px;border-right:1px solid var(--b1);flex-shrink:0}
+.xptrack{width:80px;height:3px;background:var(--b2);position:relative;overflow:hidden}
+#xpfill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--amber),var(--amber2));width:0%;transition:width .6s cubic-bezier(.4,0,.2,1);box-shadow:0 0 8px var(--amber)}
+.xpnums{font-family:var(--mono);font-size:11px;color:var(--t2);white-space:nowrap}
+#questbar{display:none;align-items:center;gap:8px;padding:0 14px;border-right:1px solid var(--b1);max-width:220px}
+.qpip{width:6px;height:6px;background:var(--amber);border-radius:50%;flex-shrink:0;animation:blink 2s ease-in-out infinite;box-shadow:0 0 6px var(--amber)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+#questname{font-family:var(--mono);font-size:11px;color:var(--amber);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hctl{font-family:var(--mono);font-size:10px;color:var(--t3);padding:0 14px;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:6px}
+.hctl kbd{display:inline-block;background:var(--bg3);border:1px solid var(--b2);border-radius:2px;padding:1px 6px;font-size:9px;color:var(--t2);font-family:var(--mono)}
+#btnql{margin-left:auto;display:flex;align-items:center;gap:6px;padding:0 20px;background:none;border:none;border-left:1px solid var(--b1);color:var(--t2);font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:1px;cursor:pointer;transition:all .2s;flex-shrink:0;text-transform:uppercase}
+#btnql:hover{background:var(--adim);color:var(--amber)}
+
+/* ── CANVAS ── */
+#c3d{position:fixed;top:48px;left:0;right:0;bottom:28px}
+
+/* ── STATUS BAR ── */
+#statusbar{position:fixed;bottom:0;left:0;right:0;height:28px;background:var(--bg1);border-top:1px solid var(--b1);display:flex;align-items:center;padding:0 16px;gap:0;z-index:200}
+.sbi{font-family:var(--mono);font-size:10px;color:var(--t3);display:flex;align-items:center;gap:6px;padding:0 14px;border-right:1px solid var(--b1);height:100%}
+.sbdot{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 4px var(--green)}
+#smode{color:var(--amber);font-weight:700}
+#smodels{font-size:9px}
+#spos{margin-left:auto;border-right:none;border-left:1px solid var(--b1)}
+#iprompt{position:absolute;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:11px;color:var(--amber);background:var(--bg1);border:1px solid var(--abrd);padding:4px 14px;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;letter-spacing:1px}
+#iprompt.show{opacity:1}
+
+/* ── QUEST LOG ── */
+#qlpanel{position:fixed;top:48px;right:-290px;bottom:28px;width:280px;background:var(--bg1);border-left:1px solid var(--b1);z-index:150;display:flex;flex-direction:column;transition:right .3s cubic-bezier(.4,0,.2,1)}
+#qlpanel::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,var(--amber),transparent)}
+#qlpanel.open{right:0}
+.qlhd{padding:14px 18px 12px;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:10px}
+.qlhd-title{font-family:var(--disp);font-size:18px;letter-spacing:3px;color:var(--w)}
+.qlcnt{font-family:var(--mono);font-size:10px;color:var(--t3);background:var(--bg3);border:1px solid var(--b1);padding:2px 7px;border-radius:2px;margin-left:auto}
+#qllist{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:4px}
+#qllist::-webkit-scrollbar{width:2px}#qllist::-webkit-scrollbar-thumb{background:var(--b2)}
+.qli{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--b1);background:var(--bg2);transition:all .15s;cursor:default}
+.qli:hover{border-color:var(--b2)}
+.qli.done{background:rgba(16,185,129,.03);border-color:rgba(16,185,129,.12)}
+.qlidot{width:6px;height:6px;border-radius:50%;background:var(--b2);flex-shrink:0}
+.qli:not(.done):hover .qlidot{background:var(--amber)}
+.qli.done .qlidot{background:var(--green)}
+.qliinfo{flex:1;min-width:0}
+.qlititle{font-family:var(--sans);font-size:13px;font-weight:500;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qli.done .qlititle{color:var(--t3);text-decoration:line-through}
+.qlinpc{font-family:var(--mono);font-size:10px;color:var(--t3);margin-top:2px}
+.qbadge{font-family:var(--mono);font-size:9px;font-weight:500;padding:2px 7px;letter-spacing:1px;text-transform:uppercase;flex-shrink:0;border-radius:2px}
+.qbadge.tutorial{color:#FBBF24;background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.2)}
+.qbadge.beginner{color:var(--green);background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2)}
+.qbadge.intermediate{color:var(--cyan);background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.2)}
+
+/* ── NPC DIALOG ── */
+#npcdlg{position:fixed;inset:0;z-index:500;display:flex;align-items:flex-end;justify-content:center;padding-bottom:38px;pointer-events:none;opacity:0;transition:opacity .25s;background:linear-gradient(to top,rgba(0,0,0,.45) 0%,transparent 55%)}
+#npcdlg.show{pointer-events:all;opacity:1}
+.dlgbox{width:min(600px,94vw);background:var(--bg1);border:1px solid var(--b2);border-top:2px solid var(--amber);box-shadow:0 -20px 60px rgba(0,0,0,.7);overflow:hidden;position:relative;transform:translateY(14px);transition:transform .3s cubic-bezier(.2,.9,.3,1)}
+#npcdlg.show .dlgbox{transform:translateY(0)}
+.dlgbox::before,.dlgbox::after{content:'';position:absolute;width:12px;height:12px;border-color:var(--amber);border-style:solid;opacity:.4}
+.dlgbox::before{top:-1px;right:-1px;border-width:2px 2px 0 0}
+.dlgbox::after{bottom:-1px;left:-1px;border-width:0 0 2px 2px}
+.dlgtop{display:flex;align-items:stretch;border-bottom:1px solid var(--b1)}
+.npcport{width:70px;flex-shrink:0;background:var(--bg3);border-right:1px solid var(--b1);display:flex;align-items:center;justify-content:center;font-size:28px;position:relative;overflow:hidden}
+.npcport::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(245,158,11,.08),transparent)}
+.npcmeta{padding:12px 16px;flex:1}
+.npcname{font-family:var(--disp);font-size:22px;letter-spacing:2px;color:var(--w);line-height:1}
+.npcrole{font-family:var(--mono);font-size:10px;font-weight:500;color:var(--amber);letter-spacing:2px;text-transform:uppercase;margin-top:4px}
+.dlgtag{padding:0 16px;font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:1px;border-left:1px solid var(--b1);display:flex;align-items:center}
+.dlgbody{padding:14px 18px}
+#dlgtxt{font-family:var(--sans);font-size:15px;line-height:1.65;color:var(--t1);margin-bottom:14px}
+.questoffer{background:var(--bg2);border:1px solid var(--abrd);padding:12px 14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:relative;overflow:hidden}
+.questoffer::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--amber)}
+.qobdg{font-family:var(--mono);font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:2px;padding:3px 8px;border-radius:2px;flex-shrink:0}
+.qobdg.tutorial{color:#FBBF24;border:1px solid rgba(251,191,36,.3);background:rgba(251,191,36,.08)}
+.qobdg.beginner{color:var(--green);border:1px solid rgba(16,185,129,.3);background:rgba(16,185,129,.08)}
+.qobdg.intermediate{color:var(--cyan);border:1px solid rgba(34,211,238,.3);background:rgba(34,211,238,.08)}
+.qotitle{flex:1;font-family:var(--sans);font-size:14px;font-weight:600;color:var(--w)}
+.qorew{display:flex;gap:14px;font-family:var(--mono);font-size:12px;font-weight:500;white-space:nowrap}
+.qorew .rc{color:var(--amber)}.qorew .rx{color:var(--cyan)}
+.noquest{font-family:var(--mono);font-size:12px;color:var(--t3);padding:4px 0}
+.dlgftr{display:flex;gap:8px;padding:12px 18px 14px;border-top:1px solid var(--b1);background:var(--bg)}
+.btn{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;padding:9px 22px;border:1px solid;cursor:pointer;transition:all .15s}
+.btnp{background:var(--amber);border-color:var(--amber);color:var(--bg);box-shadow:0 0 20px rgba(245,158,11,.2)}
+.btnp:hover{background:var(--amber2);box-shadow:0 0 30px rgba(245,158,11,.4)}
+.btng{background:transparent;border-color:var(--b2);color:var(--t2)}
+.btng:hover{border-color:var(--t2);color:var(--t1)}
+
+/* ── CODE EDITOR ── */
+#ceditor{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.87);backdrop-filter:blur(16px) saturate(.4);display:flex;align-items:center;justify-content:center;padding:20px;pointer-events:none;opacity:0;transition:opacity .25s}
+#ceditor.show{pointer-events:all;opacity:1}
+.cedpanel{width:min(700px,97vw);max-height:92vh;background:var(--bg1);border:1px solid var(--b2);border-top:2px solid var(--amber);display:flex;flex-direction:column;overflow:hidden;transform:translateY(12px) scale(.98);transition:transform .3s cubic-bezier(.2,.9,.3,1);box-shadow:0 30px 80px rgba(0,0,0,.8)}
+#ceditor.show .cedpanel{transform:translateY(0) scale(1)}
+.cedchrome{display:flex;align-items:center;padding:0 16px;height:42px;border-bottom:1px solid var(--b1);background:var(--bg);flex-shrink:0}
+.cdot{width:10px;height:10px;border-radius:50%;margin-right:6px}
+.cdot.r{background:#FF5F56}.cdot.y{background:#FFBD2E}.cdot.g{background:#27C93F}
+.ctitle{margin-left:14px;font-family:var(--mono);font-size:11px;color:var(--t3);flex:1}
+.clang{font-family:var(--mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--amber);background:var(--adim);border:1px solid var(--abrd);padding:3px 10px;border-radius:2px}
+.cedbody{flex:1;overflow-y:auto;padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.cedbody::-webkit-scrollbar{width:2px}.cedbody::-webkit-scrollbar-thumb{background:var(--b2)}
+.cedhdr{display:flex;align-items:flex-start;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--b1)}
+.cedicon{width:36px;height:36px;background:var(--adim);border:1px solid var(--abrd);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px}
+.cedsup{font-family:var(--mono);font-size:9px;color:var(--amber);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px}
+#cedqtitle{font-family:var(--sans);font-size:17px;font-weight:600;color:var(--w);line-height:1.2}
+#ceddesc{font-family:var(--sans);font-size:14px;color:var(--t1);line-height:1.7}
+#ceddesc code,#cedhint code{font-family:var(--mono);background:var(--bg3);border:1px solid var(--b2);color:var(--amber2);padding:1px 6px;border-radius:2px;font-size:12px}
+.hintblk{display:flex;align-items:flex-start;gap:10px;background:rgba(245,158,11,.04);border-left:2px solid var(--amber);padding:10px 14px}
+.hintlbl{font-family:var(--mono);font-size:9px;font-weight:700;color:var(--amber);letter-spacing:2px;text-transform:uppercase;flex-shrink:0;margin-top:2px}
+#cedhint{font-family:var(--sans);font-size:13px;color:var(--t2);line-height:1.5;flex:1}
+.codeblk{background:var(--bg);border:1px solid var(--b1);overflow:hidden;transition:border-color .2s}
+.codeblk:focus-within{border-color:var(--b2)}
+.codehdr{display:flex;align-items:center;padding:6px 12px;background:var(--bg2);border-bottom:1px solid var(--b1)}
+.chdots{display:flex;gap:5px;margin-right:10px}
+.chd{width:7px;height:7px;border-radius:50%}
+.chd.r{background:#FF5F56}.chd.y{background:#FFBD2E}.chd.g{background:#27C93F}
+.cfile{font-family:var(--mono);font-size:10px;color:var(--t3);flex:1}
+.cgut{display:flex}
+.lnums{background:var(--bg2);border-right:1px solid var(--b1);padding:10px 0;min-width:40px;display:flex;flex-direction:column;align-items:flex-end;pointer-events:none;flex-shrink:0}
+.lnums span{font-family:var(--mono);font-size:12px;color:var(--t3);padding:0 10px;line-height:22px;display:block;user-select:none}
+#codeta{flex:1;min-height:160px;max-height:240px;background:var(--bg);color:#E2E8F0;font-family:var(--mono);font-size:13px;line-height:22px;padding:10px 14px;border:none;outline:none;resize:vertical;caret-color:var(--amber);tab-size:4}
+#codeta::selection{background:rgba(245,158,11,.2)}
+#codeta.shake{animation:shake .45s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-7px)}40%{transform:translateX(7px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+#cedresult{display:none;align-items:center;gap:10px;padding:10px 14px;font-family:var(--mono);font-size:12px}
+#cedresult.show{display:flex}
+#cedresult.ok{background:rgba(16,185,129,.06);border-left:2px solid var(--green);color:var(--green)}
+#cedresult.fail{background:rgba(239,68,68,.06);border-left:2px solid var(--red);color:var(--red)}
+.cedftr{padding:12px 18px;border-top:1px solid var(--b1);background:var(--bg);display:flex;gap:8px;align-items:center;flex-shrink:0}
+#btnsub{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:10px 26px;background:var(--amber);color:var(--bg);border:none;cursor:pointer;transition:all .15s}
+#btnsub:hover{background:var(--amber2)}
+#btncan{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;text-transform:uppercase;padding:10px 18px;background:transparent;color:var(--t3);border:1px solid var(--b2);cursor:pointer;transition:all .15s}
+#btncan:hover{color:var(--red);border-color:rgba(239,68,68,.4)}
+.cedfhint{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--t3)}
+.cedfhint kbd{background:var(--bg3);border:1px solid var(--b2);border-radius:2px;padding:1px 5px;font-size:9px;color:var(--t2)}
+
+/* ── REWARD POPUPS ── */
+.rewpop{position:fixed;top:64px;left:50%;transform:translateX(-50%) translateY(-20px);background:var(--bg1);border:1px solid var(--abrd);border-top:2px solid var(--amber);padding:18px 28px;text-align:center;z-index:9000;opacity:0;pointer-events:none;box-shadow:0 20px 60px rgba(0,0,0,.7),0 0 40px rgba(245,158,11,.08);transition:all .35s cubic-bezier(.2,.9,.3,1);min-width:220px}
+.rewpop.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.rewey{font-family:var(--mono);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:4px;color:var(--amber);margin-bottom:8px}
+.rewico{font-size:28px;margin-bottom:8px}
+.rewtitle{font-family:var(--disp);font-size:22px;letter-spacing:3px;color:var(--w);margin-bottom:4px}
+.rewq{font-family:var(--sans);font-size:12px;color:var(--t2);margin-bottom:12px}
+.rewstats{display:flex;gap:20px;justify-content:center;font-family:var(--mono);font-size:14px;font-weight:700}
+.rewstats .rc{color:var(--amber)}.rewstats .rx{color:var(--cyan)}
+.lvlpop{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.85);background:var(--bg1);border:1px solid var(--abrd);border-top:3px solid var(--amber);padding:36px 64px;text-align:center;z-index:9500;opacity:0;pointer-events:none;box-shadow:0 0 80px rgba(245,158,11,.25);transition:all .4s cubic-bezier(.2,.9,.3,1)}
+.lvlpop.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.lvley{font-family:var(--mono);font-size:9px;font-weight:700;color:var(--amber);letter-spacing:4px;text-transform:uppercase;margin-bottom:8px}
+.lvlmain{font-family:var(--disp);font-size:56px;letter-spacing:6px;color:var(--w)}
+.lvlnum{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--amber);margin-top:8px;letter-spacing:2px}
+.floatc{position:fixed;font-size:12px;font-family:var(--mono);font-weight:700;color:var(--amber);opacity:0;pointer-events:none;z-index:400}
+.floatc.fly{animation:cfloat 1s ease-out forwards}
+@keyframes cfloat{0%{opacity:1;transform:translateY(0) scale(1)}70%{opacity:.8;transform:translateY(-55px) scale(1.1)}100%{opacity:0;transform:translateY(-95px) scale(.7)}}
+
+/* ── TOASTS ── */
+#toasts{position:fixed;bottom:36px;right:18px;z-index:10000;display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.toast{background:var(--bg1);border:1px solid var(--b2);border-left:2px solid var(--b2);color:var(--t1);padding:9px 14px;font-family:var(--mono);font-size:11px;letter-spacing:.5px;opacity:0;transform:translateX(20px);transition:all .25s;max-width:300px}
+.toast.show{opacity:1;transform:translateX(0)}
+.toast.ok{border-left-color:var(--green);color:var(--green);background:rgba(16,185,129,.05)}
+.toast.info{border-left-color:var(--amber);color:var(--amber);background:var(--adim)}
+.toast.warn{border-left-color:var(--red);color:#fca5a5;background:rgba(239,68,68,.05)}
+
+/* ── LOADING ── */
+#loading{position:fixed;inset:0;background:var(--bg);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .8s}
+#loading.out{opacity:0;pointer-events:none}
+.loadey{font-family:var(--mono);font-size:10px;color:var(--t3);letter-spacing:5px;text-transform:uppercase;margin-bottom:16px}
+.loadlogo{font-family:var(--disp);font-size:76px;letter-spacing:12px;color:var(--w);line-height:1;margin-bottom:4px}
+.loadlogo em{color:var(--amber);font-style:normal}
+.loadsub{font-family:var(--sans);font-size:13px;color:var(--t3);letter-spacing:3px;margin-bottom:40px}
+.loadtrack{width:280px;height:2px;background:var(--b2);position:relative;overflow:hidden;margin-bottom:12px}
+#loadfill{position:absolute;left:0;top:0;bottom:0;background:var(--amber);width:0%;transition:width .4s ease;box-shadow:0 0 10px var(--amber)}
+.loadstat{font-family:var(--mono);font-size:10px;color:var(--t3);letter-spacing:2px;animation:flicker 2s ease-in-out infinite}
+@keyframes flicker{0%,100%{opacity:.5}50%{opacity:1}}
+.loadhints{position:absolute;bottom:30px;display:flex;gap:24px;font-family:var(--mono);font-size:10px;color:var(--t3)}
+.loadhints span{display:flex;align-items:center;gap:6px}
+.loadhints kbd{background:var(--bg3);border:1px solid var(--b2);padding:2px 7px;border-radius:2px;font-size:9px;color:var(--t2)}
+
+/* CORNER ACCENTS */
+.ca{position:fixed;width:14px;height:14px;border-color:var(--amber);border-style:solid;opacity:.15;pointer-events:none;z-index:80}
+.ca.tl{top:50px;left:1px;border-width:1px 0 0 1px}.ca.tr{top:50px;right:1px;border-width:1px 1px 0 0}
+.ca.bl{bottom:30px;left:1px;border-width:0 0 1px 1px}.ca.br{bottom:30px;right:1px;border-width:0 1px 1px 0}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="loadey">// SYSTEM BOOT</div>
+  <div class="loadlogo">CODE<em>QUEST</em></div>
+  <div class="loadsub">Kenney City · Three.js Isometric RPG</div>
+  <div class="loadtrack"><div id="loadfill"></div></div>
+  <div class="loadstat" id="loadstat">Initializing renderer...</div>
+  <div class="loadhints">
+    <span><kbd>CLICK</kbd> Move/Interact</span>
+    <span><kbd>E</kbd> Talk to NPC</span>
+    <span><kbd>WASD</kbd> Pan camera</span>
+    <span><kbd>ESC</kbd> Close</span>
+  </div>
+</div>
+
+<!-- HUD -->
+<div id="hud">
+  <div class="logo"><div class="logo-hex"></div><div class="logo-txt">CODE<em>QUEST</em></div></div>
+  <div class="hseg"><div><div class="hlbl">Credits</div><div class="hval a" id="hcoins">0</div></div></div>
+  <div class="hseg"><div><div class="hlbl">Rank</div><div class="hval c" id="hlevel">01</div></div></div>
+  <div class="xpseg"><div>
+    <div class="hlbl" style="margin-bottom:4px">Experience</div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="xptrack"><div id="xpfill"></div></div>
+      <div class="xpnums"><span id="hxp">0</span>/<span id="hxpmax">100</span></div>
+    </div>
+  </div></div>
+  <div id="questbar"><div class="qpip"></div><span id="questname"></span></div>
+  <div class="hctl"><kbd>CLICK</kbd>MOVE&nbsp; <kbd>E</kbd>TALK&nbsp; <kbd>WASD</kbd>PAN&nbsp; <kbd>scroll</kbd>ZOOM</div>
+  <button id="btnql" onclick="toggleQL()">
+    <svg width="12" height="10" viewBox="0 0 12 10" fill="currentColor"><rect y="0" width="12" height="1.5"/><rect y="4" width="8" height="1.5"/><rect y="8" width="10" height="1.5"/></svg>
+    Missions
+  </button>
+</div>
+
+<!-- 3D CANVAS -->
+<div id="c3d"></div>
+
+<!-- STATUS BAR -->
+<div id="statusbar">
+  <div class="sbi"><div class="sbdot"></div><span id="smode">EXPLORE</span></div>
+  <div class="sbi" id="smodels">LOADING...</div>
+  <div class="sbi">ISO · THREE.JS r161</div>
+  <div id="iprompt">[ E ] INTERACT</div>
+  <div class="sbi" id="spos">0, 0</div>
+</div>
+
+<!-- QUEST LOG -->
+<div id="qlpanel">
+  <div class="qlhd"><div class="qlhd-title">MISSIONS</div><div class="qlcnt" id="qlcnt">0/0</div></div>
+  <div id="qllist"></div>
+</div>
+
+<!-- NPC DIALOG -->
+<div id="npcdlg">
+  <div class="dlgbox">
+    <div class="dlgtop">
+      <div class="npcport" id="dlgav">◈</div>
+      <div class="npcmeta"><div class="npcname" id="dlgname">AGENT</div><div class="npcrole" id="dlgtitle">ROLE</div></div>
+      <div class="dlgtag" id="dlgtag">NPC_001</div>
+    </div>
+    <div class="dlgbody">
+      <div id="dlgtxt"></div>
+      <div id="dlgquest"></div>
+    </div>
+    <div class="dlgftr">
+      <button class="btn btnp" id="btnaccept">ACCEPT MISSION</button>
+      <button class="btn btng" id="btndecline">DECLINE</button>
+    </div>
+  </div>
+</div>
+
+<!-- CODE EDITOR -->
+<div id="ceditor">
+  <div class="cedpanel">
+    <div class="cedchrome">
+      <div class="cdot r"></div><div class="cdot y"></div><div class="cdot g"></div>
+      <div class="ctitle" id="ctitle">codequest/mission.py</div>
+      <div class="clang" id="cedlang">PYTHON</div>
+    </div>
+    <div class="cedbody">
+      <div class="cedhdr">
+        <div class="cedicon">⚡</div>
+        <div><div class="cedsup">Mission Objective</div><div id="cedqtitle"></div></div>
+      </div>
+      <div id="ceddesc"></div>
+      <div class="hintblk"><div class="hintlbl">Hint</div><div id="cedhint"></div></div>
+      <div class="codeblk">
+        <div class="codehdr">
+          <div class="chdots"><div class="chd r"></div><div class="chd y"></div><div class="chd g"></div></div>
+          <div class="cfile" id="cfile">solution.py</div>
+        </div>
+        <div class="cgut">
+          <div class="lnums" id="lnums"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></div>
+          <textarea id="codeta" spellcheck="false" autocorrect="off" autocapitalize="off" placeholder="# Write your solution here..."></textarea>
+        </div>
+      </div>
+      <div id="cedresult"></div>
+    </div>
+    <div class="cedftr">
+      <button id="btnsub">RUN &amp; SUBMIT</button>
+      <button id="btncan">CANCEL</button>
+      <div class="cedfhint"><kbd>Tab</kbd> to indent</div>
+    </div>
+  </div>
+</div>
+
+<!-- CORNER ACCENTS -->
+<div class="ca tl"></div><div class="ca tr"></div><div class="ca bl"></div><div class="ca br"></div>
+<div id="toasts"></div>
+
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"}}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
+
+// ════════════════════════════════════════════
+// QUEST DATA
+// ════════════════════════════════════════════
+const QUESTS = [
+  {id:'tutorial',npcId:'aria', title:'Hello, World',     lang:'PYTHON',fname:'hello.py',   diff:'Tutorial',   coins:20, xp:10,
+   desc:'Output <code>Hello, World!</code> using a print statement.',
+   hint:'Use <code>print("Hello, World!")</code>',
+   starter:'# Your first line of code\n\n',
+   ok:c=>c.includes('print')&&(c.includes('"Hello')||c.includes("'Hello"))},
+  {id:'q1',npcId:'pyra', title:'Square Function',    lang:'PYTHON',fname:'square.py',  diff:'Beginner',   coins:50, xp:25,
+   desc:'Write a function <code>square(n)</code> that returns n squared.',
+   hint:'<code>def square(n):</code> then <code>return n * n</code>',
+   starter:'# Define the square function\n\n',
+   ok:c=>{const s=c.toLowerCase().replace(/\s/g,'');return s.includes('defsquare')&&(s.includes('n*n')||s.includes('**2')||s.includes('pow('))}},
+  {id:'q2',npcId:'hex',  title:'String Reversal',   lang:'JS',    fname:'reverse.js', diff:'Beginner',   coins:60, xp:30,
+   desc:'Write JS function <code>reverseString(str)</code> returning the string reversed.',
+   hint:'<code>str.split("").reverse().join("")</code>',
+   starter:'// Reverse the string\n\n',
+   ok:c=>{const s=c.toLowerCase().replace(/\s/g,'');return(s.includes('functionreversestring')||s.includes('constreversestring'))&&(s.includes('.reverse()')||s.includes('for'))}},
+  {id:'q3',npcId:'scout',title:'Count to Five',     lang:'ANY',   fname:'loop.py',    diff:'Beginner',   coins:40, xp:20,
+   desc:'Write a loop (any language) that prints numbers 1 through 5.',
+   hint:'<code>for i in range(1, 6): print(i)</code>',
+   starter:'# Loop from 1 to 5\n\n',
+   ok:c=>{const s=c.toLowerCase().replace(/\s/g,'');return(s.includes('for')||s.includes('while'))&&(s.includes('print')||s.includes('console.log'))}},
+  {id:'q4',npcId:'sigma',title:'Fibonacci',         lang:'PYTHON',fname:'fib.py',     diff:'Intermediate',coins:100,xp:60,
+   desc:'Python function <code>fibonacci(n)</code> returning the nth Fibonacci number.',
+   hint:'<code>return fibonacci(n-1) + fibonacci(n-2)</code> with base case',
+   starter:'# Return the nth fibonacci number\n\n',
+   ok:c=>{const s=c.toLowerCase().replace(/\s/g,'');return s.includes('deffibonacci')&&(s.includes('fibonacci(n-1)')||s.includes('for')||s.includes('while'))}},
+  {id:'q5',npcId:'sigma',title:'Array Sum',         lang:'JS',    fname:'sum.js',     diff:'Intermediate',coins:80, xp:45,
+   desc:'JS function <code>arraySum(arr)</code> returning the sum of all elements.',
+   hint:'<code>arr.reduce((a,b) => a+b, 0)</code>',
+   starter:'// Sum all numbers\n\n',
+   ok:c=>{const s=c.toLowerCase().replace(/\s/g,'');return(s.includes('functionarraysum')||s.includes('constarraysum'))&&(s.includes('reduce')||s.includes('for')||s.includes('foreach'))}},
+  {id:'q6',npcId:'pyra', title:'List Comprehension',lang:'PYTHON',fname:'comp.py',    diff:'Intermediate',coins:70, xp:35,
+   desc:'Python one-liner: list comprehension generating squares from 1 to 10.',
+   hint:'<code>[x**2 for x in range(1, 11)]</code>',
+   starter:'# One-liner list comprehension\n\n',
+   ok:c=>{const s=c.toLowerCase().replace(/\s/g,'');return s.includes('[')&&s.includes('for')&&s.includes('range')&&(s.includes('**2')||s.includes('*x')||s.includes('*i'))}}
+];
+
+// ════════════════════════════════════════════
+// NPC DATA  — positions in world grid units
+// character model names from kenney micro-characters pack
+// ════════════════════════════════════════════
+const NPCS = {
+  aria:  {id:'aria', name:'ARIA',  title:'Field Operative',    tag:'NPC_001',color:0xF59E0B,gx:4,  gz:4,  model:'character-female-a', quests:['tutorial'],dialog:"Welcome, operative. I'm Aria — your field handler. CodeQuest is live. Complete the initialization sequence to begin your first mission."},
+  pyra:  {id:'pyra', name:'PYRA',  title:'Python Specialist',  tag:'NPC_002',color:0x3B82F6,gx:16, gz:2,  model:'character-female-b', quests:['q1','q6'],  dialog:"Python is the language of control. I have two challenges for you — each harder than the last. Prove your skills."},
+  hex:   {id:'hex',  name:'HEX',   title:'JS Engineer',        tag:'NPC_003',color:0xF7DF1E,gx:2,  gz:12, model:'character-male-c',   quests:['q2'],       dialog:"JavaScript runs the world. My challenge separates coders from scripters. Think you can handle it?"},
+  scout: {id:'scout',name:'SCOUT', title:'Systems Analyst',    tag:'NPC_004',color:0xEF4444,gx:18, gz:13, model:'character-male-a',   quests:['q3'],       dialog:"Clean logic, no shortcuts. I need to see you write a proper loop without breaking a sweat."},
+  sigma: {id:'sigma',name:'SIGMA', title:'Algorithm Architect',tag:'NPC_005',color:0x8B5CF6,gx:9,  gz:18, model:'character-male-d',   quests:['q4','q5'],  dialog:"Algorithms define the boundary between competent and exceptional. My challenges are non-trivial. Prepare accordingly."}
+};
+
+// ════════════════════════════════════════════
+// EXACT KENNEY CITY-KIT-COMMERCIAL FILENAMES
+// Confirmed from user's actual folder screenshot
+// ════════════════════════════════════════════
+// IMPORTANT: path uses %20 for the space in "OBJ format"
+const MODEL_BASE = 'Models/OBJ%20format/';
+const TEX_BASE   = 'Models/Textures/';
+
+// Building models — confirmed filenames from screenshot 1
+// city-kit-commercial has building-a..n + skyscrapers
+const BUILDING_MODELS = [
+  'building-a','building-b','building-c','building-d',
+  'building-e','building-f','building-g','building-h',
+  'building-i','building-j','building-k','building-l',
+  'building-m','building-n',
+  'building-skyscraper-a','building-skyscraper-b','building-skyscraper-c',
+  'building-skyscraper-d','building-skyscraper-e'
+];
+
+// Low-detail buildings — also visible in screenshot 1
+const LOW_DETAIL_MODELS = [
+  'low-detail-building-a','low-detail-building-b','low-detail-building-c',
+  'low-detail-building-d','low-detail-building-e','low-detail-building-f',
+  'low-detail-building-g','low-detail-building-h','low-detail-building-i',
+  'low-detail-building-j','low-detail-building-k','low-detail-building-l',
+  'low-detail-building-m','low-detail-building-n',
+  'low-detail-building-wide-a','low-detail-building-wide-b'
+];
+
+// Character filenames — confirmed from screenshot 2
+const CHARACTER_MODELS = [
+  'character-female-a','character-female-b','character-female-c',
+  'character-female-d','character-female-e','character-female-f',
+  'character-male-a','character-male-b','character-male-c',
+  'character-male-d','character-male-e','character-male-f'
+];
+
+// Detail models — from screenshot 1
+const DETAIL_MODELS = [
+  'detail-parasol-a','detail-parasol-b',
+  'detail-awning','detail-awning-wide',
+  'detail-overhang','detail-overhang-wide'
+];
+
+// ════════════════════════════════════════════
+// PLAYER STATE
+// ════════════════════════════════════════════
+const P = {coins:0,xp:0,level:1,xpMax:100,done:[],active:null};
+
+// ════════════════════════════════════════════
+// UI HELPERS
+// ════════════════════════════════════════════
+const $=id=>document.getElementById(id);
+function updateHUD(){
+  $('hcoins').textContent=P.coins;
+  $('hlevel').textContent=String(P.level).padStart(2,'0');
+  $('hxp').textContent=P.xp; $('hxpmax').textContent=P.xpMax;
+  $('xpfill').style.width=(P.xp/P.xpMax*100)+'%';
+  if(P.active){$('questname').textContent=P.active.title;$('questbar').style.display='flex';}
+  else $('questbar').style.display='none';
+}
+function giveReward(q){
+  P.coins+=q.coins;P.xp+=q.xp;P.active=null;
+  while(P.xp>=P.xpMax){P.xp-=P.xpMax;P.level++;P.xpMax=Math.floor(P.xpMax*1.6);showLevelUp();}
+  updateHUD();P.done.push(q.id);renderQL();showRewPop(q);spawnCoins();
+}
+function showRewPop(q){
+  const p=document.createElement('div');p.className='rewpop';
+  p.innerHTML=`<div class="rewey">// mission complete</div><div class="rewico">✦</div><div class="rewtitle">CLEARED</div><div class="rewq">${q.title}</div><div class="rewstats"><span class="rc">+${q.coins} CR</span><span class="rx">+${q.xp} XP</span></div>`;
+  document.body.appendChild(p);requestAnimationFrame(()=>p.classList.add('show'));
+  setTimeout(()=>{p.classList.remove('show');setTimeout(()=>p.remove(),400);},3000);
+}
+function showLevelUp(){
+  const p=document.createElement('div');p.className='lvlpop';
+  p.innerHTML=`<div class="lvley">// rank advancement</div><div class="lvlmain">RANK UP</div><div class="lvlnum">RANK ${String(P.level).padStart(2,'0')}</div>`;
+  document.body.appendChild(p);requestAnimationFrame(()=>p.classList.add('show'));
+  setTimeout(()=>{p.classList.remove('show');setTimeout(()=>p.remove(),600);},2600);
+}
+function spawnCoins(){
+  for(let i=0;i<6;i++) setTimeout(()=>{
+    const c=document.createElement('div');c.className='floatc';c.textContent='+CR';
+    c.style.cssText=`left:${50+Math.random()*180}px;top:${8+Math.random()*30}px`;
+    $('hud').appendChild(c);requestAnimationFrame(()=>c.classList.add('fly'));
+    setTimeout(()=>c.remove(),1100);
+  },i*100);
+}
+function toast(msg,type='info'){
+  const t=document.createElement('div');t.className=`toast ${type}`;t.textContent='> '+msg;
+  $('toasts').appendChild(t);requestAnimationFrame(()=>t.classList.add('show'));
+  setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),300);},3400);
+}
+function renderQL(){
+  const el=$('qllist');el.innerHTML='';
+  $('qlcnt').textContent=P.done.length+'/'+QUESTS.length;
+  QUESTS.forEach(q=>{
+    const done=P.done.includes(q.id),npc=NPCS[q.npcId]||{};
+    const d=document.createElement('div');d.className='qli'+(done?' done':'');
+    d.innerHTML=`<div class="qlidot"></div><div class="qliinfo"><div class="qlititle">${q.title}</div><div class="qlinpc">${npc.name||''} — ${npc.title||''}</div></div><div class="qbadge ${q.diff.toLowerCase()}">${q.diff}</div>`;
+    el.appendChild(d);
+  });
+}
+function toggleQL(){$('qlpanel').classList.toggle('open');}
+window.toggleQL=toggleQL;
+
+function showNPCDlg(npc,quest,onA,onD){
+  $('dlgav').textContent=npc.tag.slice(-3);$('dlgname').textContent=npc.name;
+  $('dlgtitle').textContent=npc.title;$('dlgtag').textContent=npc.tag;$('dlgtxt').textContent=npc.dialog;
+  if(quest){
+    $('dlgquest').innerHTML=`<div class="questoffer"><div class="qobdg ${quest.diff.toLowerCase()}">${quest.diff}</div><div class="qotitle">${quest.title}</div><div class="qorew"><span class="rc">⬡ ${quest.coins} CR</span><span class="rx">↑ ${quest.xp} XP</span></div></div>`;
+    $('btnaccept').style.display='';
+    $('btnaccept').onclick=()=>{closeNPCDlg();onA&&onA(quest);};
+    $('btndecline').textContent='DECLINE';$('btndecline').onclick=()=>{closeNPCDlg();onD&&onD();};
+  } else {
+    $('dlgquest').innerHTML='<div class="noquest">No active missions. All objectives cleared.</div>';
+    $('btnaccept').style.display='none';
+    $('btndecline').textContent='DISENGAGE';$('btndecline').onclick=closeNPCDlg;
+  }
+  $('npcdlg').classList.add('show');
+}
+function closeNPCDlg(){$('npcdlg').classList.remove('show');}
+
+function showEditor(quest,onDone){
+  P.active=quest;updateHUD();
+  $('cedqtitle').textContent=quest.title;$('ceddesc').innerHTML=quest.desc;$('cedhint').innerHTML=quest.hint;
+  $('cedlang').textContent=quest.lang;$('ctitle').textContent='codequest/'+quest.fname;$('cfile').textContent=quest.fname;
+  $('codeta').value=quest.starter;$('cedresult').className='';$('cedresult').textContent='';
+  $('ceditor').classList.add('show');setTimeout(()=>$('codeta').focus(),300);
+  $('btnsub').onclick=()=>{
+    const code=$('codeta').value,ok=quest.ok(code);
+    $('cedresult').className=ok?'show ok':'show fail';
+    $('cedresult').innerHTML=ok?'&gt; ACCEPTED — Solution verified. Uploading...':'&gt; REJECTED — Does not meet requirements. Review hint.';
+    if(ok){setTimeout(()=>{closeEditor();giveReward(quest);onDone&&onDone(true);},1500);}
+    else{$('codeta').classList.add('shake');setTimeout(()=>$('codeta').classList.remove('shake'),500);}
+  };
+  $('btncan').onclick=()=>{closeEditor();P.active=null;updateHUD();onDone&&onDone(false);};
+  $('codeta').onkeydown=function(e){
+    if(e.key==='Tab'){e.preventDefault();const p=this.selectionStart,v=this.value;this.value=v.substring(0,p)+'    '+v.substring(p);this.selectionStart=this.selectionEnd=p+4;}
+    upLN(this.value);
+  };
+  $('codeta').oninput=function(){upLN(this.value);};
+}
+function upLN(v){const n=Math.max(v.split('\n').length,9);let h='';for(let i=1;i<=n;i++)h+=`<span>${i}</span>`;$('lnums').innerHTML=h;}
+function closeEditor(){$('ceditor').classList.remove('show');}
+
+// ════════════════════════════════════════════
+// THREE.JS ENGINE
+// ════════════════════════════════════════════
+const scene = new THREE.Scene();
+// Brighter "daytime" palette
+scene.background = new THREE.Color(0xcfe6ff);
+scene.fog = new THREE.Fog(0xcfe6ff, 80, 170);
+
+// TRUE ISOMETRIC ORTHOGRAPHIC CAMERA
+const FRUSTUM = 16;
+const camera = new THREE.OrthographicCamera(-FRUSTUM,FRUSTUM,FRUSTUM,-FRUSTUM,0.1,300);
+// Classic isometric: positioned on diagonal at equal x,y,z
+camera.position.set(30,30,30);
+camera.lookAt(0,0,0);
+
+const renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.25;
+$('c3d').appendChild(renderer.domElement);
+
+function resize(){
+  const w=window.innerWidth,h=window.innerHeight-76;
+  renderer.setSize(w,h);
+  const asp=w/h;
+  camera.left=-FRUSTUM*asp;camera.right=FRUSTUM*asp;
+  camera.top=FRUSTUM;camera.bottom=-FRUSTUM;
+  camera.updateProjectionMatrix();
+}
+resize();
+window.addEventListener('resize',resize);
+
+// ── LIGHTING ──
+// Kenney assets use simple materials; push toward a bright, clean look
+scene.add(new THREE.AmbientLight(0xffffff, 1.55));
+scene.add(new THREE.HemisphereLight(0xeaf6ff, 0x9fb9d6, 0.85));
+
+const sun = new THREE.DirectionalLight(0xffffff, 2.25);
+sun.position.set(20,40,15);
+sun.castShadow = true;
+sun.shadow.mapSize.set(4096,4096);
+sun.shadow.camera.near=0.5; sun.shadow.camera.far=120;
+sun.shadow.camera.left=-35; sun.shadow.camera.right=35;
+sun.shadow.camera.top=35;   sun.shadow.camera.bottom=-35;
+sun.shadow.bias=-0.0004;
+scene.add(sun);
+
+const fill = new THREE.DirectionalLight(0x9fd2ff, 0.9);
+fill.position.set(-15,10,-10);
+scene.add(fill);
+
+// ── GRID ──
+const TILE = 2.2; // world units per Kenney tile (models are ~2m scale)
+function gw(gx,gz){return{x:gx*TILE, z:gz*TILE};}
+
+// ════════════════════════════════════════════
+// MODEL CACHE & LOADER
+// ════════════════════════════════════════════
+const modelCache = {};   // name -> THREE.Object3D (cloneable template)
+const texCache = {};     // filename -> THREE.Texture
+let objLoaded=0, objFailed=0;
+let usingOBJ = false;
+
+const texLoader = new THREE.TextureLoader();
+const objLoader = new OBJLoader();
+const mtlLoader = new MTLLoader();
+
+function setProgress(pct,msg){
+  $('loadfill').style.width=pct+'%';
+  if(msg) $('loadstat').textContent=msg;
+}
+
+// Load a single OBJ file with its MTL
+function loadOBJ(name){
+  return new Promise(resolve=>{
+    const mtlPath = MODEL_BASE+name+'.mtl';
+    const objPath = MODEL_BASE+name+'.obj';
+
+    console.log(`[CodeQuest] Loading: ${objPath}`);
+
+    // Set mtlLoader path so relative texture refs in .mtl resolve correctly
+    mtlLoader.setPath(MODEL_BASE);
+    // Kenney .mtl uses: "map_Kd Textures/colormap.png"
+    // Our folder is: Models/Textures/colormap.png
+    // Setting resourcePath to "Models/" makes that resolve correctly.
+    mtlLoader.setResourcePath('Models/');
+    mtlLoader.setMaterialOptions({side:THREE.FrontSide});
+
+    mtlLoader.load(name+'.mtl',
+      (mtl)=>{
+        mtl.preload();
+        objLoader.setMaterials(mtl);
+        objLoader.setPath(MODEL_BASE);
+        objLoader.load(name+'.obj',
+          (obj)=>{
+            // Normalize: center on xz, sit on y=0
+            const bbox = new THREE.Box3().setFromObject(obj);
+            const center = bbox.getCenter(new THREE.Vector3());
+            obj.position.x -= center.x;
+            obj.position.z -= center.z;
+            obj.position.y -= bbox.min.y;
+            obj.traverse(child=>{
+              if(child.isMesh){
+                // Apply colormap if material has no texture
+                if(child.material && !child.material.map && texCache['colormap']){
+                  child.material.map = texCache['colormap'];
+                  child.material.needsUpdate = true;
+                }
+                child.castShadow=true;
+                child.receiveShadow=true;
+              }
+            });
+            modelCache[name]=obj;
+            objLoaded++;
+            console.log(`[CodeQuest] ✓ Loaded: ${name}`);
+            resolve(true);
+          },
+          undefined,
+          (err)=>{console.warn(`[CodeQuest] ✗ OBJ failed: ${name}`,err);objFailed++;resolve(false);}
+        );
+      },
+      undefined,
+      ()=>{
+        // No MTL — try OBJ alone with colormap
+        console.log(`[CodeQuest] No MTL for ${name}, trying OBJ only...`);
+        objLoader.setMaterials(null);
+        objLoader.setPath(MODEL_BASE);
+        objLoader.load(name+'.obj',
+          (obj)=>{
+            const bbox=new THREE.Box3().setFromObject(obj);
+            const center=bbox.getCenter(new THREE.Vector3());
+            obj.position.x-=center.x; obj.position.z-=center.z;
+            obj.position.y-=bbox.min.y;
+            const mat=new THREE.MeshLambertMaterial({color:0xffffff,map:texCache['colormap']||null});
+            obj.traverse(child=>{if(child.isMesh){child.material=mat;child.castShadow=true;child.receiveShadow=true;}});
+            modelCache[name]=obj;
+            objLoaded++;
+            console.log(`[CodeQuest] ✓ Loaded (no MTL): ${name}`);
+            resolve(true);
+          },
+          undefined,
+          (err)=>{console.warn(`[CodeQuest] ✗ Both MTL+OBJ failed: ${name}`,err);objFailed++;resolve(false);}
+        );
+      }
+    );
+  });
+}
+
+async function loadAllModels(){
+  setProgress(5,'Loading colormap texture...');
+
+  // Load Kenney texture atlas
+  console.log(`[CodeQuest] Loading texture from: ${TEX_BASE}colormap.png`);
+  await new Promise(res=>{
+    texLoader.load(TEX_BASE+'colormap.png',
+      t=>{texCache['colormap']=t; t.flipY=false; t.colorSpace=THREE.SRGBColorSpace; console.log('[CodeQuest] ✓ colormap.png loaded'); res();},
+      undefined,
+      e=>{console.warn('[CodeQuest] ✗ colormap.png failed',e); res();}
+    );
+  });
+
+  setProgress(10,'Loading building models...');
+  const allModels = [...BUILDING_MODELS, ...LOW_DETAIL_MODELS, ...CHARACTER_MODELS, ...DETAIL_MODELS];
+  const total = allModels.length;
+  console.log(`[CodeQuest] Attempting to load ${total} models from: ${MODEL_BASE}`);
+  let done=0;
+
+  // Load in batches of 4 for speed
+  const BATCH=4;
+  for(let i=0;i<total;i+=BATCH){
+    const batch=allModels.slice(i,i+BATCH);
+    await Promise.all(batch.map(name=>loadOBJ(name)));
+    done=Math.min(i+BATCH,total);
+    setProgress(10+Math.floor(done/total*75), `Loading models... ${done}/${total}`);
+  }
+
+  usingOBJ = objLoaded > 0;
+  return usingOBJ;
+}
+
+// Get a placed model instance (clone from cache or fallback)
+function getModel(name, fallbackFn){
+  if(modelCache[name]){
+    const clone=modelCache[name].clone();
+    clone.traverse(c=>{
+      if(c.isMesh&&c.material){
+        c.material=c.material.clone(); // unique material per instance for tinting
+        c.castShadow=true;c.receiveShadow=true;
+      }
+    });
+    return clone;
+  }
+  return fallbackFn();
+}
+
+// ════════════════════════════════════════════
+// FALLBACK GEOMETRY
+// ════════════════════════════════════════════
+function fbBox(w,h,d,col){
+  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshLambertMaterial({color:col}));
+  m.castShadow=true;m.receiveShadow=true;m.position.y=h/2;return m;
+}
+function fbBuilding(w,h,d,col){
+  const g=new THREE.Group();
+  g.add(fbBox(w,h,d,col));
+  // Windows
+  const wm=new THREE.MeshLambertMaterial({color:0x88ccff,emissive:0x88ccff,emissiveIntensity:.2});
+  for(let r=0;r<Math.floor(h/0.4)-1;r++){
+    for(let c=0;c<3;c++){
+      const ww=new THREE.Mesh(new THREE.PlaneGeometry(0.18,0.22),wm);
+      ww.position.set(-w/2+0.01, 0.35+r*0.4, (c-.5-.5)*d/3);
+      ww.rotation.y=Math.PI/2;
+      g.add(ww);
+    }
+  }
+  return g;
+}
+function fbPlayer(){
+  const g=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.BoxGeometry(.32,.48,.22),new THREE.MeshLambertMaterial({color:0x1e3050}));
+  body.position.y=.54;body.castShadow=true;
+  const head=new THREE.Mesh(new THREE.SphereGeometry(.18,8,6),new THREE.MeshLambertMaterial({color:0xDFAB89}));
+  head.position.y=.96;head.castShadow=true;
+  const stripe=new THREE.Mesh(new THREE.BoxGeometry(.055,.48,.24),new THREE.MeshLambertMaterial({color:0xF59E0B,emissive:0xF59E0B,emissiveIntensity:.3}));
+  stripe.position.set(-.13,.54,0);
+  g.add(body,head,stripe);return g;
+}
+function fbNPC(col){
+  const g=new THREE.Group();
+  const body=new THREE.Mesh(new THREE.BoxGeometry(.28,.44,.2),new THREE.MeshLambertMaterial({color:0x1e2a3d}));
+  body.position.y=.5;body.castShadow=true;
+  const head=new THREE.Mesh(new THREE.SphereGeometry(.16,8,6),new THREE.MeshLambertMaterial({color:0xDFAB89}));
+  head.position.y=.88;head.castShadow=true;
+  const acc=new THREE.Mesh(new THREE.BoxGeometry(.05,.44,.22),new THREE.MeshLambertMaterial({color:col,emissive:col,emissiveIntensity:.35}));
+  acc.position.set(-.115,.5,0);
+  g.add(body,head,acc);return g;
+}
+function fbTree(){
+  const g=new THREE.Group();
+  const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.07,.1,.55,6),new THREE.MeshLambertMaterial({color:0x6b3a2a}));
+  trunk.position.y=.28;trunk.castShadow=true;
+  const leaves=new THREE.Mesh(new THREE.SphereGeometry(.45,8,6),new THREE.MeshLambertMaterial({color:0x0f4a24}));
+  leaves.position.y=.9;leaves.scale.y=1.3;leaves.castShadow=true;
+  g.add(trunk,leaves);return g;
+}
+
+// ════════════════════════════════════════════
+// WORLD BUILDER
+// ════════════════════════════════════════════
+// Map size: 22x22 grid
+const MAP_SIZE = 22;
+
+// Road grid pattern:
+// Vertical roads at x=10,11  Horizontal at z=8,9 and z=16,17
+const ROAD_COLS = new Set([10,11]);
+const ROAD_ROWS = new Set([8,9,16,17]);
+
+function isRoad(gx,gz){return ROAD_COLS.has(gx)||ROAD_ROWS.has(gz);}
+
+// Brighter ground so city reads clearly
+const groundMat   = new THREE.MeshLambertMaterial({color:0xaec5d8});
+const roadMat     = new THREE.MeshLambertMaterial({color:0x495869});
+const grassMat    = new THREE.MeshLambertMaterial({color:0x3f7a5c});
+const lineMat     = new THREE.MeshLambertMaterial({color:0xF59E0B,emissive:0xF59E0B,emissiveIntensity:.35});
+const sidewalkMat = new THREE.MeshLambertMaterial({color:0x8aa3b8});
+
+function buildGround(){
+  // Base plane
+  const gnd=new THREE.Mesh(new THREE.PlaneGeometry(MAP_SIZE*TILE,MAP_SIZE*TILE),groundMat);
+  gnd.rotation.x=-Math.PI/2; gnd.position.set((MAP_SIZE/2-.5)*TILE,-0.01,(MAP_SIZE/2-.5)*TILE);
+  gnd.receiveShadow=true; scene.add(gnd);
+
+  // Per-tile ground details
+  for(let gz=0;gz<MAP_SIZE;gz++){
+    for(let gx=0;gx<MAP_SIZE;gx++){
+      const {x,z}=gw(gx,gz);
+      const isR=isRoad(gx,gz);
+      const isEdge=gx<2||gx>MAP_SIZE-3||gz<2||gz>MAP_SIZE-3;
+
+      // Tile slab
+      const tmat = isR ? roadMat : isEdge ? grassMat : sidewalkMat;
+      const tile=new THREE.Mesh(new THREE.PlaneGeometry(TILE*.98,TILE*.98),tmat);
+      tile.rotation.x=-Math.PI/2; tile.position.set(x,0.002,z);
+      tile.receiveShadow=true; scene.add(tile);
+    }
+  }
+
+  // Road center amber dashes — vertical road
+  for(let gz=0;gz<MAP_SIZE;gz+=2){
+    const {z}=gw(10,gz);
+    const dash=new THREE.Mesh(new THREE.PlaneGeometry(0.06,TILE*.55),lineMat);
+    dash.rotation.x=-Math.PI/2; dash.position.set(gw(10,0).x+TILE*.5,0.008,z); scene.add(dash);
+  }
+  // Horizontal roads
+  [[8],[16]].flat().forEach(rz=>{
+    for(let gx=0;gx<MAP_SIZE;gx+=2){
+      const dash=new THREE.Mesh(new THREE.PlaneGeometry(TILE*.55,0.06),lineMat);
+      dash.rotation.x=-Math.PI/2; dash.position.set(gw(gx,0).x,0.008,gw(0,rz).z+TILE*.5); scene.add(dash);
+    }
+  });
+
+  // Amber street lights along roads
+  const lightPositions=[
+    [10,4],[10,13],[10,20],[4,8],[14,8],[20,8],
+    [4,16],[14,16],[20,16]
+  ];
+  lightPositions.forEach(([lgx,lgz])=>{
+    const pl=new THREE.PointLight(0xF59E0B,.6,8);
+    const {x,z}=gw(lgx,lgz);
+    pl.position.set(x,2.5,z); scene.add(pl);
+    // Pole
+    const pole=new THREE.Mesh(new THREE.CylinderGeometry(.04,.04,2.5,6),new THREE.MeshLambertMaterial({color:0x2a3545}));
+    pole.position.set(x,1.25,z); scene.add(pole);
+    // Light head
+    const head=new THREE.Mesh(new THREE.SphereGeometry(.12,8,6),new THREE.MeshLambertMaterial({color:0xF59E0B,emissive:0xF59E0B,emissiveIntensity:1}));
+    head.position.set(x,2.6,z); scene.add(head);
+  });
+}
+
+// City block layout:
+// Zones: Top-left, Top-right, Bottom-left, Bottom-right (separated by roads)
+// Each zone gets a mix of building types
+const CITY_LAYOUT = [
+  // TOP-LEFT ZONE (gx 0-9, gz 0-7)
+  [1,1,'building-skyscraper-a'],[3,1,'building-skyscraper-c'],[5,1,'building-d'],
+  [7,1,'building-skyscraper-b'],[1,3,'building-f'],          [3,3,'building-a'],
+  [5,3,'building-skyscraper-e'],[7,3,'building-c'],          [1,5,'building-b'],
+  [3,5,'building-e'],          [5,5,'building-g'],          [7,5,'building-h'],
+  // TOP-RIGHT ZONE (gx 12-21, gz 0-7)
+  [12,1,'building-skyscraper-d'],[14,1,'building-i'],        [16,1,'building-skyscraper-a'],
+  [18,1,'building-j'],           [20,1,'building-skyscraper-c'],[12,3,'building-k'],
+  [14,3,'building-l'],           [16,3,'building-m'],         [18,3,'building-n'],
+  [20,3,'building-b'],           [12,5,'building-skyscraper-b'],[14,5,'building-a'],
+  [16,5,'building-f'],           [18,5,'building-skyscraper-e'],[20,5,'building-c'],
+  // BOTTOM-LEFT ZONE (gx 0-9, gz 10-15)
+  [1,10,'building-g'],           [3,10,'building-skyscraper-a'],[5,10,'building-h'],
+  [7,10,'building-d'],           [1,12,'building-skyscraper-c'],[3,12,'building-e'],
+  [5,12,'building-a'],           [7,12,'building-skyscraper-d'],[1,14,'building-b'],
+  [3,14,'building-j'],           [5,14,'building-k'],           [7,14,'building-l'],
+  // BOTTOM-RIGHT ZONE (gx 12-21, gz 10-15)
+  [12,10,'building-skyscraper-e'],[14,10,'building-m'],        [16,10,'building-n'],
+  [18,10,'building-skyscraper-a'],[20,10,'building-i'],        [12,12,'building-c'],
+  [14,12,'building-skyscraper-b'],[16,12,'building-d'],        [18,12,'building-f'],
+  [20,12,'building-skyscraper-c'],[12,14,'building-g'],        [14,14,'building-a'],
+  [16,14,'building-h'],          [18,14,'building-e'],         [20,14,'building-skyscraper-d'],
+  // BOTTOM ZONE (below road z=16)
+  [1,18,'building-skyscraper-a'],[3,18,'building-b'],          [5,18,'building-c'],
+  [7,18,'building-d'],           [12,18,'building-e'],         [14,18,'building-skyscraper-b'],
+  [16,18,'building-f'],          [18,18,'building-g'],         [20,18,'building-skyscraper-c'],
+];
+
+// Additional background buildings using low-detail models (faster render for distant buildings)
+const LOW_DETAIL_LAYOUT = [
+  // Far background buildings
+  [1,0,'low-detail-building-a'],[3,0,'low-detail-building-b'],[5,0,'low-detail-building-c'],
+  [7,0,'low-detail-building-d'],[12,0,'low-detail-building-e'],[14,0,'low-detail-building-f'],
+  [18,0,'low-detail-building-g'],[20,0,'low-detail-building-h'],
+  // Bottom far zone
+  [1,19,'low-detail-building-i'],[3,19,'low-detail-building-j'],[5,19,'low-detail-building-k'],
+  [7,19,'low-detail-building-l'],[12,19,'low-detail-building-m'],[14,19,'low-detail-building-n'],
+  [17,19,'low-detail-building-wide-a'],[20,19,'low-detail-building-wide-b'],
+];
+const TREE_POSITIONS = [
+  [2,7],[4,7],[6,7],[8,7],    // park strip above h-road
+  [2,15],[4,15],[6,15],[8,15],
+  [13,7],[15,7],[17,7],[19,7],
+  [13,15],[15,15],[17,15],[19,15],
+  // Corner parks
+  [0,0],[0,2],[0,4],[0,6],
+  [21,0],[21,2],[21,4],[21,6],
+  [0,10],[0,12],[0,14],
+  [21,10],[21,12],[21,14],
+  [0,18],[0,20],[21,18],[21,20],
+  [4,19],[6,20],[15,19],[18,20],
+];
+
+function key(gx,gz){return gx+','+gz;}
+function randPick(arr){return arr[(Math.random()*arr.length)|0];}
+
+function placeDenseBuildings(){
+  // Reserve tiles we already use
+  const used=new Set();
+  CITY_LAYOUT.forEach(([gx,gz])=>used.add(key(gx,gz)));
+  LOW_DETAIL_LAYOUT.forEach(([gx,gz])=>used.add(key(gx,gz)));
+  TREE_POSITIONS.forEach(([gx,gz])=>used.add(key(gx,gz)));
+  Object.values(NPCS).forEach(npc=>used.add(key(npc.gx,npc.gz)));
+  used.add(key(4,4)); // player spawn
+  [[4,8],[14,8],[4,16],[14,16],[8,4],[8,12]].forEach(([gx,gz])=>used.add(key(gx,gz)));
+
+  // Fill interior blocks (non-road, not edge) with a high density
+  const candidates=[];
+  for(let gz=2;gz<MAP_SIZE-2;gz++){
+    for(let gx=2;gx<MAP_SIZE-2;gx++){
+      if(isRoad(gx,gz)) continue;
+      const k=key(gx,gz);
+      if(used.has(k)) continue;
+      candidates.push([gx,gz]);
+    }
+  }
+  // Deterministic-ish shuffle (stable enough visually)
+  for(let i=candidates.length-1;i>0;i--){
+    const j=(Math.random()*(i+1))|0;
+    const t=candidates[i]; candidates[i]=candidates[j]; candidates[j]=t;
+  }
+
+  const denseBuildings=[...BUILDING_MODELS, ...LOW_DETAIL_MODELS];
+  const density=0.78; // 0..1
+  const toPlace=Math.floor(candidates.length*density);
+
+  for(let i=0;i<toPlace;i++){
+    const [gx,gz]=candidates[i];
+    const name=randPick(denseBuildings);
+    const obj=getModel(name,()=>fbBuilding(TILE*.7,1.2,TILE*.7,0xdde8f5));
+    const {x,z}=gw(gx,gz);
+    obj.position.set(x,0,z);
+    obj.rotation.y=randPick([0,Math.PI/2,Math.PI,Math.PI*1.5]);
+    scene.add(obj);
+    used.add(key(gx,gz));
+  }
+}
+
+function buildCity(){
+  // Buildings
+  CITY_LAYOUT.forEach(([gx,gz,name])=>{
+    const obj=getModel(name,()=>{
+      const heights={'building-skyscraper-a':3.5,'building-skyscraper-b':4,'building-skyscraper-c':3,'building-skyscraper-d':4.5,'building-skyscraper-e':3.8};
+      const h=heights[name]||1.4;
+      return fbBuilding(TILE*.75,h,TILE*.75,0xdde8f5);
+    });
+    const {x,z}=gw(gx,gz);
+    obj.position.set(x,0,z);
+    scene.add(obj);
+  });
+
+  // Low-detail background buildings
+  LOW_DETAIL_LAYOUT.forEach(([gx,gz,name])=>{
+    const obj=getModel(name,()=>fbBuilding(TILE*.65,1.0,TILE*.65,0xccd8e8));
+    const {x,z}=gw(gx,gz);
+    obj.position.set(x,0,z);
+    scene.add(obj);
+  });
+
+  // Detail props (parasols, awnings in street-level areas)
+  const detailSpots=[[4,8],[14,8],[4,16],[14,16],[8,4],[8,12]];
+  detailSpots.forEach(([gx,gz],i)=>{
+    const name=DETAIL_MODELS[i%DETAIL_MODELS.length];
+    const obj=getModel(name,()=>fbBox(.5,.3,.5,0x22cc66));
+    const {x,z}=gw(gx,gz);
+    obj.position.set(x+TILE*.3,0,z+TILE*.3);
+    scene.add(obj);
+  });
+
+  // Trees
+  TREE_POSITIONS.forEach(([gx,gz])=>{
+    const obj=getModel('detail-parasol-a', fbTree);
+    const {x,z}=gw(gx,gz);
+    const offX=(Math.random()-.5)*.3, offZ=(Math.random()-.5)*.3;
+    obj.position.set(x+offX,0,z+offZ);
+    obj.rotation.y=Math.random()*Math.PI*2;
+    scene.add(obj);
+  });
+
+  // Dense fill for a more "city" vibe
+  placeDenseBuildings();
+}
+
+// ════════════════════════════════════════════
+// PLAYER & NPCs
+// ════════════════════════════════════════════
+const playerPos   = new THREE.Vector3(gw(4,4).x, 0, gw(4,4).z);
+const playerTarget= new THREE.Vector3().copy(playerPos);
+let playerMesh=null, playerMoving=false;
+
+const npcMeshes={};
+const npcRings={};
+
+function buildPlayer(){
+  playerMesh=getModel('character-male-b', fbPlayer);
+  // Kenney characters are ~1m — scale up a tiny bit
+  playerMesh.scale.set(1.1,1.1,1.1);
+  playerMesh.position.copy(playerPos);
+  // Amber glow ring under player
+  const ring=new THREE.Mesh(new THREE.RingGeometry(.25,.38,32),new THREE.MeshBasicMaterial({color:0xF59E0B,transparent:true,opacity:.5,side:THREE.DoubleSide}));
+  ring.rotation.x=-Math.PI/2; ring.position.set(0,0.02,0);
+  playerMesh.add(ring);
+  scene.add(playerMesh);
+}
+
+function buildNPCs(){
+  Object.values(NPCS).forEach(npc=>{
+    const {x,z}=gw(npc.gx,npc.gz);
+
+    const mesh=getModel(npc.model,()=>fbNPC(npc.color));
+    mesh.scale.set(1.05,1.05,1.05);
+    mesh.position.set(x,0,z);
+    mesh.userData.npcId=npc.id;
+    scene.add(mesh);
+    npcMeshes[npc.id]=mesh;
+
+    // Coloured role indicator ring under NPC
+    const ringMat=new THREE.MeshBasicMaterial({color:npc.color,transparent:true,opacity:.5,side:THREE.DoubleSide});
+    const ring=new THREE.Mesh(new THREE.RingGeometry(.28,.42,32),ringMat);
+    ring.rotation.x=-Math.PI/2;
+    ring.position.set(x,0.02,z);
+    scene.add(ring);
+    npcRings[npc.id]={ring,mat:ringMat};
+
+    // Canvas-based name plate sprite
+    makeNameSprite(npc,x,z);
+  });
+}
+
+function makeNameSprite(npc,x,z){
+  const cvs=document.createElement('canvas');
+  cvs.width=320;cvs.height=72;
+  const ctx=cvs.getContext('2d');
+  ctx.fillStyle='rgba(6,9,15,0.9)';
+  ctx.fillRect(0,0,320,72);
+  ctx.strokeStyle=`rgba(${npc.color>>16&255},${npc.color>>8&255},${npc.color&255},0.6)`;
+  ctx.lineWidth=2;ctx.strokeRect(1,1,318,70);
+  // top amber line
+  ctx.fillStyle='#F59E0B';ctx.fillRect(2,2,316,2);
+  ctx.fillStyle='#F1F5F9';
+  ctx.font='bold 26px "JetBrains Mono",monospace';
+  ctx.textAlign='center';ctx.fillText(npc.name,160,34);
+  ctx.fillStyle='#94A3B8';
+  ctx.font='15px "JetBrains Mono",monospace';
+  ctx.fillText(npc.title,160,58);
+
+  const tex=new THREE.CanvasTexture(cvs);
+  const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true}));
+  sp.position.set(x,3.2,z);
+  sp.scale.set(2.4,.54,1);
+  scene.add(sp);
+}
+
+// ════════════════════════════════════════════
+// INTERACTION
+// ════════════════════════════════════════════
+const raycaster=new THREE.Raycaster();
+const mouse=new THREE.Vector2();
+const groundPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
+const clickPoint=new THREE.Vector3();
+let pendingNPC=null, interacting=false, nearNPC=null;
+
+// Click target ring
+const clickRingGeo=new THREE.RingGeometry(.2,.32,24);
+const clickRingMat=new THREE.MeshBasicMaterial({color:0xF59E0B,transparent:true,opacity:0,side:THREE.DoubleSide});
+const clickRing=new THREE.Mesh(clickRingGeo,clickRingMat);
+clickRing.rotation.x=-Math.PI/2; clickRing.position.y=0.02;
+scene.add(clickRing);
+let crAlpha=0;
+
+renderer.domElement.addEventListener('click',e=>{
+  if(interacting) return;
+  const rect=renderer.domElement.getBoundingClientRect();
+  mouse.x=((e.clientX-rect.left)/rect.width)*2-1;
+  mouse.y=-((e.clientY-rect.top)/rect.height)*2+1;
+  raycaster.setFromCamera(mouse,camera);
+
+  // Check NPC click
+  const npcObjs=[];
+  Object.values(npcMeshes).forEach(m=>m.traverse(c=>{if(c.isMesh)npcObjs.push(c);}));
+  const hits=raycaster.intersectObjects(npcObjs);
+  if(hits.length){
+    let m=hits[0].object;
+    while(m.parent&&!m.userData.npcId) m=m.parent;
+    if(m.userData.npcId){
+      const npc=NPCS[m.userData.npcId];
+      if(npc){
+        playerTarget.set(gw(npc.gx,npc.gz).x,0,gw(npc.gx,npc.gz).z);
+        pendingNPC=npc.id; playerMoving=true; return;
+      }
+    }
+  }
+
+  // Ground click
+  if(raycaster.ray.intersectPlane(groundPlane,clickPoint)){
+    playerTarget.set(clickPoint.x,0,clickPoint.z);
+    pendingNPC=null; playerMoving=true;
+    clickRing.position.set(clickPoint.x,0.02,clickPoint.z);
+    crAlpha=0.9; clickRingMat.opacity=0.9;
+  }
+});
+
+function triggerInteract(npc){
+  if(interacting) return;
+  interacting=true; playerMoving=false; pendingNPC=null;
+  $('smode').textContent='TALKING';
+  const avail=npc.quests.find(q=>!P.done.includes(q));
+  const quest=avail?QUESTS.find(q=>q.id===avail):null;
+  showNPCDlg(npc,quest,
+    q=>{interacting=false;$('smode').textContent='CODING';showEditor(q,ok=>{$('smode').textContent='EXPLORE';if(ok)toast('Mission complete — +'+q.coins+' credits','ok');});},
+    ()=>{interacting=false;$('smode').textContent='EXPLORE';}
+  );
+}
+
+// ════════════════════════════════════════════
+// CAMERA CONTROLS  (WASD pan + scroll zoom)
+// ════════════════════════════════════════════
+const camCenter=new THREE.Vector3(0,0,0);
+const ISO_OFFSET=new THREE.Vector3(30,30,30); // fixed isometric offset
+let camZoom=1.0;
+const keys={};
+
+document.addEventListener('keydown',e=>{
+  keys[e.key.toLowerCase()]=true;
+  if((e.key==='e'||e.key==='E')&&nearNPC&&!interacting) triggerInteract(nearNPC);
+  if(e.key==='Escape'){
+    if($('ceditor').classList.contains('show')){closeEditor();P.active=null;updateHUD();$('smode').textContent='EXPLORE';}
+    else if($('npcdlg').classList.contains('show')){closeNPCDlg();interacting=false;$('smode').textContent='EXPLORE';}
+    else if($('qlpanel').classList.contains('open')) toggleQL();
+  }
+});
+document.addEventListener('keyup',e=>delete keys[e.key.toLowerCase()]);
+document.addEventListener('click',e=>{
+  if($('qlpanel').classList.contains('open')&&!e.target.closest('#qlpanel,#btnql')) toggleQL();
+});
+
+renderer.domElement.addEventListener('wheel',e=>{
+  camZoom=Math.max(0.4,Math.min(2.5,camZoom+e.deltaY*0.001));
+  resize(); // recalculate frustum with zoom
+},{ passive:true });
+
+// ════════════════════════════════════════════
+// ANIMATION LOOP
+// ════════════════════════════════════════════
+const clock=new THREE.Clock();
+let bobT=0;
+
+function animate(){
+  requestAnimationFrame(animate);
+  const dt=clock.getDelta();
+  bobT+=dt;
+
+  // Camera WASD pan (in isometric plane)
+  const PAN=9;
+  if(keys['a']||keys['arrowleft'])  camCenter.x-=PAN*dt;
+  if(keys['d']||keys['arrowright']) camCenter.x+=PAN*dt;
+  if(keys['w']||keys['arrowup'])    camCenter.z-=PAN*dt;
+  if(keys['s']||keys['arrowdown'])  camCenter.z+=PAN*dt;
+  // Clamp pan
+  const mapW=MAP_SIZE*TILE;
+  camCenter.x=Math.max(-5,Math.min(mapW+5,camCenter.x));
+  camCenter.z=Math.max(-5,Math.min(mapW+5,camCenter.z));
+
+  // Smooth follow player
+  camCenter.lerp(playerPos,0.04);
+
+  const zf=camZoom;
+  const asp=window.innerWidth/(window.innerHeight-76);
+  camera.left=(-FRUSTUM*asp)/zf; camera.right=(FRUSTUM*asp)/zf;
+  camera.top=FRUSTUM/zf; camera.bottom=-FRUSTUM/zf;
+  camera.updateProjectionMatrix();
+  camera.position.set(camCenter.x+ISO_OFFSET.x,camCenter.y+ISO_OFFSET.y,camCenter.z+ISO_OFFSET.z);
+  camera.lookAt(camCenter);
+
+  // Player movement
+  if(playerMoving&&!interacting){
+    const dx=playerTarget.x-playerPos.x, dz=playerTarget.z-playerPos.z;
+    const dist=Math.sqrt(dx*dx+dz*dz);
+    if(dist>0.07){
+      const spd=7*dt;
+      playerPos.x+=dx/dist*spd; playerPos.z+=dz/dist*spd;
+      playerMesh.position.set(playerPos.x,Math.abs(Math.sin(bobT*7))*.045,playerPos.z);
+      playerMesh.rotation.y=Math.atan2(dx,dz);
+      $('spos').textContent=`${Math.round(playerPos.x/TILE)}, ${Math.round(playerPos.z/TILE)}`;
+    } else {
+      playerMoving=false;
+      playerMesh.position.y=0;
+      if(pendingNPC){const npc=NPCS[pendingNPC];if(npc)triggerInteract(npc);pendingNPC=null;}
+    }
+  }
+
+  // NPC bob & proximity
+  nearNPC=null; let nearDist=3.8;
+  Object.values(NPCS).forEach(npc=>{
+    const m=npcMeshes[npc.id]; const rdata=npcRings[npc.id];
+    if(!m) return;
+    m.position.y=Math.sin(bobT*1.4+npc.id.length*.7)*.06+.06;
+    const dx=playerPos.x-gw(npc.gx,npc.gz).x, dz=playerPos.z-gw(npc.gx,npc.gz).z;
+    const d=Math.sqrt(dx*dx+dz*dz);
+    if(d<nearDist){nearDist=d;nearNPC=npc;}
+    if(rdata){
+      const pulse=d<4;
+      rdata.mat.opacity=pulse?.55+Math.sin(bobT*4)*.2:.3;
+      rdata.ring.scale.setScalar(pulse?1+Math.sin(bobT*3)*.08:1);
+    }
+  });
+
+  // Interact prompt
+  const pr=$('iprompt');
+  if(nearNPC&&!interacting){pr.classList.add('show');pr.textContent='[ E ] TALK TO '+nearNPC.name;}
+  else pr.classList.remove('show');
+
+  // Click ring fade
+  if(crAlpha>0){crAlpha-=dt*2.5;clickRingMat.opacity=Math.max(0,crAlpha);}
+
+  renderer.render(scene,camera);
+}
+
+// ════════════════════════════════════════════
+// BOOT
+// ════════════════════════════════════════════
+async function boot(){
+  updateHUD(); renderQL();
+
+  if(location.protocol === 'file:'){
+    $('smodels').textContent='⚠ Serve via local server (not file://)';
+    toast('OBJ/MTL loading requires a local server. Use serve.bat or VS Code Live Server.','warn');
+
+    const blocker=document.createElement('div');
+    blocker.style.cssText=[
+      'position:fixed','inset:0','z-index:99998','background:rgba(0,0,0,.82)',
+      'display:flex','align-items:center','justify-content:center','padding:18px'
+    ].join(';');
+    blocker.innerHTML=`
+      <div style="max-width:760px;width:100%;background:var(--bg1);border:1px solid var(--b2);border-top:3px solid var(--amber);box-shadow:0 30px 80px rgba(0,0,0,.8)">
+        <div style="padding:18px 20px;border-bottom:1px solid var(--b1);font-family:var(--disp);letter-spacing:3px;color:var(--w);font-size:18px">
+          LOCAL SERVER REQUIRED
+        </div>
+        <div style="padding:18px 20px;font-family:var(--mono);font-size:12px;line-height:1.75;color:var(--t1)">
+          You opened this page via <b>file://</b>. Browsers block loading <b>.obj / .mtl / .png</b> from disk (CORS).<br><br>
+          Fix (Windows): <b>double-click</b> <code style="background:var(--bg3);border:1px solid var(--b2);padding:1px 6px;border-radius:2px;color:var(--amber2)">serve.bat</code><br>
+          Then open:
+          <div style="margin:12px 0;padding:12px 14px;background:var(--bg);border:1px solid var(--b1);white-space:pre-wrap;color:var(--amber2)">http://localhost:8000/codequest_kenney.html</div>
+          Alternative: VS Code extension <b>Live Server</b> → “Open with Live Server”.
+        </div>
+      </div>`;
+    document.body.appendChild(blocker);
+    console.error('[CodeQuest] You are running via file:// — OBJ/MTL/PNG loads are blocked. Use serve.bat.');
+    return;
+  }
+
+  setProgress(5,'Initializing Three.js renderer...');
+  await new Promise(r=>setTimeout(r,100));
+
+  setProgress(8,'Attempting to load Kenney OBJ models...');
+  const loaded=await loadAllModels();
+
+  setProgress(86,'Building city world...');
+  buildGround();
+  buildCity();
+  buildPlayer();
+  buildNPCs();
+
+  setProgress(100,'Ready.');
+  animate();
+
+  setTimeout(()=>{
+    $('loading').classList.add('out');
+    setTimeout(()=>$('loading').remove(),800);
+
+    if(loaded && objLoaded>0){
+      $('smodels').textContent=`✓ OBJ (${objLoaded} models, ${objFailed} failed)`;
+      toast(`Kenney models loaded — ${objLoaded} objects`,'ok');
+    } else {
+      $('smodels').textContent=`✗ OBJ FAILED (${objFailed} errors) — check console F12`;
+      toast(`Models not found! Open F12 console to see exact errors. Check: Models/OBJ format/ path`,'warn');
+      // Show what path we tried
+      console.error(`[CodeQuest] FAILED — tried path: "${MODEL_BASE}building-a.obj"`);
+      console.error(`[CodeQuest] Make sure your folder structure is:`);
+      console.error(`  codequest_kenney.html`);
+      console.error(`  Models/`);
+      console.error(`    OBJ format/   ← folder with space in name`);
+      console.error(`      building-a.obj`);
+      console.error(`      building-a.mtl`);
+      console.error(`    Textures/`);
+      console.error(`      colormap.png`);
+      console.error(`[CodeQuest] IMPORTANT: Must use local server (npx serve . or python -m http.server)`);
+    }
+    toast('Walk to an agent and press E to begin missions','info');
+  },600);
+}
+
+boot();
+</script>
+</body>
+</html>

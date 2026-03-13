@@ -10,9 +10,9 @@ export const CodeScene: React.FC<Props> = ({ data }) => {
     <div className="flex flex-col h-full w-full bg-[#0D1117] text-[#C9D1D9] p-12 items-center justify-center relative">
       <div className="absolute top-0 right-0 w-80 h-80 bg-[#58A6FF]/10 rounded-full blur-[80px] pointer-events-none"></div>
       
-      {data.description && (
+      { (data.description || data.text || data.summary) && (
         <div className="mb-10 text-2xl md:text-3xl font-medium text-[#8B949E] text-center max-w-4xl text-balance drop-shadow-sm">
-          {data.description}
+          {data.description || data.text || data.summary}
         </div>
       )}
 
@@ -33,7 +33,7 @@ export const CodeScene: React.FC<Props> = ({ data }) => {
         
         <pre className="p-8 overflow-x-auto text-xl/relaxed md:text-2xl/relaxed font-mono">
           <code className="text-[#E6EDF3] whitespace-pre-wrap break-words">
-            {data.code}
+            {data.code || data.snippet || "No code provided."}
           </code>
         </pre>
       </div>

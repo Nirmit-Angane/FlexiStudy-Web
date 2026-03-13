@@ -9,16 +9,17 @@ export const TerminalScene: React.FC<Props> = ({ data }) => {
   const [visibleLines, setVisibleLines] = useState<number>(0);
 
   useEffect(() => {
-    if (!data.lines) return;
+    const lines = data.lines || data.commands || data.events || [];
+    if (!lines.length) return;
     const interval = setInterval(() => {
       setVisibleLines(v => {
-        if (v < data.lines.length) return v + 1;
+        if (v < lines.length) return v + 1;
         clearInterval(interval);
         return v;
       });
     }, 800);
     return () => clearInterval(interval);
-  }, [data.lines]);
+  }, [data.lines, data.commands, data.events]);
 
   return (
     <div className="flex w-full h-full bg-[#0D1117] items-center justify-center p-16 md:p-24 relative overflow-hidden">
@@ -33,12 +34,12 @@ export const TerminalScene: React.FC<Props> = ({ data }) => {
           <div className="ml-4 text-sm font-semibold tracking-wider text-[#8B949E]">bash - 80x24</div>
         </div>
         <div className="p-8 text-[#E6EDF3] leading-relaxed min-h-[400px]">
-          {data.lines?.slice(0, visibleLines).map((line: string, i: number) => (
+          {(data.lines || data.commands || data.events || []).slice(0, visibleLines).map((line: string, i: number) => (
             <div key={i} className="mb-3">
               <span className="text-[#2EA043] font-bold">{data.prompt || "$"}</span> <span className="text-[#7EE787] drop-shadow-sm">{line}</span>
             </div>
           ))}
-          {visibleLines < (data.lines?.length || 0) && (
+          {visibleLines < ((data.lines || data.commands || data.events || []).length) && (
             <div className="w-4 h-6 bg-[#E6EDF3] animate-pulse inline-block align-middle ml-3"></div>
           )}
         </div>

@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useProgress } from "@/hooks/useProgress";
 import {
   Search, ChevronRight, ArrowLeft, Clock, BookOpen,
-  CheckCircle, Circle, Lock, Star, Zap, Play, BarChart2
+  CheckCircle, Circle, Lock, Star, Zap, Play, BarChart2,
+  Loader2, RotateCcw
 } from "lucide-react";
+import { MicroVideoPlayer } from "@/components/video/MicroVideoPlayer";
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 const SUBJECTS = [
@@ -701,10 +704,34 @@ function StatusIcon({ status }: { status: string }) {
 
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 export default function CoursesExplorer() {
-  const [page, setPage] = useState<"subjects" | "subtopics" | "modules">("subjects");
+  const [page, setPage] = useState<"subjects" | "subtopics" | "modules" | "lesson">("subjects");
   const [selectedSubject, setSelectedSubject] = useState<typeof SUBJECTS[0] | null>(null);
   const [selectedSubtopic, setSelectedSubtopic] = useState<typeof SUBJECTS[0]["subtopicList"][0] | null>(null);
+  const [selectedModule, setSelectedModule] = useState<typeof SUBJECTS[0]["subtopicList"][0]["moduleList"][0] | null>(null);
   const [search, setSearch] = useState("");
+
+  const { getProgress, getModuleStatus, markComplete } = useProgress();
+
+  // AI Micro-Video States
+  const [generatedLesson, setGeneratedLesson] = useState<any>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [videoError, setVideoError] = useState("");
+
+  // Rules of Hooks: Move state to top level
+  const [videoWatched, setVideoWatched] = useState(false);
+
+  useEffect(() => {
+    // If it's already done, it should stay watched
+    if (page === "lesson" && selectedModule) {
+      const topicKey = `${selectedSubject?.id}_${selectedSubtopic?.id}`;
+      const status = getModuleStatus(topicKey, selectedModule.id);
+      if (status === "done") {
+        setVideoWatched(true);
+      } else {
+        setVideoWatched(false);
+      }
+    }
+  }, [page, selectedModule, selectedSubject, selectedSubtopic, getModuleStatus]);
 
   const goToSubtopics = (subj: typeof SUBJECTS[0]) => {
     setSelectedSubject(subj);
@@ -717,9 +744,46 @@ export default function CoursesExplorer() {
     setSearch("");
     setPage("modules");
   };
+  const goToLesson = async (subj: typeof SUBJECTS[0], st: typeof SUBJECTS[0]["subtopicList"][0], mod: typeof SUBJECTS[0]["subtopicList"][0]["moduleList"][0]) => {
+    // Check if module is locked
+    const topicKey = `${subj.id}_${st.id}`;
+    if (getModuleStatus(topicKey, mod.id) === "locked") return;
+
+    setSelectedSubject(subj);
+    setSelectedSubtopic(st);
+    setSelectedModule(mod);
+    setPage("lesson");
+    
+    // Trigger AI lesson generation
+    setIsGenerating(true);
+    setVideoError("");
+    setGeneratedLesson(null);
+    
+    try {
+      const res = await fetch("/api/generate-microlesson", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          topic: mod.name, 
+          subject: subj.name 
+        }),
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to generate AI lesson");
+      }
+      const data = await res.json();
+      setGeneratedLesson(data);
+    } catch (err: any) {
+      setVideoError(err.message || "Something went wrong generating the lesson.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
   const goBack = () => {
     setSearch("");
-    if (page === "modules") setPage("subtopics");
+    if (page === "lesson") setPage("modules");
+    else if (page === "modules") setPage("subtopics");
     else { setPage("subjects"); setSelectedSubject(null); }
   };
 
@@ -811,7 +875,7 @@ export default function CoursesExplorer() {
     const filtered = s.subtopicList.filter(st =>
       st.name.toLowerCase().includes(search.toLowerCase())
     );
-    const overallPct = Math.round(s.subtopicList.reduce((a, st) => a + st.progress, 0) / s.subtopicList.length);
+    const overallPct = Math.round(s.subtopicList.reduce((a, st) => a + getProgress(`${s.id}_${st.id}`, st.modules), 0) / s.subtopicList.length);
     return (
       <>
         <style>{`
@@ -884,8 +948,9 @@ export default function CoursesExplorer() {
 
           <div className="st-grid">
             {filtered.map((st, i) => {
-              const isDone = st.progress === 100;
-              const isNew = st.progress === 0;
+              const hookProgress = getProgress(`${s.id}_${st.id}`, st.modules);
+              const isDone = hookProgress === 100;
+              const isNew = hookProgress === 0;
               return (
                 <div key={st.id} className="st-card" style={{ animationDelay: `${i * 50}ms` }}
                   onClick={() => goToModules(st)}
@@ -900,16 +965,16 @@ export default function CoursesExplorer() {
                       </div>
                       <div className="st-desc">{st.desc}</div>
                     </div>
-                    <ProgressRing pct={st.progress} color={s.color} size={40} />
+                    <ProgressRing pct={hookProgress} color={s.color} size={40} />
                   </div>
 
                   <div>
                     <div className="st-progress-row">
                       <span className="st-progress-lbl">Progress</span>
-                      <span className="st-progress-pct" style={{ color: s.color }}>{st.progress}%</span>
+                      <span className="st-progress-pct" style={{ color: s.color }}>{hookProgress}%</span>
                     </div>
                     <div className="st-bar">
-                      <div className="st-bar-fill" style={{ width: `${st.progress}%`, background: s.color }} />
+                      <div className="st-bar-fill" style={{ width: `${hookProgress}%`, background: s.color }} />
                     </div>
                   </div>
 
@@ -941,9 +1006,17 @@ export default function CoursesExplorer() {
     if (!selectedSubject || !selectedSubtopic) return null;
     const s = selectedSubject;
     const st = selectedSubtopic;
-    const doneCount = st.moduleList.filter(m => m.status === "done").length;
-    const activeIdx = st.moduleList.findIndex(m => m.status === "active");
-    const filtered = st.moduleList.filter(m =>
+    
+    const topicKey = `${s.id}_${st.id}`;
+    let doneCount = 0;
+    const mappedModules = st.moduleList.map(m => {
+      const status = getModuleStatus(topicKey, m.id);
+      if (status === "done") doneCount++;
+      return { ...m, dynamicStatus: status };
+    });
+    const subProgress = getProgress(topicKey, st.modules);
+
+    const filtered = mappedModules.filter(m =>
       m.name.toLowerCase().includes(search.toLowerCase())
     );
     return (
@@ -1031,9 +1104,9 @@ export default function CoursesExplorer() {
             <div className="mod-hero-bar-wrap">
               <span style={{ fontSize: "var(--text-xs)", fontWeight: 600, color: "var(--text-secondary)", whiteSpace: "nowrap" }}>Overall Progress</span>
               <div className="mod-hero-bar-track">
-                <div className="mod-hero-bar-fill" style={{ width: `${st.progress}%`, background: s.color }} />
+                <div className="mod-hero-bar-fill" style={{ width: `${subProgress}%`, background: s.color }} />
               </div>
-              <span className="mod-hero-bar-pct" style={{ color: s.color }}>{st.progress}%</span>
+              <span className="mod-hero-bar-pct" style={{ color: s.color }}>{subProgress}%</span>
             </div>
           </div>
 
@@ -1050,13 +1123,14 @@ export default function CoursesExplorer() {
           {/* Module list */}
           <div className="mod-list">
             {filtered.map((m, i) => {
-              const isDone = m.status === "done";
-              const isActive = m.status === "active";
-              const isLocked = m.status === "locked";
+              const isDone = m.dynamicStatus === "done";
+              const isActive = m.dynamicStatus === "active";
+              const isLocked = m.dynamicStatus === "locked";
               return (
                 <div key={m.id}
                   className={`mod-item${isActive ? " mod-active" : ""}${isLocked ? " mod-locked" : ""}`}
                   style={{ animationDelay: `${i * 40}ms` }}
+                  onClick={() => !isLocked && goToLesson(s, st, m)}
                 >
                   <div className="mod-num" style={{
                     background: isDone ? "var(--success-subtle)" : isActive ? "var(--brand-primary)" : "var(--bg-elevated)",
@@ -1072,7 +1146,7 @@ export default function CoursesExplorer() {
                     </div>
                   </div>
                   <div className="mod-right">
-                    <StatusIcon status={m.status} />
+                    <StatusIcon status={m.dynamicStatus} />
                     {!isLocked && (
                       <div className="mod-play-btn"
                         style={{ background: isActive ? "var(--brand-primary)" : isDone ? "var(--success-subtle)" : s.bg }}
@@ -1093,11 +1167,112 @@ export default function CoursesExplorer() {
     );
   };
 
+  // ── PAGE 4: LESSON ────────────────────────────────────────────────────────
+  const renderLesson = () => {
+    if (!selectedSubject || !selectedSubtopic || !selectedModule) return null;
+    const s = selectedSubject;
+    const st = selectedSubtopic;
+    const m = selectedModule;
+    const topicKey = `${s.id}_${st.id}`;
+    const status = getModuleStatus(topicKey, m.id);
+    const isDone = status === "done";
+    
+    const handleComplete = () => {
+      markComplete(topicKey, m.id);
+      goBack(); // Return to modules page
+    };
+
+    return (
+      <div className="page-wrap" style={{ maxWidth: 860, margin: "0 auto", animation: "fadeSlideUp .4s ease" }}>
+        <style>{`
+          .lesson-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--space-6); }
+          .back-btn { display:inline-flex; align-items:center; gap:var(--space-2); font-size:var(--text-sm); font-weight:600; color:var(--text-secondary); cursor:pointer; background:none; border:none; padding:0; transition:color var(--transition-fast); }
+          .back-btn:hover { color:var(--text-primary); }
+          .video-container { position:relative; width:100%; aspect-ratio:16/9; background:#000; border-radius:var(--radius-xl); overflow:hidden; box-shadow:var(--shadow-lg); margin-bottom:var(--space-6); display:flex; align-items:center; justify-content:center; }
+          .lesson-footer { display:flex; align-items:center; justify-content:space-between; padding:var(--space-6); background:var(--bg-surface); border:1.5px solid var(--border-default); border-radius:var(--radius-xl); }
+          .complete-btn { padding:12px 24px; border-radius:var(--radius-full); font-weight:700; font-size:var(--text-sm); border:none; cursor:pointer; transition:all var(--transition-fast); display:flex; align-items:center; gap:8px; }
+          .btn-active { background:var(--brand-primary); color:#fff; box-shadow:var(--shadow-sm); }
+          .btn-active:hover { background:var(--brand-primary-dark); transform:translateY(-2px); box-shadow:var(--shadow-md); }
+          .btn-disabled { background:var(--bg-elevated); color:var(--text-muted); cursor:not-allowed; }
+          .btn-done { background:var(--success-subtle); color:var(--success-text); cursor:default; }
+        `}</style>
+        
+        <div className="lesson-header">
+          <button className="back-btn" onClick={goBack}><ArrowLeft size={16} /> Back to Modules</button>
+          <div style={{ fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--text-secondary)" }}>
+            Module {m.id} of {st.modules}
+          </div>
+        </div>
+
+        <div>
+          <h1 style={{ fontFamily: "var(--font-display)", fontSize: "var(--text-3xl)", fontWeight: 800, marginBottom: "var(--space-2)" }}>{m.name}</h1>
+          <p style={{ color: "var(--text-secondary)", marginBottom: "var(--space-4)" }}>{s.name} • {st.name} • {m.duration}</p>
+        </div>
+
+        <div className="video-container" style={{ background: isGenerating ? "var(--bg-elevated)" : "#000" }}>
+          {isGenerating ? (
+            <div style={{ textAlign: "center", padding: 40 }}>
+              <Loader2 size={48} className="animate-spin" style={{ color: "var(--brand-primary)", marginBottom: 16, margin: "0 auto" }} />
+              <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8 }}>AI is crafting your 30-second lesson…</div>
+              <p style={{ color: "var(--text-secondary)", fontSize: 14 }}>Building animated segments and interactive moments.</p>
+            </div>
+          ) : videoError ? (
+            <div style={{ textAlign: "center", padding: 40 }}>
+              <div style={{ fontSize: 40, marginBottom: 16 }}>⚠️</div>
+              <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 8, color: "var(--error)" }}>Generation Error</div>
+              <p style={{ color: "var(--text-secondary)", fontSize: 13, marginBottom: 20, maxWidth: "80%", margin: "0 auto 20px" }}>
+                {videoError}
+              </p>
+              <button 
+                className="btn btn-secondary" 
+                onClick={() => goToLesson(s, st, m)}
+                style={{ background: "var(--bg-surface)" }}
+              >
+                <RotateCcw size={14} style={{ marginRight: 8 }} /> Try Again
+              </button>
+            </div>
+          ) : generatedLesson ? (
+            <MicroVideoPlayer 
+              lesson={generatedLesson} 
+              onComplete={() => setVideoWatched(true)} 
+            />
+          ) : (
+            <div style={{ color: "var(--text-muted)" }}>Initializing player...</div>
+          )}
+        </div>
+
+        <div className="lesson-footer">
+          <div>
+            <div style={{ fontWeight: 700, fontSize: "var(--text-base)", marginBottom: 4 }}>Did you understand the topic?</div>
+            <div style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)" }}>
+              {isDone ? "You have already completed this lesson." : videoWatched ? "Great! Mark this topic as completed to continue." : "Watch the lesson to unlock completion."}
+            </div>
+          </div>
+          
+          {isDone ? (
+            <button className="complete-btn btn-done">
+              <CheckCircle size={18} /> Completed
+            </button>
+          ) : (
+            <button 
+              className={`complete-btn ${videoWatched ? "btn-active" : "btn-disabled"}`}
+              onClick={videoWatched ? handleComplete : undefined}
+              disabled={!videoWatched}
+            >
+              <CheckCircle size={18} /> Complete Topic
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div style={{ padding: "var(--space-8)", background: "var(--bg-page)", minHeight: "100vh" }}>
       {page === "subjects" && renderSubjects()}
       {page === "subtopics" && renderSubtopics()}
       {page === "modules" && renderModules()}
+      {page === "lesson" && renderLesson()}
     </div>
   );
 }

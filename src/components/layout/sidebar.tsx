@@ -5,12 +5,14 @@ import { usePathname } from "next/navigation";
 import { 
   LayoutDashboard, 
   BookOpen, 
-  PenTool, 
   Layers, 
   BarChart3, 
   Trophy, 
   Flame, 
-  Settings
+  Settings,
+  MessageSquare,
+  Gamepad2,
+  Zap
 } from "lucide-react";
 
 export function Sidebar() {
@@ -18,12 +20,14 @@ export function Sidebar() {
 
   const navItems = [
     { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { label: "CodeQuest", href: "/game", icon: Gamepad2 },
     { label: "My Courses", href: "/courses", icon: BookOpen },
-    { label: "Practice", href: "/practice", icon: PenTool },
+    { label: "30s Video", href: "/micro-video", icon: Zap },
     { label: "Flashcards", href: "/flashcards", icon: Layers },
     { label: "Analytics", href: "/analytics", icon: BarChart3 },
     { label: "Achievements", href: "/achievements", icon: Trophy },
     { label: "Streaks", href: "/streaks", icon: Flame },
+    { label: "AI Tutor", href: "/tutor", icon: MessageSquare },
   ];
 
   return (

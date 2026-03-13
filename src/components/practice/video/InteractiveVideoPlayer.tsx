@@ -6,18 +6,21 @@ import { Play, Pause, RotateCcw, Maximize2 } from "lucide-react";
 
 interface Props {
   lesson: VideoLesson;
+  onComplete?: () => void;
 }
 
-export const InteractiveVideoPlayer: React.FC<Props> = ({ lesson }) => {
+export const InteractiveVideoPlayer: React.FC<Props> = ({ lesson, onComplete }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentSceneIdx, setCurrentSceneIdx] = useState(0);
   const [progress, setProgress] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
+  const hasTriggeredComplete = useRef(false);
   
   const synthRef = useRef<SpeechSynthesisUtterance | null>(null);
   const startTimeRef = useRef<number>(0);
   const animFrameRef = useRef<number>(0);
-  const currentSceneTimeRef = useRef<number>(0); // Time spent in the current scene
+  const isPlayingRef = useRef<boolean>(false);
+  const currentSceneIdxRef = useRef<number>(0);
 
   useEffect(() => {
     // Attempt to preload voice
@@ -57,31 +60,48 @@ export const InteractiveVideoPlayer: React.FC<Props> = ({ lesson }) => {
       setIsPlaying(false);
       setIsFinished(true);
       setProgress(100);
+      if (onComplete && !hasTriggeredComplete.current) {
+        onComplete();
+        hasTriggeredComplete.current = true;
+      }
     };
 
     synthRef.current = utterance;
     window.speechSynthesis.speak(utterance);
   };
 
+  useEffect(() => {
+    if (isPlaying && !isFinished) {
+      console.log("Playback started, starting animation loop");
+      animFrameRef.current = requestAnimationFrame(animate);
+    } else {
+      cancelAnimationFrame(animFrameRef.current);
+    }
+    return () => cancelAnimationFrame(animFrameRef.current);
+  }, [isPlaying, isFinished]);
+
   const handlePlayPause = () => {
     if (isFinished) {
+      console.log("Restarting lesson");
       restart();
       return;
     }
 
     if (isPlaying) {
+      console.log("Pausing playback");
       window.speechSynthesis.pause();
       setIsPlaying(false);
-      cancelAnimationFrame(animFrameRef.current);
+      isPlayingRef.current = false;
     } else {
+      console.log("Resuming/Starting playback");
       if (!synthRef.current) {
         playTTS();
       } else {
         window.speechSynthesis.resume();
       }
       setIsPlaying(true);
+      isPlayingRef.current = true;
       startTimeRef.current = performance.now() - (progress / 100) * totalDuration;
-      animate();
     }
   };
 
@@ -92,31 +112,41 @@ export const InteractiveVideoPlayer: React.FC<Props> = ({ lesson }) => {
     setIsFinished(false);
     setProgress(0);
     setCurrentSceneIdx(0);
-    currentSceneTimeRef.current = 0;
+    currentSceneIdxRef.current = 0;
+    hasTriggeredComplete.current = false;
     setTimeout(() => handlePlayPause(), 100);
   };
 
   const animate = () => {
-    if (!isPlaying && !synthRef.current) return;
+    if (!isPlayingRef.current) return;
     
     const now = performance.now();
     const elapsed = now - startTimeRef.current;
     
     if (elapsed >= totalDuration) {
+      console.log("Lesson finished");
       setProgress(100);
       setIsFinished(true);
       setIsPlaying(false);
+      isPlayingRef.current = false;
+      if (onComplete && !hasTriggeredComplete.current) {
+        onComplete();
+        hasTriggeredComplete.current = true;
+      }
       return;
     }
 
-    setProgress((elapsed / totalDuration) * 100);
+    const newProgress = (elapsed / totalDuration) * 100;
+    setProgress(newProgress);
 
     // Calculate current scene
     let accumulatedTime = 0;
     for (let i = 0; i < lesson.scenes.length; i++) {
       accumulatedTime += lesson.scenes[i].duration;
       if (elapsed < accumulatedTime) {
-        if (currentSceneIdx !== i) {
+        if (currentSceneIdxRef.current !== i) {
+          console.log(`Scene transitioning: ${currentSceneIdxRef.current} -> ${i}`);
+          currentSceneIdxRef.current = i;
           setCurrentSceneIdx(i);
         }
         break;
@@ -147,8 +177,12 @@ export const InteractiveVideoPlayer: React.FC<Props> = ({ lesson }) => {
 
       {/* Video Viewport */}
       <div className="relative w-full aspect-video bg-black overflow-hidden border-x border-[#2A2D36]">
-        {lesson.scenes[currentSceneIdx] && (
+        {lesson.scenes && lesson.scenes[currentSceneIdx] ? (
           <SceneRenderer scene={lesson.scenes[currentSceneIdx]} />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-black text-white px-8 text-center">
+            <p className="text-xl opacity-50">Preparing scene Content...</p>
+          </div>
         )}
 
         {/* Initial Play Overlay */}

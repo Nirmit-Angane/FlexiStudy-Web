@@ -12,4 +12,6 @@ export interface VideoLesson {
   scenes: SceneData[];
   mcqs: any[];
   notes: any;
+  subject?: string;
+  difficulty?: string;
 }

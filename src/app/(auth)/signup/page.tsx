@@ -2,7 +2,7 @@
 import { BookOpen, ArrowRight } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
@@ -15,6 +15,7 @@ export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const isAuthInProgress = useRef(false);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +51,9 @@ export default function SignupPage() {
   };
 
   const handleGoogleLogin = async () => {
+    if (isAuthInProgress.current) return;
+
+    isAuthInProgress.current = true;
     setGoogleLoading(true);
     const provider = new GoogleAuthProvider();
 
@@ -77,10 +81,20 @@ export default function SignupPage() {
       toast.success(`Welcome, ${user.displayName || "Learner"}!`);
       router.push("/dashboard");
     } catch (error: any) {
+      if (error.code === "auth/cancelled-popup-request") {
+        console.log("Ignored concurrent popup request.");
+        return;
+      }
+      if (error.code === "auth/popup-closed-by-user") {
+        toast.error("Sign-in cancelled. Please try again.");
+        return;
+      }
       console.error("Google auth error:", error);
       toast.error(error.message || "Failed to sign in with Google");
     } finally {
+      setGoogleLoading(true); // Keep spinner while redirecting usually, but for reliability:
       setGoogleLoading(false);
+      isAuthInProgress.current = false;
     }
   };
 
