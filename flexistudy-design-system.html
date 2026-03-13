@@ -1,0 +1,2446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FlexiStudy — Design System V2.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   DESIGN TOKENS — SINGLE SOURCE OF TRUTH
+   ============================================================ */
+:root {
+  /* BRAND */
+  --brand-primary:       #3D8B71;
+  --brand-primary-dark:  #2E6B57;
+  --brand-primary-light: #EAF5F1;
+
+  /* BACKGROUNDS */
+  --bg-page:     #FAF8F4;
+  --bg-surface:  #FFFFFF;
+  --bg-elevated: #F4F2EE;
+  --bg-overlay:  rgba(28,31,39,0.08);
+  --bg-dark:     #1C1F27;
+
+  /* TEXT */
+  --text-primary:   #1C1F27;
+  --text-secondary: #5C6070;
+  --text-muted:     #9DA3B0;
+  --text-inverse:   #FFFFFF;
+  --text-brand:     #3D8B71;
+
+  /* BORDERS */
+  --border-default: #E8E4DC;
+  --border-strong:  #C8C3BA;
+  --border-brand:   #3D8B71;
+  --border-subtle:  #F0EDE7;
+
+  /* FUNCTIONAL */
+  --success:         #2E9E6B;
+  --success-subtle:  #EAF6F1;
+  --success-text:    #1E7A52;
+
+  --error:           #E05252;
+  --error-subtle:    #FDEEEE;
+  --error-text:      #C03A3A;
+
+  --warning:         #D4860A;
+  --warning-subtle:  #FEF4E3;
+  --warning-text:    #A6650A;
+
+  --info:            #4A7FC1;
+  --info-subtle:     #EAF0FA;
+  --info-text:       #2E5F9E;
+
+  /* SUBJECT COLORS */
+  --subject-math:     #F5A623;
+  --subject-math-bg:  #FEF5E3;
+  --subject-math-txt: #A66B0A;
+
+  --subject-science:     #3D8B71;
+  --subject-science-bg:  #EAF5F1;
+  --subject-science-txt: #2E6B57;
+
+  --subject-tech:     #4A7FC1;
+  --subject-tech-bg:  #EAF0FA;
+  --subject-tech-txt: #2E5F9E;
+
+  --subject-history:     #C4714A;
+  --subject-history-bg:  #F9EDE6;
+  --subject-history-txt: #9A4E2E;
+
+  --subject-geo:     #5BA3A0;
+  --subject-geo-bg:  #EBF5F5;
+  --subject-geo-txt: #3A7A78;
+
+  --subject-english:     #A06CB0;
+  --subject-english-bg:  #F4EEF7;
+  --subject-english-txt: #7A4A8C;
+
+  --subject-econ:     #D4860A;
+  --subject-econ-bg:  #FEF4E3;
+  --subject-econ-txt: #A6650A;
+
+  /* LEARNING STYLE COLORS */
+  --style-visual:      #6C63FF;
+  --style-visual-bg:   #EEEEFF;
+  --style-example:     #F5A623;
+  --style-example-bg:  #FEF5E3;
+  --style-practical:   #3D8B71;
+  --style-practical-bg:#EAF5F1;
+  --style-interactive: #E05252;
+  --style-interactive-bg: #FDEEEE;
+
+  /* SHADOWS */
+  --shadow-sm:  0 1px 3px rgba(28,31,39,0.06), 0 1px 2px rgba(28,31,39,0.04);
+  --shadow-md:  0 4px 12px rgba(28,31,39,0.08), 0 2px 4px rgba(28,31,39,0.04);
+  --shadow-lg:  0 8px 24px rgba(28,31,39,0.10), 0 4px 8px rgba(28,31,39,0.06);
+  --shadow-xl:  0 16px 40px rgba(28,31,39,0.12), 0 8px 16px rgba(28,31,39,0.06);
+  --shadow-brand: 0 4px 16px rgba(61,139,113,0.25);
+
+  /* RADII */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* SPACING (4px base grid) */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* TYPOGRAPHY */
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+  --font-body:    'Inter', sans-serif;
+
+  --text-xs:   12px;
+  --text-sm:   14px;
+  --text-base: 16px;
+  --text-lg:   18px;
+  --text-xl:   20px;
+  --text-2xl:  24px;
+  --text-3xl:  32px;
+  --text-4xl:  40px;
+  --text-5xl:  48px;
+
+  --leading-tight:  1.2;
+  --leading-snug:   1.35;
+  --leading-normal: 1.5;
+  --leading-relaxed:1.65;
+
+  /* TRANSITIONS */
+  --transition-fast:   150ms cubic-bezier(0.4,0,0.2,1);
+  --transition-normal: 250ms cubic-bezier(0.4,0,0.2,1);
+  --transition-slow:   400ms cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ============================================================
+   RESET + BASE
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+.ds-header {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(250,248,244,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-default);
+  padding: 0 var(--space-8);
+  height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.ds-logo {
+  display: flex; align-items: center; gap: var(--space-2);
+  font-family: var(--font-display);
+  font-weight: 700; font-size: var(--text-lg);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+.ds-logo-icon {
+  width: 32px; height: 32px;
+  background: var(--brand-primary);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+}
+.ds-nav {
+  display: flex; gap: var(--space-1);
+}
+.ds-nav a {
+  font-size: var(--text-sm); font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none; padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+.ds-nav a:hover { background: var(--bg-elevated); color: var(--text-primary); }
+.ds-badge {
+  font-family: var(--font-display);
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: var(--brand-primary-light);
+  color: var(--brand-primary);
+  border: 1px solid rgba(61,139,113,0.2);
+}
+
+.ds-container { max-width: 1140px; margin: 0 auto; padding: 0 var(--space-8); }
+.ds-section { padding: var(--space-16) 0; border-bottom: 1px solid var(--border-subtle); }
+.ds-section:last-child { border-bottom: none; }
+
+.ds-section-label {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  font-size: var(--text-xs); font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--brand-primary);
+  margin-bottom: var(--space-3);
+}
+.ds-section-label::before {
+  content: '';
+  display: block; width: 16px; height: 2px;
+  background: var(--brand-primary);
+  border-radius: 2px;
+}
+.ds-section-title {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl); font-weight: 800;
+  color: var(--text-primary);
+  line-height: var(--leading-tight);
+  margin-bottom: var(--space-2);
+}
+.ds-section-desc {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  max-width: 560px;
+  margin-bottom: var(--space-10);
+}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.ds-hero {
+  padding: var(--space-16) 0 var(--space-12);
+  background: linear-gradient(160deg, #FAF8F4 60%, #EAF5F1 100%);
+  border-bottom: 1px solid var(--border-default);
+}
+.ds-hero-eyebrow {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  font-size: var(--text-xs); font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--brand-primary);
+  margin-bottom: var(--space-4);
+}
+.ds-hero-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--brand-primary); }
+.ds-hero h1 {
+  font-family: var(--font-display);
+  font-size: var(--text-5xl); font-weight: 800;
+  line-height: var(--leading-tight);
+  color: var(--text-primary);
+  margin-bottom: var(--space-4);
+}
+.ds-hero h1 span { color: var(--brand-primary); }
+.ds-hero p {
+  font-size: var(--text-lg);
+  color: var(--text-secondary);
+  max-width: 540px;
+  margin-bottom: var(--space-8);
+  line-height: var(--leading-relaxed);
+}
+.ds-hero-meta {
+  display: flex; gap: var(--space-6); flex-wrap: wrap;
+}
+.ds-hero-stat {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.ds-hero-stat strong {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl); font-weight: 700;
+  color: var(--text-primary);
+}
+.ds-hero-stat span {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* ============================================================
+   GRID UTILITIES
+   ============================================================ */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+.grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: var(--space-4); }
+.grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: var(--space-4); }
+.grid-auto { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: var(--space-4); }
+.flex-row { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; }
+.flex-col { display: flex; flex-direction: column; gap: var(--space-3); }
+
+/* ============================================================
+   COLOR SWATCHES
+   ============================================================ */
+.swatch-group { display: flex; flex-direction: column; gap: var(--space-6); }
+.swatch-group-title {
+  font-size: var(--text-xs); font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: var(--space-3);
+}
+.swatch-row { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+.swatch-item {
+  display: flex; align-items: center; gap: var(--space-3);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  min-width: 220px;
+  box-shadow: var(--shadow-sm);
+}
+.swatch-dot {
+  width: 36px; height: 36px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+.swatch-info { display: flex; flex-direction: column; gap: 2px; }
+.swatch-name { font-size: var(--text-sm); font-weight: 600; color: var(--text-primary); }
+.swatch-token { font-size: var(--text-xs); color: var(--text-muted); font-family: monospace; }
+.swatch-hex { font-size: var(--text-xs); color: var(--text-secondary); font-family: monospace; font-weight: 500; }
+
+/* Subject Pills */
+.subject-pill {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm); font-weight: 600;
+}
+.subject-pill .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+/* ============================================================
+   TYPOGRAPHY SHOWCASE
+   ============================================================ */
+.type-row {
+  display: flex; align-items: baseline; gap: var(--space-6);
+  padding: var(--space-5) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.type-row:last-child { border-bottom: none; }
+.type-meta { width: 140px; flex-shrink: 0; }
+.type-meta .type-label { font-size: var(--text-xs); color: var(--text-muted); font-weight: 500; }
+.type-meta .type-spec { font-size: var(--text-xs); color: var(--brand-primary); font-family: monospace; font-weight: 600; }
+
+/* ============================================================
+   SPACING SHOWCASE
+   ============================================================ */
+.space-item {
+  display: flex; align-items: center; gap: var(--space-4);
+  padding: var(--space-3) 0;
+}
+.space-bar-wrap { flex: 1; height: 12px; background: var(--bg-elevated); border-radius: 2px; overflow: hidden; }
+.space-bar { height: 100%; background: var(--brand-primary); border-radius: 2px; }
+.space-meta { display: flex; gap: var(--space-8); min-width: 160px; }
+.space-meta span { font-size: var(--text-xs); color: var(--text-muted); font-family: monospace; }
+.space-meta strong { font-size: var(--text-xs); font-weight: 600; color: var(--text-primary); font-family: monospace; }
+
+/* ============================================================
+   BUTTONS
+   ============================================================ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: var(--space-2);
+  font-family: var(--font-body);
+  font-weight: 600;
+  border: none; cursor: pointer;
+  text-decoration: none;
+  transition: all var(--transition-fast);
+  outline: none;
+  white-space: nowrap;
+}
+.btn:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 3px; }
+
+/* Sizes */
+.btn-sm  { font-size: var(--text-sm);  padding: 7px 14px;  border-radius: var(--radius-sm);  }
+.btn-md  { font-size: var(--text-sm);  padding: 10px 20px; border-radius: var(--radius-md);  }
+.btn-lg  { font-size: var(--text-base); padding: 14px 28px; border-radius: var(--radius-md);  }
+.btn-xl  { font-size: var(--text-lg);  padding: 16px 36px; border-radius: var(--radius-lg);  }
+
+/* Variants */
+.btn-primary {
+  background: var(--brand-primary);
+  color: #fff;
+  box-shadow: var(--shadow-brand);
+}
+.btn-primary:hover { background: var(--brand-primary-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(61,139,113,0.35); }
+.btn-primary:active { transform: translateY(0); }
+
+.btn-secondary {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1.5px solid var(--border-strong);
+  box-shadow: var(--shadow-sm);
+}
+.btn-secondary:hover { border-color: var(--brand-primary); color: var(--brand-primary); background: var(--brand-primary-light); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+}
+.btn-ghost:hover { background: var(--bg-elevated); color: var(--text-primary); }
+
+.btn-danger {
+  background: var(--error);
+  color: #fff;
+}
+.btn-danger:hover { background: var(--error-text); transform: translateY(-1px); }
+
+.btn-outline-brand {
+  background: var(--brand-primary-light);
+  color: var(--brand-primary);
+  border: 1.5px solid rgba(61,139,113,0.35);
+}
+.btn-outline-brand:hover { background: var(--brand-primary); color: #fff; }
+
+.btn:disabled, .btn.disabled {
+  opacity: 0.42; cursor: not-allowed; pointer-events: none; transform: none !important;
+}
+.btn-icon { width: 36px; height: 36px; padding: 0; border-radius: var(--radius-sm); font-size: 18px; }
+.btn-icon.btn-lg { width: 44px; height: 44px; border-radius: var(--radius-md); }
+
+/* ============================================================
+   INPUTS
+   ============================================================ */
+.input-wrap { display: flex; flex-direction: column; gap: var(--space-2); max-width: 360px; }
+.input-label { font-size: var(--text-sm); font-weight: 600; color: var(--text-primary); }
+.input-hint  { font-size: var(--text-xs); color: var(--text-muted); }
+.input-error-msg { font-size: var(--text-xs); color: var(--error); }
+
+.input-field {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border-default);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  outline: none;
+  width: 100%;
+  transition: all var(--transition-fast);
+  line-height: 1.5;
+}
+.input-field::placeholder { color: var(--text-muted); }
+.input-field:hover { border-color: var(--border-strong); }
+.input-field:focus { border-color: var(--brand-primary); box-shadow: 0 0 0 3px rgba(61,139,113,0.12); }
+
+.input-field.input-error { border-color: var(--error); }
+.input-field.input-error:focus { box-shadow: 0 0 0 3px rgba(224,82,82,0.12); }
+.input-field.input-success { border-color: var(--success); }
+.input-field:disabled { background: var(--bg-elevated); color: var(--text-muted); cursor: not-allowed; }
+
+.input-with-icon { position: relative; }
+.input-with-icon .input-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; pointer-events: none; }
+.input-with-icon .input-field { padding-left: 38px; }
+.input-with-icon .input-icon-right { left: auto; right: 12px; }
+.input-with-icon .input-field.has-right-icon { padding-right: 38px; }
+
+/* Search input */
+.input-search {
+  background: var(--bg-elevated);
+  border-color: transparent;
+  border-radius: var(--radius-full);
+  padding-left: 40px;
+}
+.input-search:focus { background: var(--bg-surface); border-color: var(--brand-primary); box-shadow: 0 0 0 3px rgba(61,139,113,0.12); }
+
+/* Textarea */
+.input-textarea { min-height: 100px; resize: vertical; line-height: var(--leading-relaxed); }
+
+/* Select */
+.input-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239DA3B0' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+/* ============================================================
+   BADGES & CHIPS
+   ============================================================ */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: var(--text-xs); font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  line-height: 1.4;
+}
+.badge-success  { background: var(--success-subtle);  color: var(--success-text); }
+.badge-error    { background: var(--error-subtle);    color: var(--error-text); }
+.badge-warning  { background: var(--warning-subtle);  color: var(--warning-text); }
+.badge-info     { background: var(--info-subtle);     color: var(--info-text); }
+.badge-neutral  { background: var(--bg-elevated);     color: var(--text-secondary); border: 1px solid var(--border-default); }
+.badge-brand    { background: var(--brand-primary-light); color: var(--brand-primary); }
+
+/* Chip — interactive */
+.chip {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  font-size: var(--text-sm); font-weight: 500;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--border-default);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.chip:hover { border-color: var(--brand-primary); color: var(--brand-primary); background: var(--brand-primary-light); }
+.chip.active { border-color: var(--brand-primary); background: var(--brand-primary); color: #fff; }
+.chip-close { font-size: 14px; opacity: 0.6; }
+.chip.active .chip-close { opacity: 0.8; }
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+}
+.card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.card-body { padding: var(--space-6); }
+.card-header { padding: var(--space-4) var(--space-6); border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; }
+.card-footer { padding: var(--space-4) var(--space-6); border-top: 1px solid var(--border-subtle); background: var(--bg-elevated); }
+
+/* Stat Card */
+.stat-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+  display: flex; flex-direction: column; gap: var(--space-3);
+}
+.stat-card-icon {
+  width: 44px; height: 44px;
+  border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+.stat-card-value {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl); font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+}
+.stat-card-label { font-size: var(--text-sm); color: var(--text-muted); }
+.stat-card-delta {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: var(--text-xs); font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+.delta-up   { background: var(--success-subtle); color: var(--success-text); }
+.delta-down { background: var(--error-subtle);   color: var(--error-text); }
+
+/* Course Card */
+.course-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal);
+}
+.course-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-3px); }
+.course-thumb {
+  height: 140px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 40px;
+  position: relative;
+  overflow: hidden;
+}
+.course-thumb::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.15));
+}
+.course-info { padding: var(--space-5); }
+.course-tag  { font-size: var(--text-xs); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+.course-title { font-family: var(--font-display); font-size: var(--text-base); font-weight: 700; color: var(--text-primary); margin: var(--space-1) 0 var(--space-3); line-height: var(--leading-snug); }
+.course-meta  { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-3); }
+.course-meta-item { display: flex; align-items: center; gap: 4px; font-size: var(--text-xs); color: var(--text-muted); }
+.progress-bar { height: 6px; background: var(--bg-elevated); border-radius: var(--radius-full); overflow: hidden; margin-top: var(--space-2); }
+.progress-fill { height: 100%; border-radius: var(--radius-full); background: var(--brand-primary); transition: width 0.6s ease; }
+
+/* ============================================================
+   LEARNING STYLE CARDS — HERO COMPONENT
+   ============================================================ */
+.style-card-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4);
+}
+@media (max-width: 900px) { .style-card-grid { grid-template-columns: repeat(2,1fr); } }
+
+.style-card {
+  background: var(--bg-surface);
+  border: 2px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+}
+.style-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  opacity: 0; transition: opacity var(--transition-fast);
+}
+.style-card-visual::before   { background: var(--style-visual); }
+.style-card-example::before  { background: var(--style-example); }
+.style-card-practical::before{ background: var(--style-practical); }
+.style-card-interactive::before{ background: var(--style-interactive); }
+
+/* Default state */
+.style-card-icon {
+  width: 52px; height: 52px;
+  border-radius: var(--radius-lg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; margin-bottom: var(--space-4);
+  transition: transform var(--transition-normal);
+}
+.style-card-visual .style-card-icon      { background: var(--style-visual-bg);      color: var(--style-visual); }
+.style-card-example .style-card-icon     { background: var(--style-example-bg);     color: var(--style-example); }
+.style-card-practical .style-card-icon   { background: var(--style-practical-bg);   color: var(--style-practical); }
+.style-card-interactive .style-card-icon { background: var(--style-interactive-bg); color: var(--style-interactive); }
+
+.style-card-title {
+  font-family: var(--font-display);
+  font-size: var(--text-base); font-weight: 700;
+  color: var(--text-primary); margin-bottom: var(--space-2);
+}
+.style-card-desc { font-size: var(--text-sm); color: var(--text-secondary); line-height: var(--leading-relaxed); }
+
+.style-check {
+  position: absolute; top: var(--space-4); right: var(--space-4);
+  width: 24px; height: 24px; border-radius: 50%;
+  border: 2px solid var(--border-default);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; color: transparent;
+  transition: all var(--transition-fast);
+  background: var(--bg-surface);
+}
+
+/* Hover state */
+.style-card:hover { transform: translateY(-3px); }
+.style-card-visual:hover   { border-color: var(--style-visual);      box-shadow: 0 8px 24px rgba(108,99,255,0.15); }
+.style-card-example:hover  { border-color: var(--style-example);     box-shadow: 0 8px 24px rgba(245,166,35,0.15); }
+.style-card-practical:hover{ border-color: var(--style-practical);   box-shadow: 0 8px 24px rgba(61,139,113,0.15); }
+.style-card-interactive:hover{ border-color: var(--style-interactive); box-shadow: 0 8px 24px rgba(224,82,82,0.15); }
+
+.style-card:hover::before { opacity: 1; }
+.style-card:hover .style-card-icon { transform: scale(1.08); }
+
+/* Selected state */
+.style-card.selected { transform: translateY(-3px); }
+.style-card-visual.selected   { border-color: var(--style-visual);      background: linear-gradient(135deg, var(--bg-surface) 60%, var(--style-visual-bg));   box-shadow: 0 8px 24px rgba(108,99,255,0.20); }
+.style-card-example.selected  { border-color: var(--style-example);     background: linear-gradient(135deg, var(--bg-surface) 60%, var(--style-example-bg));  box-shadow: 0 8px 24px rgba(245,166,35,0.20); }
+.style-card-practical.selected{ border-color: var(--style-practical);   background: linear-gradient(135deg, var(--bg-surface) 60%, var(--style-practical-bg)); box-shadow: 0 8px 24px rgba(61,139,113,0.20); }
+.style-card-interactive.selected{ border-color: var(--style-interactive); background: linear-gradient(135deg, var(--bg-surface) 60%, var(--style-interactive-bg)); box-shadow: 0 8px 24px rgba(224,82,82,0.20); }
+
+.style-card.selected::before { opacity: 1; }
+
+.style-card-visual.selected .style-check     { border-color: var(--style-visual);      background: var(--style-visual);      color: #fff; }
+.style-card-example.selected .style-check    { border-color: var(--style-example);     background: var(--style-example);     color: #fff; }
+.style-card-practical.selected .style-check  { border-color: var(--style-practical);   background: var(--style-practical);   color: #fff; }
+.style-card-interactive.selected .style-check{ border-color: var(--style-interactive); background: var(--style-interactive); color: #fff; }
+
+/* ============================================================
+   NAVIGATION SIDEBAR
+   ============================================================ */
+.nav-demo {
+  width: 240px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+.nav-user {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.nav-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--brand-primary-light);
+  color: var(--brand-primary);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: var(--text-sm);
+  border: 2px solid rgba(61,139,113,0.2);
+}
+.nav-user-name { font-weight: 600; font-size: var(--text-sm); color: var(--text-primary); }
+.nav-user-role { font-size: var(--text-xs); color: var(--text-muted); }
+.nav-section-label {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-muted);
+  padding: var(--space-4) var(--space-4) var(--space-2);
+}
+.nav-item {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: 10px var(--space-4);
+  font-size: var(--text-sm); font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border-left: 3px solid transparent;
+  text-decoration: none;
+}
+.nav-item:hover { background: var(--bg-elevated); color: var(--text-primary); }
+.nav-item.active {
+  background: var(--brand-primary-light);
+  color: var(--brand-primary);
+  border-left-color: var(--brand-primary);
+  font-weight: 600;
+}
+.nav-item-icon { font-size: 18px; width: 22px; text-align: center; }
+.nav-item-badge {
+  margin-left: auto;
+  font-size: 10px; font-weight: 700;
+  background: var(--brand-primary);
+  color: #fff;
+  padding: 1px 6px; border-radius: var(--radius-full);
+  min-width: 18px; text-align: center;
+}
+
+/* ============================================================
+   TOASTS / ALERTS
+   ============================================================ */
+.toast {
+  display: flex; align-items: flex-start; gap: var(--space-3);
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  border: 1px solid;
+  max-width: 380px;
+  box-shadow: var(--shadow-md);
+  background: var(--bg-surface);
+}
+.toast-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.toast-content { flex: 1; }
+.toast-title { font-size: var(--text-sm); font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+.toast-desc  { font-size: var(--text-xs); color: var(--text-secondary); line-height: var(--leading-relaxed); }
+.toast-close { font-size: 18px; color: var(--text-muted); cursor: pointer; flex-shrink: 0; }
+
+.toast-success { border-color: rgba(46,158,107,0.25); }
+.toast-success .toast-icon { color: var(--success); }
+.toast-error   { border-color: rgba(224,82,82,0.25); }
+.toast-error .toast-icon { color: var(--error); }
+.toast-warning { border-color: rgba(212,134,10,0.25); }
+.toast-warning .toast-icon { color: var(--warning); }
+.toast-info    { border-color: rgba(74,127,193,0.25); }
+.toast-info .toast-icon { color: var(--info); }
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; padding: var(--space-16) var(--space-8);
+  background: var(--bg-surface);
+  border: 1.5px dashed var(--border-default);
+  border-radius: var(--radius-xl);
+}
+.empty-state-icon {
+  width: 72px; height: 72px;
+  background: var(--bg-elevated);
+  border-radius: var(--radius-xl);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; margin-bottom: var(--space-5);
+}
+.empty-state-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl); font-weight: 700;
+  color: var(--text-primary); margin-bottom: var(--space-2);
+}
+.empty-state-desc {
+  font-size: var(--text-sm); color: var(--text-secondary);
+  max-width: 320px; line-height: var(--leading-relaxed);
+  margin-bottom: var(--space-6);
+}
+
+/* ============================================================
+   SKELETON LOADERS
+   ============================================================ */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-elevated) 25%, var(--border-subtle) 50%, var(--bg-elevated) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+.skeleton-text  { height: 16px; border-radius: var(--radius-xs); margin-bottom: var(--space-2); }
+.skeleton-title { height: 24px; border-radius: var(--radius-sm); margin-bottom: var(--space-3); }
+.skeleton-avatar{ border-radius: 50%; }
+.skeleton-thumb { height: 140px; border-radius: var(--radius-md); }
+.skeleton-btn   { height: 40px; border-radius: var(--radius-md); width: 120px; }
+.skeleton-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ============================================================
+   AVATAR
+   ============================================================ */
+.avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--bg-surface);
+  background: var(--brand-primary-light);
+  color: var(--brand-primary);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+}
+.avatar-xs  { width: 24px; height: 24px; font-size: 10px; }
+.avatar-sm  { width: 32px; height: 32px; font-size: 13px; }
+.avatar-md  { width: 44px; height: 44px; font-size: 17px; }
+.avatar-lg  { width: 60px; height: 60px; font-size: 22px; }
+.avatar-xl  { width: 80px; height: 80px; font-size: 30px; }
+.avatar-stack { display: flex; }
+.avatar-stack .avatar { margin-left: -8px; box-shadow: 0 0 0 2px var(--bg-page); }
+.avatar-stack .avatar:first-child { margin-left: 0; }
+
+/* ============================================================
+   PROGRESS & XP
+   ============================================================ */
+.xp-bar-wrap {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-full);
+  height: 10px;
+  overflow: hidden;
+  position: relative;
+}
+.xp-bar {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, var(--brand-primary), #56C99A);
+  position: relative;
+  transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+.xp-bar::after {
+  content: '';
+  position: absolute; right: 0; top: 0; bottom: 0;
+  width: 16px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4));
+  border-radius: var(--radius-full);
+}
+
+/* Circular Progress */
+.circular-progress {
+  width: 80px; height: 80px;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+.circular-progress svg { position: absolute; top: 0; left: 0; transform: rotate(-90deg); }
+.circular-progress-bg   { fill: none; stroke: var(--bg-elevated); stroke-width: 6; }
+.circular-progress-fill { fill: none; stroke: var(--brand-primary); stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 0.8s ease; }
+.circular-progress-text {
+  font-family: var(--font-display);
+  font-size: var(--text-sm); font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   MODAL / DIALOG (preview)
+   ============================================================ */
+.modal-backdrop {
+  background: rgba(28,31,39,0.45);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  display: flex; align-items: center; justify-content: center;
+  min-height: 280px;
+}
+.modal {
+  background: var(--bg-surface);
+  border-radius: var(--radius-xl);
+  width: 100%; max-width: 440px;
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+}
+.modal-header {
+  padding: var(--space-6);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl); font-weight: 700;
+  color: var(--text-primary);
+}
+.modal-body { padding: var(--space-6); }
+.modal-footer {
+  padding: var(--space-4) var(--space-6);
+  border-top: 1px solid var(--border-subtle);
+  display: flex; gap: var(--space-3); justify-content: flex-end;
+  background: var(--bg-elevated);
+}
+
+/* ============================================================
+   TABS
+   ============================================================ */
+.tabs { display: flex; gap: 2px; background: var(--bg-elevated); border-radius: var(--radius-md); padding: 3px; width: fit-content; }
+.tab-item {
+  font-size: var(--text-sm); font-weight: 600;
+  padding: 8px 18px;
+  border-radius: calc(var(--radius-md) - 2px);
+  cursor: pointer; color: var(--text-secondary);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+.tab-item:hover { color: var(--text-primary); }
+.tab-item.active { background: var(--bg-surface); color: var(--text-primary); box-shadow: var(--shadow-sm); }
+
+/* Underline tabs */
+.tabs-underline { display: flex; gap: 0; border-bottom: 2px solid var(--border-default); }
+.tab-underline-item {
+  font-size: var(--text-sm); font-weight: 600;
+  padding: var(--space-3) var(--space-5);
+  cursor: pointer; color: var(--text-secondary);
+  border-bottom: 2px solid transparent; margin-bottom: -2px;
+  transition: all var(--transition-fast);
+}
+.tab-underline-item:hover { color: var(--text-primary); }
+.tab-underline-item.active { color: var(--brand-primary); border-bottom-color: var(--brand-primary); }
+
+/* ============================================================
+   SECTION SEPARATOR / HELPER
+   ============================================================ */
+.ds-subsection { margin-top: var(--space-10); }
+.ds-subsection-title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl); font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--space-6);
+  display: flex; align-items: center; gap: var(--space-3);
+}
+.ds-subsection-title::after {
+  content: '';
+  flex: 1; height: 1px;
+  background: var(--border-subtle);
+}
+.ds-state-label {
+  font-size: var(--text-xs); font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: var(--space-3);
+}
+
+/* ============================================================
+   CODE TOKEN BLOCK
+   ============================================================ */
+.token-block {
+  background: var(--bg-dark);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  overflow-x: auto;
+  box-shadow: var(--shadow-lg);
+}
+.token-block pre {
+  font-family: 'Courier New', monospace;
+  font-size: var(--text-xs);
+  line-height: 1.8;
+  color: #B8C4D6;
+  margin: 0;
+}
+.token-block .t-comment { color: #5C6A7A; }
+.token-block .t-key     { color: #7CBCF8; }
+.token-block .t-val     { color: #98D4A3; }
+.token-block .t-str     { color: #F4B96A; }
+.token-block .t-punc    { color: #6C7A8A; }
+
+/* ============================================================
+   TAILWIND CONFIG
+   ============================================================ */
+.config-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+.config-filename {
+  font-size: var(--text-sm); font-weight: 600;
+  color: var(--text-muted);
+  display: flex; align-items: center; gap: var(--space-2);
+}
+.config-filename .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--warning); }
+
+/* ============================================================
+   LUCIDE ICON UTILITY
+   ============================================================ */
+.ico {
+  display: inline-block;
+  width: 1em; height: 1em;
+  vertical-align: -0.125em;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+.ico-sm { width: 14px; height: 14px; }
+.ico-md { width: 18px; height: 18px; }
+.ico-lg { width: 24px; height: 24px; }
+.ico-xl { width: 32px; height: 32px; }
+
+/* ============================================================
+   MISC
+   ============================================================ */
+.divider { height: 1px; background: var(--border-subtle); margin: var(--space-8) 0; }
+.ds-footer {
+  padding: var(--space-10) 0 var(--space-16);
+  text-align: center;
+  border-top: 1px solid var(--border-default);
+}
+.ds-footer-links { display: flex; justify-content: center; gap: var(--space-6); margin-top: var(--space-3); }
+.ds-footer-links a { font-size: var(--text-sm); color: var(--text-muted); text-decoration: none; }
+.ds-footer-links a:hover { color: var(--brand-primary); }
+.ds-footer p { font-size: var(--text-sm); color: var(--text-muted); }
+</style>
+</head>
+<body>
+
+<!-- ======================================================
+     HEADER
+     ====================================================== -->
+<header class="ds-header">
+  <a class="ds-logo" href="#">
+    <div class="ds-logo-icon"><svg class="ico ico-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+    FlexiStudy
+  </a>
+  <nav class="ds-nav">
+    <a href="#colors">Colors</a>
+    <a href="#typography">Type</a>
+    <a href="#spacing">Spacing</a>
+    <a href="#buttons">Buttons</a>
+    <a href="#inputs">Inputs</a>
+    <a href="#badges">Badges</a>
+    <a href="#cards">Cards</a>
+    <a href="#learning-styles">Learning Styles</a>
+    <a href="#navigation">Nav</a>
+    <a href="#feedback">Feedback</a>
+    <a href="#skeletons">Skeletons</a>
+    <a href="#config">Config</a>
+  </nav>
+  <span class="ds-badge">V2.0 — FIXED</span>
+</header>
+
+<!-- ======================================================
+     HERO
+     ====================================================== -->
+<section class="ds-hero">
+  <div class="ds-container">
+    <div class="ds-hero-eyebrow">
+      <div class="ds-hero-dot"></div>
+      Design System — FlexiStudy Education Platform
+    </div>
+    <h1>Built to scale.<br/><span>Every token. Every state.</span></h1>
+    <p>A warm, human-centric design language for learners. Every color, component, and interaction pattern — documented, tokenized, and ready to ship on both web and mobile.</p>
+    <div class="ds-hero-meta">
+      <div class="ds-hero-stat"><strong>42</strong><span>Design Tokens</span></div>
+      <div class="ds-hero-stat"><strong>18+</strong><span>Components</span></div>
+      <div class="ds-hero-stat"><strong>7</strong><span>Subject Colors</span></div>
+      <div class="ds-hero-stat"><strong>4</strong><span>Learning Styles</span></div>
+    </div>
+  </div>
+</section>
+
+<main>
+
+<!-- ======================================================
+     1. COLORS
+     ====================================================== -->
+<section class="ds-section" id="colors">
+  <div class="ds-container">
+    <div class="ds-section-label">01 — Color System</div>
+    <h2 class="ds-section-title">Color Palette</h2>
+    <p class="ds-section-desc">All colors are defined as CSS variables and Tailwind tokens. Never use raw hex values or default Tailwind color names in components.</p>
+
+    <!-- Brand & Neutrals -->
+    <div class="ds-subsection">
+      <div class="ds-subsection-title">Brand &amp; Backgrounds</div>
+      <div class="swatch-row">
+        <div class="swatch-item">
+          <div class="swatch-dot" style="background:#3D8B71"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Primary Brand</div>
+            <div class="swatch-token">--brand-primary / text-brand-primary</div>
+            <div class="swatch-hex">#3D8B71 — Mint Forest</div>
+          </div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-dot" style="background:#2E6B57"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Brand Dark</div>
+            <div class="swatch-token">--brand-primary-dark / text-brand-dark</div>
+            <div class="swatch-hex">#2E6B57 — Deep Forest</div>
+          </div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-dot" style="background:#EAF5F1; border:1px solid #D6EBE4"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Brand Light</div>
+            <div class="swatch-token">--brand-primary-light / bg-brand-light</div>
+            <div class="swatch-hex">#EAF5F1 — Mint Tint</div>
+          </div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-dot" style="background:#FAF8F4; border:1px solid #E8E4DC"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Page Background</div>
+            <div class="swatch-token">--bg-page / bg-page</div>
+            <div class="swatch-hex">#FAF8F4 — Warm Eggshell</div>
+          </div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-dot" style="background:#FFFFFF; border:1px solid #E8E4DC"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Surface</div>
+            <div class="swatch-token">--bg-surface / bg-surface</div>
+            <div class="swatch-hex">#FFFFFF — Pure White</div>
+          </div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-dot" style="background:#F4F2EE; border:1px solid #E8E4DC"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Elevated</div>
+            <div class="swatch-token">--bg-elevated / bg-elevated</div>
+            <div class="swatch-hex">#F4F2EE — Warm Gray</div>
+          </div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-dot" style="background:#1C1F27"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Deep Text / Dark BG</div>
+            <div class="swatch-token">--bg-dark / --text-primary</div>
+            <div class="swatch-hex">#1C1F27 — Midnight</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Text -->
+    <div class="ds-subsection">
+      <div class="ds-subsection-title">Text Scale</div>
+      <div class="swatch-row">
+        <div class="swatch-item">
+          <div class="swatch-dot" style="background:#1C1F27"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">text-text-primary</div>
+            <div class="swatch-token">--text-primary</div>
+            <div class="swatch-hex">#1C1F27 — Headings, body</div>
+          </div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-dot" style="background:#5C6070"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">text-text-secondary</div>
+            <div class="swatch-token">--text-secondary</div>
+            <div class="swatch-hex">#5C6070 — Subtitles, labels</div>
+          </div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-dot" style="background:#9DA3B0"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">text-text-muted</div>
+            <div class="swatch-token">--text-muted</div>
+            <div class="swatch-hex">#9DA3B0 — Hints, captions</div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding:14px 16px;background:var(--error-subtle);border:1px solid rgba(224,82,82,0.2);border-radius:var(--radius-md);font-size:13px;color:var(--error-text);display:flex;align-items:center;gap:8px">
+        <svg class="ico ico-md" style="flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> <strong>Breaking Change:</strong> Replace all <code>text-slate-900</code> → <code>text-text-primary</code> &nbsp;|&nbsp; <code>text-slate-600</code> → <code>text-text-secondary</code> &nbsp;|&nbsp; <code>text-slate-400/500</code> → <code>text-text-muted</code>
+      </div>
+    </div>
+
+    <!-- Functional -->
+    <div class="ds-subsection">
+      <div class="ds-subsection-title">Functional States</div>
+      <div class="swatch-row">
+        <div class="swatch-item">
+          <div class="swatch-dot" style="background:#2E9E6B"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Success</div>
+            <div class="swatch-token">--success / text-success</div>
+            <div class="swatch-hex">#2E9E6B</div>
+          </div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-dot" style="background:#EAF6F1;border:1px solid #C6E6DB"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Success Subtle</div>
+            <div class="swatch-token">--success-subtle / bg-success-subtle</div>
+            <div class="swatch-hex">#EAF6F1</div>
+          </div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-dot" style="background:#E05252"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Error</div>
+            <div class="swatch-token">--error / text-error</div>
+            <div class="swatch-hex">#E05252</div>
+          </div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-dot" style="background:#FDEEEE;border:1px solid #F5C6C6"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Error Subtle</div>
+            <div class="swatch-token">--error-subtle / bg-error-subtle</div>
+            <div class="swatch-hex">#FDEEEE</div>
+          </div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-dot" style="background:#D4860A"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Warning</div>
+            <div class="swatch-token">--warning / text-warning</div>
+            <div class="swatch-hex">#D4860A</div>
+          </div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-dot" style="background:#FEF4E3;border:1px solid #F5D89A"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Warning Subtle</div>
+            <div class="swatch-token">--warning-subtle / bg-warning-subtle</div>
+            <div class="swatch-hex">#FEF4E3</div>
+          </div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-dot" style="background:#4A7FC1"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Info</div>
+            <div class="swatch-token">--info / text-info</div>
+            <div class="swatch-hex">#4A7FC1</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subjects -->
+    <div class="ds-subsection">
+      <div class="ds-subsection-title">Subject &amp; Category Colors</div>
+      <div class="swatch-row">
+        <div class="swatch-item">
+          <div class="swatch-dot" style="background:#F5A623"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Mathematics</div>
+            <div class="swatch-token">--subject-math / bg-subject-math</div>
+            <div class="swatch-hex">#F5A623 — Amber</div>
+          </div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-dot" style="background:#3D8B71"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Science</div>
+            <div class="swatch-token">--subject-science / bg-subject-science</div>
+            <div class="swatch-hex">#3D8B71 — Forest (Brand)</div>
+          </div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-dot" style="background:#4A7FC1"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Technology</div>
+            <div class="swatch-token">--subject-tech / bg-subject-tech</div>
+            <div class="swatch-hex">#4A7FC1 — Ocean Blue</div>
+          </div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-dot" style="background:#C4714A"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">History</div>
+            <div class="swatch-token">--subject-history / bg-subject-history</div>
+            <div class="swatch-hex">#C4714A — Terracotta</div>
+          </div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-dot" style="background:#5BA3A0"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Geography</div>
+            <div class="swatch-token">--subject-geo / bg-subject-geo</div>
+            <div class="swatch-hex">#5BA3A0 — Teal</div>
+          </div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-dot" style="background:#A06CB0"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">English</div>
+            <div class="swatch-token">--subject-english / bg-subject-english</div>
+            <div class="swatch-hex">#A06CB0 — Soft Purple</div>
+          </div>
+        </div>
+        <div class="swatch-item">
+          <div class="swatch-dot" style="background:#D4860A"></div>
+          <div class="swatch-info">
+            <div class="swatch-name">Economics</div>
+            <div class="swatch-token">--subject-econ / bg-subject-econ</div>
+            <div class="swatch-hex">#D4860A — Gold</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Subject Pills Preview -->
+      <div class="flex-row" style="margin-top:var(--space-5);">
+        <span class="subject-pill" style="background:var(--subject-math-bg);color:var(--subject-math-txt)">
+          <span class="dot" style="background:var(--subject-math)"></span>Mathematics
+        </span>
+        <span class="subject-pill" style="background:var(--subject-science-bg);color:var(--subject-science-txt)">
+          <span class="dot" style="background:var(--subject-science)"></span>Science
+        </span>
+        <span class="subject-pill" style="background:var(--subject-tech-bg);color:var(--subject-tech-txt)">
+          <span class="dot" style="background:var(--subject-tech)"></span>Technology
+        </span>
+        <span class="subject-pill" style="background:var(--subject-history-bg);color:var(--subject-history-txt)">
+          <span class="dot" style="background:var(--subject-history)"></span>History
+        </span>
+        <span class="subject-pill" style="background:var(--subject-geo-bg);color:var(--subject-geo-txt)">
+          <span class="dot" style="background:var(--subject-geo)"></span>Geography
+        </span>
+        <span class="subject-pill" style="background:var(--subject-english-bg);color:var(--subject-english-txt)">
+          <span class="dot" style="background:var(--subject-english)"></span>English
+        </span>
+        <span class="subject-pill" style="background:var(--subject-econ-bg);color:var(--subject-econ-txt)">
+          <span class="dot" style="background:var(--subject-econ)"></span>Economics
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================
+     2. TYPOGRAPHY
+     ====================================================== -->
+<section class="ds-section" id="typography">
+  <div class="ds-container">
+    <div class="ds-section-label">02 — Typography</div>
+    <h2 class="ds-section-title">Type Scale</h2>
+    <p class="ds-section-desc">Plus Jakarta Sans for all display and heading text. Inter for all body and UI text. Never mix or override.</p>
+
+    <div class="ds-subsection">
+      <div class="ds-subsection-title">Display — Plus Jakarta Sans</div>
+      <div class="type-row">
+        <div class="type-meta"><div class="type-label">H1 / Display</div><div class="type-spec">48px · 800 · 1.2</div></div>
+        <div style="font-family:var(--font-display);font-size:48px;font-weight:800;line-height:1.2;color:var(--text-primary)">The future of learning.</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta"><div class="type-label">H2 / Section</div><div class="type-spec">32px · 700 · 1.25</div></div>
+        <div style="font-family:var(--font-display);font-size:32px;font-weight:700;line-height:1.25;color:var(--text-primary)">Curated for your growth.</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta"><div class="type-label">H3 / Card Title</div><div class="type-spec">24px · 700 · 1.3</div></div>
+        <div style="font-family:var(--font-display);font-size:24px;font-weight:700;line-height:1.3;color:var(--text-primary)">Start your journey today.</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta"><div class="type-label">H4 / Subheading</div><div class="type-spec">20px · 700 · 1.35</div></div>
+        <div style="font-family:var(--font-display);font-size:20px;font-weight:700;line-height:1.35;color:var(--text-primary)">Master every concept, one step at a time.</div>
+      </div>
+    </div>
+
+    <div class="ds-subsection">
+      <div class="ds-subsection-title">Body — Inter</div>
+      <div class="type-row">
+        <div class="type-meta"><div class="type-label">Body Large</div><div class="type-spec">18px · 400 · 1.65</div></div>
+        <div style="font-size:18px;line-height:1.65;color:var(--text-primary);max-width:600px">FlexiStudy adapts to your learning pace, providing a seamless educational experience tailored to how your mind works best across all your devices.</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta"><div class="type-label">Body Medium</div><div class="type-spec">16px · 400 · 1.5</div></div>
+        <div style="font-size:16px;line-height:1.5;color:var(--text-secondary);max-width:600px">Our platform supports over 500 subjects, ranging from quantum physics to contemporary digital art movements.</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta"><div class="type-label">Body Small</div><div class="type-spec">14px · 400 · 1.5</div></div>
+        <div style="font-size:14px;line-height:1.5;color:var(--text-secondary)">Use this for supporting text, helper messages, and secondary information in cards.</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta"><div class="type-label">Caption</div><div class="type-spec">12px · 400 · 1.4</div></div>
+        <div style="font-size:12px;color:var(--text-muted)">Last updated: October 2023 · System status: Active</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta"><div class="type-label">Label / Tag</div><div class="type-spec">11px · 700 · letter-spacing</div></div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted)">Course Category · 12 Lessons</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================
+     3. SPACING
+     ====================================================== -->
+<section class="ds-section" id="spacing">
+  <div class="ds-container">
+    <div class="ds-section-label">03 — Spacing &amp; Layout</div>
+    <h2 class="ds-section-title">Spacing Scale</h2>
+    <p class="ds-section-desc">Strict 4px base grid. All margins, padding, and component heights must be multiples of 4px.</p>
+
+    <div style="max-width:600px">
+      <div class="space-item"><div class="space-meta"><strong>space-1</strong><span>4px</span></div><div class="space-bar-wrap"><div class="space-bar" style="width:4px"></div></div></div>
+      <div class="space-item"><div class="space-meta"><strong>space-2</strong><span>8px</span></div><div class="space-bar-wrap"><div class="space-bar" style="width:8px"></div></div></div>
+      <div class="space-item"><div class="space-meta"><strong>space-3</strong><span>12px</span></div><div class="space-bar-wrap"><div class="space-bar" style="width:12px"></div></div></div>
+      <div class="space-item"><div class="space-meta"><strong>space-4</strong><span>16px</span></div><div class="space-bar-wrap"><div class="space-bar" style="width:20px"></div></div></div>
+      <div class="space-item"><div class="space-meta"><strong>space-5</strong><span>20px</span></div><div class="space-bar-wrap"><div class="space-bar" style="width:28px"></div></div></div>
+      <div class="space-item"><div class="space-meta"><strong>space-6</strong><span>24px</span></div><div class="space-bar-wrap"><div class="space-bar" style="width:40px"></div></div></div>
+      <div class="space-item"><div class="space-meta"><strong>space-8</strong><span>32px</span></div><div class="space-bar-wrap"><div class="space-bar" style="width:60px"></div></div></div>
+      <div class="space-item"><div class="space-meta"><strong>space-10</strong><span>40px</span></div><div class="space-bar-wrap"><div class="space-bar" style="width:80px"></div></div></div>
+      <div class="space-item"><div class="space-meta"><strong>space-12</strong><span>48px</span></div><div class="space-bar-wrap"><div class="space-bar" style="width:110px"></div></div></div>
+      <div class="space-item"><div class="space-meta"><strong>space-16</strong><span>64px</span></div><div class="space-bar-wrap"><div class="space-bar" style="width:160px"></div></div></div>
+    </div>
+
+    <div class="ds-subsection">
+      <div class="ds-subsection-title">Border Radii</div>
+      <div class="flex-row" style="align-items:flex-end;gap:var(--space-6)">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:var(--space-2)">
+          <div style="width:40px;height:40px;background:var(--brand-primary);border-radius:var(--radius-xs)"></div>
+          <div style="font-size:11px;color:var(--text-muted);font-weight:600">4px<br/>xs</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:var(--space-2)">
+          <div style="width:48px;height:48px;background:var(--brand-primary);border-radius:var(--radius-sm)"></div>
+          <div style="font-size:11px;color:var(--text-muted);font-weight:600">8px<br/>sm</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:var(--space-2)">
+          <div style="width:56px;height:56px;background:var(--brand-primary);border-radius:var(--radius-md)"></div>
+          <div style="font-size:11px;color:var(--text-muted);font-weight:600">12px<br/>md</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:var(--space-2)">
+          <div style="width:64px;height:64px;background:var(--brand-primary);border-radius:var(--radius-lg)"></div>
+          <div style="font-size:11px;color:var(--text-muted);font-weight:600">16px<br/>lg</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:var(--space-2)">
+          <div style="width:72px;height:72px;background:var(--brand-primary);border-radius:var(--radius-xl)"></div>
+          <div style="font-size:11px;color:var(--text-muted);font-weight:600">24px<br/>xl</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:var(--space-2)">
+          <div style="width:80px;height:40px;background:var(--brand-primary);border-radius:var(--radius-full)"></div>
+          <div style="font-size:11px;color:var(--text-muted);font-weight:600">9999px<br/>full</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================
+     4. BUTTONS
+     ====================================================== -->
+<section class="ds-section" id="buttons">
+  <div class="ds-container">
+    <div class="ds-section-label">04 — Buttons</div>
+    <h2 class="ds-section-title">Button System</h2>
+    <p class="ds-section-desc">Five variants, four sizes, icon support, and disabled states. Never build a custom button outside this system.</p>
+
+    <div class="ds-subsection">
+      <div class="ds-subsection-title">Variants</div>
+      <div class="flex-row" style="margin-bottom:var(--space-2)">
+        <div class="ds-state-label" style="width:100%">DEFAULT</div>
+      </div>
+      <div class="flex-row">
+        <button class="btn btn-md btn-primary">Primary</button>
+        <button class="btn btn-md btn-secondary">Secondary</button>
+        <button class="btn btn-md btn-ghost">Ghost</button>
+        <button class="btn btn-md btn-danger">Danger</button>
+        <button class="btn btn-md btn-outline-brand">Brand Outline</button>
+      </div>
+      <div class="flex-row" style="margin-top:var(--space-6);margin-bottom:var(--space-2)">
+        <div class="ds-state-label" style="width:100%">DISABLED</div>
+      </div>
+      <div class="flex-row">
+        <button class="btn btn-md btn-primary disabled">Primary</button>
+        <button class="btn btn-md btn-secondary disabled">Secondary</button>
+        <button class="btn btn-md btn-ghost disabled">Ghost</button>
+        <button class="btn btn-md btn-danger disabled">Danger</button>
+      </div>
+    </div>
+
+    <div class="ds-subsection">
+      <div class="ds-subsection-title">Sizes</div>
+      <div class="flex-row" style="align-items:flex-end">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:var(--space-2)">
+          <button class="btn btn-sm btn-primary">Small</button>
+          <span style="font-size:11px;color:var(--text-muted);font-weight:600">sm · 30px</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:var(--space-2)">
+          <button class="btn btn-md btn-primary">Medium</button>
+          <span style="font-size:11px;color:var(--text-muted);font-weight:600">md · 40px</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:var(--space-2)">
+          <button class="btn btn-lg btn-primary">Large</button>
+          <span style="font-size:11px;color:var(--text-muted);font-weight:600">lg · 48px</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:var(--space-2)">
+          <button class="btn btn-xl btn-primary">Extra Large</button>
+          <span style="font-size:11px;color:var(--text-muted);font-weight:600">xl · 56px</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ds-subsection">
+      <div class="ds-subsection-title">With Icons + Icon Only</div>
+      <div class="flex-row">
+        <button class="btn btn-md btn-primary"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> Start Learning</button>
+        <button class="btn btn-md btn-secondary"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> Attach File</button>
+        <button class="btn btn-md btn-outline-brand"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg> Generate with AI</button>
+        <button class="btn btn-md btn-ghost"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> Back</button>
+        <button class="btn btn-icon btn-md btn-primary"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
+        <button class="btn btn-icon btn-md btn-secondary"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg></button>
+        <button class="btn btn-icon btn-md btn-ghost"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================
+     5. INPUTS
+     ====================================================== -->
+<section class="ds-section" id="inputs">
+  <div class="ds-container">
+    <div class="ds-section-label">05 — Form Inputs</div>
+    <h2 class="ds-section-title">Input Fields</h2>
+    <p class="ds-section-desc">Consistent form controls with all interactive states. Never style inputs inline — use these classes.</p>
+
+    <div class="grid-3" style="gap:var(--space-8);align-items:start">
+      <!-- Default -->
+      <div class="flex-col">
+        <div class="ds-state-label">DEFAULT</div>
+        <div class="input-wrap" style="max-width:100%">
+          <label class="input-label">Full Name</label>
+          <input class="input-field" type="text" placeholder="Enter your name" />
+          <span class="input-hint">This will appear on your profile</span>
+        </div>
+      </div>
+      <!-- Focus (simulated) -->
+      <div class="flex-col">
+        <div class="ds-state-label">FOCUS</div>
+        <div class="input-wrap" style="max-width:100%">
+          <label class="input-label">Email Address</label>
+          <input class="input-field" type="email" value="student@school.edu" style="border-color:var(--brand-primary);box-shadow:0 0 0 3px rgba(61,139,113,0.12);" />
+          <span class="input-hint">Used for login and notifications</span>
+        </div>
+      </div>
+      <!-- Error -->
+      <div class="flex-col">
+        <div class="ds-state-label">ERROR</div>
+        <div class="input-wrap" style="max-width:100%">
+          <label class="input-label">Password</label>
+          <input class="input-field input-error" type="password" value="abc" />
+          <span class="input-error-msg"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> Password must be at least 8 characters</span>
+        </div>
+      </div>
+      <!-- Success -->
+      <div class="flex-col">
+        <div class="ds-state-label">SUCCESS</div>
+        <div class="input-wrap" style="max-width:100%">
+          <label class="input-label">Username</label>
+          <input class="input-field input-success" type="text" value="@flexilearner" />
+          <span style="font-size:var(--text-xs);color:var(--success)"><svg class="ico" style="vertical-align:-2px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Username is available</span>
+        </div>
+      </div>
+      <!-- Disabled -->
+      <div class="flex-col">
+        <div class="ds-state-label">DISABLED</div>
+        <div class="input-wrap" style="max-width:100%">
+          <label class="input-label" style="opacity:.5">School ID</label>
+          <input class="input-field" type="text" value="STU-2024-0042" disabled />
+          <span class="input-hint" style="opacity:.5">Auto-assigned by system</span>
+        </div>
+      </div>
+      <!-- Search -->
+      <div class="flex-col">
+        <div class="ds-state-label">SEARCH VARIANT</div>
+        <div class="input-wrap" style="max-width:100%">
+          <label class="input-label">Search</label>
+          <div class="input-with-icon">
+            <span class="input-icon"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span>
+            <input class="input-field input-search" type="search" placeholder="Search courses, topics..." />
+          </div>
+        </div>
+      </div>
+      <!-- Textarea -->
+      <div class="flex-col" style="grid-column:span 2">
+        <div class="ds-state-label">TEXTAREA</div>
+        <div class="input-wrap" style="max-width:100%">
+          <label class="input-label">Study Note</label>
+          <textarea class="input-field input-textarea" placeholder="Write your notes here..."></textarea>
+          <span class="input-hint">Supports markdown formatting</span>
+        </div>
+      </div>
+      <!-- Select -->
+      <div class="flex-col">
+        <div class="ds-state-label">SELECT</div>
+        <div class="input-wrap" style="max-width:100%">
+          <label class="input-label">Subject</label>
+          <select class="input-field input-select">
+            <option value="">Choose subject...</option>
+            <option>Mathematics</option>
+            <option>Science</option>
+            <option>Technology</option>
+            <option>History</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================
+     6. BADGES & CHIPS
+     ====================================================== -->
+<section class="ds-section" id="badges">
+  <div class="ds-container">
+    <div class="ds-section-label">06 — Badges &amp; Chips</div>
+    <h2 class="ds-section-title">Status Badges &amp; Interactive Chips</h2>
+    <p class="ds-section-desc">Badges are read-only status indicators. Chips are interactive and support selected states.</p>
+
+    <div class="ds-subsection">
+      <div class="ds-subsection-title">Status Badges</div>
+      <div class="flex-row">
+        <span class="badge badge-success"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Completed</span>
+        <span class="badge badge-error"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg> Failed</span>
+        <span class="badge badge-warning"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg> Pending</span>
+        <span class="badge badge-info"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg> In Progress</span>
+        <span class="badge badge-neutral">Draft</span>
+        <span class="badge badge-brand"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg> AI Generated</span>
+        <span class="badge badge-success"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg> Streak: 7 days</span>
+        <span class="badge badge-warning"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Due Soon</span>
+        <span class="badge badge-info"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg> New Lesson</span>
+      </div>
+    </div>
+
+    <div class="ds-subsection">
+      <div class="ds-subsection-title">Interactive Chips — Filter &amp; Multi-select</div>
+      <div class="flex-row">
+        <span class="chip active">All Subjects</span>
+        <span class="chip">Mathematics</span>
+        <span class="chip">Science</span>
+        <span class="chip">Technology</span>
+        <span class="chip">History</span>
+        <span class="chip">English</span>
+      </div>
+      <div class="flex-row" style="margin-top:var(--space-4)">
+        <span class="chip active"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></svg> Video <span class="chip-close"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span></span>
+        <span class="chip"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg> Article</span>
+        <span class="chip"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" x2="10" y1="11" y2="11"/><line x1="8" x2="8" y1="9" y2="13"/><line x1="15" x2="15.01" y1="12" y2="12"/><line x1="18" x2="18.01" y1="10" y2="10"/><path d="M17.32 5H6.68a4 4 0 0 0-3.978 3.59c-.006.052-.01.101-.017.152C2.604 9.416 2 14.456 2 16a3 3 0 0 0 3 3c1 0 1.5-.5 2-1l1.414-1.414A2 2 0 0 1 9.828 16h4.344a2 2 0 0 1 1.414.586L17 18c.5.5 1 1 2 1a3 3 0 0 0 3-3c0-1.545-.604-6.584-.685-7.258-.007-.05-.011-.1-.017-.151A4 4 0 0 0 17.32 5z"/></svg> Quiz</span>
+        <span class="chip active"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Practice <span class="chip-close"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></span></span>
+        <span class="chip"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg> Flashcards</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================
+     7. CARDS
+     ====================================================== -->
+<section class="ds-section" id="cards">
+  <div class="ds-container">
+    <div class="ds-section-label">07 — Cards</div>
+    <h2 class="ds-section-title">Card Components</h2>
+    <p class="ds-section-desc">Stat cards, course cards, and generic cards. All cards use the same shadow and radius system.</p>
+
+    <!-- Stat Cards -->
+    <div class="ds-subsection">
+      <div class="ds-subsection-title">Stat Cards — Teacher Dashboard</div>
+      <div class="grid-4">
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:var(--brand-primary-light)"><svg class="ico ico-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+          <div>
+            <div class="stat-card-value">2,847</div>
+            <div class="stat-card-label">Total Students</div>
+          </div>
+          <span class="stat-card-delta delta-up">↑ +12.4%</span>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:var(--info-subtle)"><svg class="ico ico-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg></div>
+          <div>
+            <div class="stat-card-value">78%</div>
+            <div class="stat-card-label">Avg Completion</div>
+          </div>
+          <span class="stat-card-delta delta-up">↑ +4.2%</span>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:var(--warning-subtle)"><svg class="ico ico-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+          <div>
+            <div class="stat-card-value">142</div>
+            <div class="stat-card-label">Active Now</div>
+          </div>
+          <span class="stat-card-delta delta-down">↓ −3.1%</span>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-icon" style="background:var(--subject-english-bg)"><svg class="ico ico-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+          <div>
+            <div class="stat-card-value">94%</div>
+            <div class="stat-card-label">Avg Score</div>
+          </div>
+          <span class="stat-card-delta delta-up">↑ +1.8%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Course Cards -->
+    <div class="ds-subsection">
+      <div class="ds-subsection-title">Course Cards</div>
+      <div class="grid-3">
+        <div class="course-card">
+          <div class="course-thumb" style="background:linear-gradient(135deg,var(--subject-math-bg),#FDECC8)"><svg class="ico ico-xl" viewBox="0 0 24 24" fill="none" stroke="var(--subject-math-txt)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 7V4H6l6 8-6 8h12v-3"/></svg></div>
+          <div class="course-info">
+            <div class="course-tag" style="color:var(--subject-math-txt)">Mathematics</div>
+            <div class="course-title">Advanced Algebra &amp; Functions</div>
+            <div class="course-meta">
+              <span class="course-meta-item"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg> 24 lessons</span>
+              <span class="course-meta-item"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 6.5 hrs</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+              <span style="font-size:11px;font-weight:600;color:var(--text-muted)">Progress</span>
+              <span style="font-size:11px;font-weight:700;color:var(--subject-math-txt)">68%</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:68%;background:var(--subject-math)"></div></div>
+          </div>
+        </div>
+        <div class="course-card">
+          <div class="course-thumb" style="background:linear-gradient(135deg,var(--subject-science-bg),#C3E8DC)"><svg class="ico ico-xl" viewBox="0 0 24 24" fill="none" stroke="var(--subject-science-txt)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2v17.5c0 1.4-1.1 2.5-2.5 2.5h0c-1.4 0-2.5-1.1-2.5-2.5V2"/><path d="M8.5 2h7"/><path d="M14.5 16h-5"/></svg></div>
+          <div class="course-info">
+            <div class="course-tag" style="color:var(--subject-science-txt)">Science</div>
+            <div class="course-title">Cell Biology &amp; Genetics</div>
+            <div class="course-meta">
+              <span class="course-meta-item"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg> 18 lessons</span>
+              <span class="course-meta-item"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 4.2 hrs</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+              <span style="font-size:11px;font-weight:600;color:var(--text-muted)">Progress</span>
+              <span style="font-size:11px;font-weight:700;color:var(--subject-science-txt)">100%</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--subject-science)"></div></div>
+          </div>
+        </div>
+        <div class="course-card">
+          <div class="course-thumb" style="background:linear-gradient(135deg,var(--subject-tech-bg),#C5D8F0)"><svg class="ico ico-xl" viewBox="0 0 24 24" fill="none" stroke="var(--subject-tech-txt)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg></div>
+          <div class="course-info">
+            <div class="course-tag" style="color:var(--subject-tech-txt)">Technology</div>
+            <div class="course-title">Python for Data Analysis</div>
+            <div class="course-meta">
+              <span class="course-meta-item"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg> 32 lessons</span>
+              <span class="course-meta-item"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> 9.0 hrs</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+              <span style="font-size:11px;font-weight:600;color:var(--text-muted)">Progress</span>
+              <span style="font-size:11px;font-weight:700;color:var(--subject-tech-txt)">23%</span>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width:23%;background:var(--subject-tech)"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress Components -->
+    <div class="ds-subsection">
+      <div class="ds-subsection-title">Progress &amp; XP Components</div>
+      <div class="grid-2" style="align-items:start">
+        <div style="background:var(--bg-surface);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:var(--space-6);box-shadow:var(--shadow-sm)">
+          <div style="font-family:var(--font-display);font-weight:700;font-size:var(--text-base);margin-bottom:var(--space-4)">XP Progress Bar</div>
+          <div style="display:flex;justify-content:space-between;font-size:var(--text-xs);margin-bottom:var(--space-2)">
+            <span style="font-weight:600;color:var(--text-secondary)">Level 12 — Explorer</span>
+            <span style="font-weight:700;color:var(--brand-primary)">720 / 1000 XP</span>
+          </div>
+          <div class="xp-bar-wrap" style="height:14px"><div class="xp-bar" style="width:72%"></div></div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:var(--space-2)">280 XP to next level</div>
+        </div>
+        <div style="background:var(--bg-surface);border:1px solid var(--border-default);border-radius:var(--radius-lg);padding:var(--space-6);box-shadow:var(--shadow-sm);display:flex;gap:var(--space-6);align-items:center">
+          <div style="font-family:var(--font-display);font-weight:700;font-size:var(--text-base);flex:1">Circular Progress</div>
+          <div style="display:flex;gap:var(--space-5)">
+            <div class="circular-progress">
+              <svg width="80" height="80" viewBox="0 0 80 80">
+                <circle class="circular-progress-bg" cx="40" cy="40" r="32"/>
+                <circle class="circular-progress-fill" cx="40" cy="40" r="32" stroke-dasharray="201" stroke-dashoffset="54"/>
+              </svg>
+              <div class="circular-progress-text">73%</div>
+            </div>
+            <div class="circular-progress">
+              <svg width="80" height="80" viewBox="0 0 80 80">
+                <circle class="circular-progress-bg" cx="40" cy="40" r="32"/>
+                <circle class="circular-progress-fill" cx="40" cy="40" r="32" stroke-dasharray="201" stroke-dashoffset="160" stroke="var(--subject-math)"/>
+              </svg>
+              <div class="circular-progress-text">20%</div>
+            </div>
+            <div class="circular-progress">
+              <svg width="80" height="80" viewBox="0 0 80 80">
+                <circle class="circular-progress-bg" cx="40" cy="40" r="32"/>
+                <circle class="circular-progress-fill" cx="40" cy="40" r="32" stroke-dasharray="201" stroke-dashoffset="0" stroke="var(--success)"/>
+              </svg>
+              <div class="circular-progress-text">100%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Avatar -->
+    <div class="ds-subsection">
+      <div class="ds-subsection-title">Avatars &amp; Stack</div>
+      <div class="flex-row" style="align-items:flex-end;gap:var(--space-6)">
+        <div class="flex-col" style="align-items:center;gap:var(--space-2)">
+          <div class="avatar avatar-xs">A</div>
+          <span style="font-size:11px;color:var(--text-muted)">xs 24px</span>
+        </div>
+        <div class="flex-col" style="align-items:center;gap:var(--space-2)">
+          <div class="avatar avatar-sm">B</div>
+          <span style="font-size:11px;color:var(--text-muted)">sm 32px</span>
+        </div>
+        <div class="flex-col" style="align-items:center;gap:var(--space-2)">
+          <div class="avatar avatar-md">CD</div>
+          <span style="font-size:11px;color:var(--text-muted)">md 44px</span>
+        </div>
+        <div class="flex-col" style="align-items:center;gap:var(--space-2)">
+          <div class="avatar avatar-lg">EF</div>
+          <span style="font-size:11px;color:var(--text-muted)">lg 60px</span>
+        </div>
+        <div class="flex-col" style="align-items:center;gap:var(--space-2)">
+          <div class="avatar avatar-xl">GH</div>
+          <span style="font-size:11px;color:var(--text-muted)">xl 80px</span>
+        </div>
+        <div class="flex-col" style="align-items:center;gap:var(--space-2)">
+          <div class="avatar-stack">
+            <div class="avatar avatar-md" style="background:var(--subject-math-bg);color:var(--subject-math-txt)">A</div>
+            <div class="avatar avatar-md" style="background:var(--subject-tech-bg);color:var(--subject-tech-txt)">B</div>
+            <div class="avatar avatar-md" style="background:var(--subject-english-bg);color:var(--subject-english-txt)">C</div>
+            <div class="avatar avatar-md" style="background:var(--bg-elevated);color:var(--text-secondary);font-size:12px">+4</div>
+          </div>
+          <span style="font-size:11px;color:var(--text-muted)">Stack</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================
+     8. LEARNING STYLE CARDS — HERO COMPONENT
+     ====================================================== -->
+<section class="ds-section" id="learning-styles">
+  <div class="ds-container">
+    <div class="ds-section-label">08 — Learning Style Selector</div>
+    <h2 class="ds-section-title">Learning Style Cards</h2>
+    <p class="ds-section-desc">The primary interaction for PS-4 and PS-1 flows. Four cards, three states each. Click to toggle selected state.</p>
+
+    <div class="ds-subsection">
+      <div class="ds-subsection-title">Default State — No selection</div>
+      <div class="style-card-grid">
+        <div class="style-card style-card-visual">
+          <div class="style-check"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+          <div class="style-card-icon"><svg class="ico ico-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div>
+          <div class="style-card-title">Visual Learner</div>
+          <div class="style-card-desc">I learn best through diagrams, charts, images, and visual representations.</div>
+        </div>
+        <div class="style-card style-card-example">
+          <div class="style-check"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+          <div class="style-card-icon"><svg class="ico ico-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg></div>
+          <div class="style-card-title">By Example</div>
+          <div class="style-card-desc">I understand concepts better when I see real-world examples and case studies.</div>
+        </div>
+        <div class="style-card style-card-practical">
+          <div class="style-check"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+          <div class="style-card-icon"><svg class="ico ico-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+          <div class="style-card-title">Practical Doer</div>
+          <div class="style-card-desc">I learn by doing — exercises, projects, and hands-on practice are key for me.</div>
+        </div>
+        <div class="style-card style-card-interactive">
+          <div class="style-check"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+          <div class="style-card-icon"><svg class="ico ico-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+          <div class="style-card-title">Interactive</div>
+          <div class="style-card-desc">I thrive with quizzes, challenges, games, and competitive learning formats.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ds-subsection">
+      <div class="ds-subsection-title">Selected State — Click to interact below</div>
+      <div class="style-card-grid" id="interactive-style-grid">
+        <div class="style-card style-card-visual selected" onclick="toggleStyle(this)">
+          <div class="style-check"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+          <div class="style-card-icon"><svg class="ico ico-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div>
+          <div class="style-card-title">Visual Learner</div>
+          <div class="style-card-desc">I learn best through diagrams, charts, images, and visual representations.</div>
+        </div>
+        <div class="style-card style-card-example" onclick="toggleStyle(this)">
+          <div class="style-check"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+          <div class="style-card-icon"><svg class="ico ico-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg></div>
+          <div class="style-card-title">By Example</div>
+          <div class="style-card-desc">I understand concepts better when I see real-world examples and case studies.</div>
+        </div>
+        <div class="style-card style-card-practical" onclick="toggleStyle(this)">
+          <div class="style-check"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+          <div class="style-card-icon"><svg class="ico ico-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+          <div class="style-card-title">Practical Doer</div>
+          <div class="style-card-desc">I learn by doing — exercises, projects, and hands-on practice are key for me.</div>
+        </div>
+        <div class="style-card style-card-interactive" onclick="toggleStyle(this)">
+          <div class="style-check"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+          <div class="style-card-icon"><svg class="ico ico-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div>
+          <div class="style-card-title">Interactive</div>
+          <div class="style-card-desc">I thrive with quizzes, challenges, games, and competitive learning formats.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================
+     9. NAVIGATION SIDEBAR
+     ====================================================== -->
+<section class="ds-section" id="navigation">
+  <div class="ds-container">
+    <div class="ds-section-label">09 — Navigation</div>
+    <h2 class="ds-section-title">Sidebar Navigation</h2>
+    <p class="ds-section-desc">Used in the web teacher dashboard. Student mobile app uses bottom tab navigation (Flutter).</p>
+
+    <div class="grid-2" style="align-items:start;max-width:720px">
+      <!-- Student Nav -->
+      <div>
+        <div class="ds-state-label" style="margin-bottom:var(--space-3)">STUDENT — WEB SIDEBAR</div>
+        <div class="nav-demo">
+          <div class="nav-user">
+            <div class="nav-avatar">PK</div>
+            <div>
+              <div class="nav-user-name">Priya Kulkarni</div>
+              <div class="nav-user-role">Grade 10 · Science</div>
+            </div>
+          </div>
+          <div class="nav-section-label">Learn</div>
+          <a class="nav-item active"><span class="nav-item-icon"><svg class="ico ico-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span> Dashboard</a>
+          <a class="nav-item"><span class="nav-item-icon"><svg class="ico ico-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span> My Courses <span class="nav-item-badge">3</span></a>
+          <a class="nav-item"><span class="nav-item-icon"><svg class="ico ico-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span> Practice</a>
+          <a class="nav-item"><span class="nav-item-icon"><svg class="ico ico-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span> Flashcards</a>
+          <div class="nav-section-label">Progress</div>
+          <a class="nav-item"><span class="nav-item-icon"><svg class="ico ico-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg></span> Analytics</a>
+          <a class="nav-item"><span class="nav-item-icon"><svg class="ico ico-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg></span> Achievements <span class="nav-item-badge">2</span></a>
+          <a class="nav-item"><span class="nav-item-icon"><svg class="ico ico-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></span> Streaks</a>
+          <div class="nav-section-label">Account</div>
+          <a class="nav-item"><span class="nav-item-icon"><svg class="ico ico-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span> Settings</a>
+        </div>
+      </div>
+      <!-- Teacher Nav -->
+      <div>
+        <div class="ds-state-label" style="margin-bottom:var(--space-3)">TEACHER — WEB SIDEBAR</div>
+        <div class="nav-demo">
+          <div class="nav-user">
+            <div class="nav-avatar" style="background:var(--info-subtle);color:var(--info);border-color:rgba(74,127,193,0.2)">RS</div>
+            <div>
+              <div class="nav-user-name">Rohit Sharma</div>
+              <div class="nav-user-role">Teacher · Mathematics</div>
+            </div>
+          </div>
+          <div class="nav-section-label">Classroom</div>
+          <a class="nav-item active"><span class="nav-item-icon"><svg class="ico ico-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg></span> Overview</a>
+          <a class="nav-item"><span class="nav-item-icon"><svg class="ico ico-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Students <span class="nav-item-badge">142</span></a>
+          <a class="nav-item"><span class="nav-item-icon"><svg class="ico ico-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg></span> Assignments</a>
+          <a class="nav-item"><span class="nav-item-icon"><svg class="ico ico-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg></span> AI Tools</a>
+          <div class="nav-section-label">Content</div>
+          <a class="nav-item"><span class="nav-item-icon"><svg class="ico ico-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span> Courses</a>
+          <a class="nav-item"><span class="nav-item-icon"><svg class="ico ico-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg></span> Question Bank</a>
+          <div class="nav-section-label">More</div>
+          <a class="nav-item"><span class="nav-item-icon"><svg class="ico ico-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></span> Settings</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="ds-subsection">
+      <div class="ds-subsection-title">Tabs</div>
+      <div class="flex-col" style="gap:var(--space-6)">
+        <div>
+          <div class="ds-state-label">PILL TABS (for cards/panels)</div>
+          <div class="tabs">
+            <div class="tab-item active">Overview</div>
+            <div class="tab-item">Lessons</div>
+            <div class="tab-item">Practice</div>
+            <div class="tab-item">Discussion</div>
+          </div>
+        </div>
+        <div>
+          <div class="ds-state-label">UNDERLINE TABS (for page sections)</div>
+          <div class="tabs-underline">
+            <div class="tab-underline-item">All Students</div>
+            <div class="tab-underline-item active">Active</div>
+            <div class="tab-underline-item">At Risk</div>
+            <div class="tab-underline-item">Completed</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================
+     10. FEEDBACK — TOASTS, MODALS
+     ====================================================== -->
+<section class="ds-section" id="feedback">
+  <div class="ds-container">
+    <div class="ds-section-label">10 — Feedback Components</div>
+    <h2 class="ds-section-title">Toasts, Modals &amp; Empty States</h2>
+    <p class="ds-section-desc">Use these for all async feedback. Never use browser alert() or window.confirm().</p>
+
+    <div class="ds-subsection">
+      <div class="ds-subsection-title">Toast Notifications</div>
+      <div class="flex-col" style="max-width:400px;gap:var(--space-3)">
+        <div class="toast toast-success">
+          <div class="toast-icon"><svg class="ico ico-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg></div>
+          <div class="toast-content">
+            <div class="toast-title">Lesson Completed!</div>
+            <div class="toast-desc">You've earned 50 XP. Keep up the streak!</div>
+          </div>
+          <div class="toast-close"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></div>
+        </div>
+        <div class="toast toast-error">
+          <div class="toast-icon"><svg class="ico ico-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg></div>
+          <div class="toast-content">
+            <div class="toast-title">Submission Failed</div>
+            <div class="toast-desc">Could not save your answer. Please try again.</div>
+          </div>
+          <div class="toast-close"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></div>
+        </div>
+        <div class="toast toast-warning">
+          <div class="toast-icon"><svg class="ico ico-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div>
+          <div class="toast-content">
+            <div class="toast-title">Assignment Due Tomorrow</div>
+            <div class="toast-desc">Chapter 4 quiz closes at 11:59 PM tonight.</div>
+          </div>
+          <div class="toast-close"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></div>
+        </div>
+        <div class="toast toast-info">
+          <div class="toast-icon"><svg class="ico ico-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg></div>
+          <div class="toast-content">
+            <div class="toast-title">AI Tip</div>
+            <div class="toast-desc">Based on your progress, try reviewing Quadratic Equations.</div>
+          </div>
+          <div class="toast-close"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ds-subsection">
+      <div class="ds-subsection-title">Modal Dialog</div>
+      <div class="modal-backdrop">
+        <div class="modal">
+          <div class="modal-header">
+            <div class="modal-title">Submit Assignment?</div>
+            <button class="btn btn-icon btn-ghost"><svg class="ico ico-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+          </div>
+          <div class="modal-body">
+            <p style="font-size:var(--text-sm);color:var(--text-secondary);line-height:var(--leading-relaxed)">You have answered <strong style="color:var(--text-primary)">18 out of 20 questions</strong>. 2 questions are still unanswered. Once submitted, you cannot make changes.</p>
+            <div style="margin-top:var(--space-4);padding:var(--space-3) var(--space-4);background:var(--warning-subtle);border-radius:var(--radius-md);font-size:var(--text-xs);color:var(--warning-text);display:flex;align-items:center;gap:var(--space-2)">
+              <svg class="ico" style="flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+              <span>Unanswered questions will be marked as incorrect.</span>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-md btn-ghost">Cancel</button>
+            <button class="btn btn-md btn-primary">Submit Now <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ds-subsection">
+      <div class="ds-subsection-title">Empty States</div>
+      <div class="grid-3">
+        <div class="empty-state">
+          <div class="empty-state-icon"><svg class="ico ico-xl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+          <div class="empty-state-title">No Courses Yet</div>
+          <div class="empty-state-desc">You haven't enrolled in any courses. Start your learning journey today.</div>
+          <button class="btn btn-md btn-primary">Browse Courses</button>
+        </div>
+        <div class="empty-state">
+          <div class="empty-state-icon"><svg class="ico ico-xl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></div>
+          <div class="empty-state-title">No Results Found</div>
+          <div class="empty-state-desc">Try a different keyword or browse by subject category.</div>
+          <button class="btn btn-md btn-secondary">Clear Search</button>
+        </div>
+        <div class="empty-state">
+          <div class="empty-state-icon"><svg class="ico ico-xl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg></div>
+          <div class="empty-state-title">No AI Response Yet</div>
+          <div class="empty-state-desc">Ask Flexi anything about your subject. AI is ready to help.</div>
+          <button class="btn btn-md btn-outline-brand"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg> Ask Flexi AI</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================
+     11. SKELETON LOADERS
+     ====================================================== -->
+<section class="ds-section" id="skeletons">
+  <div class="ds-container">
+    <div class="ds-section-label">11 — Loading States</div>
+    <h2 class="ds-section-title">Skeleton Loaders</h2>
+    <p class="ds-section-desc">Show skeletons while Firestore data is loading. Never show empty states during load — always use skeletons.</p>
+
+    <div class="grid-3" style="align-items:start">
+      <!-- Course Card Skeleton -->
+      <div class="skeleton-card">
+        <div class="skeleton skeleton-thumb" style="margin-bottom:var(--space-4)"></div>
+        <div class="skeleton skeleton-text" style="width:40%"></div>
+        <div class="skeleton skeleton-title" style="width:90%"></div>
+        <div class="skeleton skeleton-title" style="width:70%;height:18px"></div>
+        <div style="display:flex;gap:var(--space-4);margin-bottom:var(--space-4)">
+          <div class="skeleton skeleton-text" style="width:60px"></div>
+          <div class="skeleton skeleton-text" style="width:60px"></div>
+        </div>
+        <div class="skeleton skeleton-btn"></div>
+      </div>
+
+      <!-- Stat Card Skeleton -->
+      <div class="skeleton-card">
+        <div style="display:flex;gap:var(--space-3);align-items:center;margin-bottom:var(--space-4)">
+          <div class="skeleton skeleton-avatar" style="width:44px;height:44px"></div>
+          <div style="flex:1">
+            <div class="skeleton skeleton-text" style="width:80%;margin-bottom:4px"></div>
+            <div class="skeleton skeleton-text" style="width:50%;height:12px"></div>
+          </div>
+        </div>
+        <div class="skeleton" style="height:32px;width:60%;margin-bottom:var(--space-2)"></div>
+        <div class="skeleton skeleton-text" style="width:40%"></div>
+      </div>
+
+      <!-- List Skeleton -->
+      <div class="skeleton-card">
+        <div class="skeleton skeleton-title" style="width:60%;margin-bottom:var(--space-4)"></div>
+        <div style="display:flex;flex-direction:column;gap:var(--space-4)">
+          <div style="display:flex;align-items:center;gap:var(--space-3)">
+            <div class="skeleton skeleton-avatar" style="width:36px;height:36px"></div>
+            <div style="flex:1">
+              <div class="skeleton skeleton-text" style="width:70%;margin-bottom:4px"></div>
+              <div class="skeleton skeleton-text" style="width:40%;height:12px"></div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:var(--space-3)">
+            <div class="skeleton skeleton-avatar" style="width:36px;height:36px"></div>
+            <div style="flex:1">
+              <div class="skeleton skeleton-text" style="width:80%;margin-bottom:4px"></div>
+              <div class="skeleton skeleton-text" style="width:50%;height:12px"></div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:var(--space-3)">
+            <div class="skeleton skeleton-avatar" style="width:36px;height:36px"></div>
+            <div style="flex:1">
+              <div class="skeleton skeleton-text" style="width:55%;margin-bottom:4px"></div>
+              <div class="skeleton skeleton-text" style="width:35%;height:12px"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================================================
+     12. TAILWIND CONFIG
+     ====================================================== -->
+<section class="ds-section" id="config">
+  <div class="ds-container">
+    <div class="ds-section-label">12 — Implementation</div>
+    <h2 class="ds-section-title">tailwind.config.js — Complete Token Map</h2>
+    <p class="ds-section-desc">Copy this exact config. This fixes Problems 2, 3, and 6 from the review. All tokens match the CSS variables above.</p>
+
+    <div class="config-header">
+      <div class="config-filename"><span class="dot"></span>tailwind.config.js</div>
+      <button class="btn btn-sm btn-secondary" onclick="copyConfig()"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg> Copy Config</button>
+    </div>
+    <div class="token-block" id="config-block">
+      <pre>
+<span class="t-comment">/** @type {import('tailwindcss').Config} */</span>
+<span class="t-key">module</span><span class="t-punc">.</span><span class="t-key">exports</span> <span class="t-punc">= {</span>
+  <span class="t-key">content</span><span class="t-punc">: [</span><span class="t-str">"./src/**/*.{js,ts,jsx,tsx,mdx}"</span><span class="t-punc">],</span>
+  <span class="t-key">theme</span><span class="t-punc">: {</span>
+    <span class="t-key">extend</span><span class="t-punc">: {</span>
+
+      <span class="t-comment">/* ── FONTS ────────────────────────────────────── */</span>
+      <span class="t-key">fontFamily</span><span class="t-punc">: {</span>
+        <span class="t-key">display</span><span class="t-punc">: [</span><span class="t-str">"Plus Jakarta Sans"</span><span class="t-punc">,</span> <span class="t-str">"sans-serif"</span><span class="t-punc">],</span>
+        <span class="t-key">body</span><span class="t-punc">:    [</span><span class="t-str">"Inter"</span><span class="t-punc">,</span>              <span class="t-str">"sans-serif"</span><span class="t-punc">],</span>
+      <span class="t-punc">},</span>
+
+      <span class="t-comment">/* ── COLORS ───────────────────────────────────── */</span>
+      <span class="t-key">colors</span><span class="t-punc">: {</span>
+
+        <span class="t-comment">/* Brand */</span>
+        <span class="t-key">brand</span><span class="t-punc">: {</span>
+          <span class="t-key">primary</span><span class="t-punc">:  </span><span class="t-str">"#3D8B71"</span><span class="t-punc">,</span>
+          <span class="t-key">dark</span><span class="t-punc">:     </span><span class="t-str">"#2E6B57"</span><span class="t-punc">,</span>
+          <span class="t-key">light</span><span class="t-punc">:    </span><span class="t-str">"#EAF5F1"</span><span class="t-punc">,</span>
+        <span class="t-punc">},</span>
+
+        <span class="t-comment">/* Backgrounds */</span>
+        <span class="t-key">bg</span><span class="t-punc">: {</span>
+          <span class="t-key">page</span><span class="t-punc">:    </span><span class="t-str">"#FAF8F4"</span><span class="t-punc">,</span>
+          <span class="t-key">surface</span><span class="t-punc">: </span><span class="t-str">"#FFFFFF"</span><span class="t-punc">,</span>
+          <span class="t-key">elevated</span><span class="t-punc">:</span><span class="t-str">"#F4F2EE"</span><span class="t-punc">,</span>
+          <span class="t-key">dark</span><span class="t-punc">:    </span><span class="t-str">"#1C1F27"</span><span class="t-punc">,</span>
+        <span class="t-punc">},</span>
+
+        <span class="t-comment">/* Text — REPLACES ALL slate-* classes */</span>
+        <span class="t-key">text</span><span class="t-punc">: {</span>
+          <span class="t-key">primary</span><span class="t-punc">:   </span><span class="t-str">"#1C1F27"</span><span class="t-punc">,</span>  <span class="t-comment">// was: text-slate-900</span>
+          <span class="t-key">secondary</span><span class="t-punc">: </span><span class="t-str">"#5C6070"</span><span class="t-punc">,</span>  <span class="t-comment">// was: text-slate-600</span>
+          <span class="t-key">muted</span><span class="t-punc">:     </span><span class="t-str">"#9DA3B0"</span><span class="t-punc">,</span>  <span class="t-comment">// was: text-slate-400/500</span>
+          <span class="t-key">inverse</span><span class="t-punc">:   </span><span class="t-str">"#FFFFFF"</span><span class="t-punc">,</span>
+          <span class="t-key">brand</span><span class="t-punc">:     </span><span class="t-str">"#3D8B71"</span><span class="t-punc">,</span>
+        <span class="t-punc">},</span>
+
+        <span class="t-comment">/* Borders */</span>
+        <span class="t-key">border</span><span class="t-punc">: {</span>
+          <span class="t-key">default</span><span class="t-punc">: </span><span class="t-str">"#E8E4DC"</span><span class="t-punc">,</span>
+          <span class="t-key">strong</span><span class="t-punc">:  </span><span class="t-str">"#C8C3BA"</span><span class="t-punc">,</span>
+          <span class="t-key">brand</span><span class="t-punc">:   </span><span class="t-str">"#3D8B71"</span><span class="t-punc">,</span>
+          <span class="t-key">subtle</span><span class="t-punc">:  </span><span class="t-str">"#F0EDE7"</span><span class="t-punc">,</span>
+        <span class="t-punc">},</span>
+
+        <span class="t-comment">/* Functional — FIXED from Tailwind defaults */</span>
+        <span class="t-key">success</span><span class="t-punc">: {</span>
+          <span class="t-key">DEFAULT</span><span class="t-punc">: </span><span class="t-str">"#2E9E6B"</span><span class="t-punc">,</span>  <span class="t-comment">// was: emerald-500</span>
+          <span class="t-key">subtle</span><span class="t-punc">:  </span><span class="t-str">"#EAF6F1"</span><span class="t-punc">,</span>
+          <span class="t-key">text</span><span class="t-punc">:    </span><span class="t-str">"#1E7A52"</span><span class="t-punc">,</span>
+        <span class="t-punc">},</span>
+        <span class="t-key">error</span><span class="t-punc">: {</span>
+          <span class="t-key">DEFAULT</span><span class="t-punc">: </span><span class="t-str">"#E05252"</span><span class="t-punc">,</span>  <span class="t-comment">// was: rose-500</span>
+          <span class="t-key">subtle</span><span class="t-punc">:  </span><span class="t-str">"#FDEEEE"</span><span class="t-punc">,</span>
+          <span class="t-key">text</span><span class="t-punc">:    </span><span class="t-str">"#C03A3A"</span><span class="t-punc">,</span>
+        <span class="t-punc">},</span>
+        <span class="t-key">warning</span><span class="t-punc">: {</span>
+          <span class="t-key">DEFAULT</span><span class="t-punc">: </span><span class="t-str">"#D4860A"</span><span class="t-punc">,</span>
+          <span class="t-key">subtle</span><span class="t-punc">:  </span><span class="t-str">"#FEF4E3"</span><span class="t-punc">,</span>
+          <span class="t-key">text</span><span class="t-punc">:    </span><span class="t-str">"#A6650A"</span><span class="t-punc">,</span>
+        <span class="t-punc">},</span>
+        <span class="t-key">info</span><span class="t-punc">: {</span>
+          <span class="t-key">DEFAULT</span><span class="t-punc">: </span><span class="t-str">"#4A7FC1"</span><span class="t-punc">,</span>
+          <span class="t-key">subtle</span><span class="t-punc">:  </span><span class="t-str">"#EAF0FA"</span><span class="t-punc">,</span>
+          <span class="t-key">text</span><span class="t-punc">:    </span><span class="t-str">"#2E5F9E"</span><span class="t-punc">,</span>
+        <span class="t-punc">},</span>
+
+        <span class="t-comment">/* Subjects — FIXED from Tailwind defaults */</span>
+        <span class="t-key">subject</span><span class="t-punc">: {</span>
+          <span class="t-comment">/* was: blue-400   */</span> <span class="t-key">math</span><span class="t-punc">:    </span><span class="t-str">"#F5A623"</span><span class="t-punc">,</span>
+          <span class="t-comment">/* was: sky-400    */</span> <span class="t-key">science</span><span class="t-punc">: </span><span class="t-str">"#3D8B71"</span><span class="t-punc">,</span>
+          <span class="t-comment">/* was: indigo-400 */</span> <span class="t-key">tech</span><span class="t-punc">:    </span><span class="t-str">"#4A7FC1"</span><span class="t-punc">,</span>
+          <span class="t-comment">/* was: amber-400  */</span> <span class="t-key">history</span><span class="t-punc">: </span><span class="t-str">"#C4714A"</span><span class="t-punc">,</span>
+          <span class="t-key">geo</span><span class="t-punc">:     </span><span class="t-str">"#5BA3A0"</span><span class="t-punc">,</span>
+          <span class="t-comment">/* was: purple-400 */</span> <span class="t-key">english</span><span class="t-punc">: </span><span class="t-str">"#A06CB0"</span><span class="t-punc">,</span>
+          <span class="t-comment">/* was: rose-400   */</span> <span class="t-key">econ</span><span class="t-punc">:    </span><span class="t-str">"#D4860A"</span><span class="t-punc">,</span>
+          <span class="t-comment">/* Subject bg/text variants */</span>
+          <span class="t-key">"math-bg"</span><span class="t-punc">:      </span><span class="t-str">"#FEF5E3"</span><span class="t-punc">,</span>
+          <span class="t-key">"math-text"</span><span class="t-punc">:    </span><span class="t-str">"#A66B0A"</span><span class="t-punc">,</span>
+          <span class="t-key">"science-bg"</span><span class="t-punc">:   </span><span class="t-str">"#EAF5F1"</span><span class="t-punc">,</span>
+          <span class="t-key">"science-text"</span><span class="t-punc">: </span><span class="t-str">"#2E6B57"</span><span class="t-punc">,</span>
+          <span class="t-key">"tech-bg"</span><span class="t-punc">:      </span><span class="t-str">"#EAF0FA"</span><span class="t-punc">,</span>
+          <span class="t-key">"tech-text"</span><span class="t-punc">:    </span><span class="t-str">"#2E5F9E"</span><span class="t-punc">,</span>
+          <span class="t-key">"history-bg"</span><span class="t-punc">:   </span><span class="t-str">"#F9EDE6"</span><span class="t-punc">,</span>
+          <span class="t-key">"history-text"</span><span class="t-punc">: </span><span class="t-str">"#9A4E2E"</span><span class="t-punc">,</span>
+          <span class="t-key">"geo-bg"</span><span class="t-punc">:       </span><span class="t-str">"#EBF5F5"</span><span class="t-punc">,</span>
+          <span class="t-key">"geo-text"</span><span class="t-punc">:     </span><span class="t-str">"#3A7A78"</span><span class="t-punc">,</span>
+          <span class="t-key">"english-bg"</span><span class="t-punc">:   </span><span class="t-str">"#F4EEF7"</span><span class="t-punc">,</span>
+          <span class="t-key">"english-text"</span><span class="t-punc">: </span><span class="t-str">"#7A4A8C"</span><span class="t-punc">,</span>
+          <span class="t-key">"econ-bg"</span><span class="t-punc">:      </span><span class="t-str">"#FEF4E3"</span><span class="t-punc">,</span>
+          <span class="t-key">"econ-text"</span><span class="t-punc">:    </span><span class="t-str">"#A6650A"</span><span class="t-punc">,</span>
+        <span class="t-punc">},</span>
+
+        <span class="t-comment">/* Learning Styles */</span>
+        <span class="t-key">style</span><span class="t-punc">: {</span>
+          <span class="t-key">visual</span><span class="t-punc">:          </span><span class="t-str">"#6C63FF"</span><span class="t-punc">,</span>
+          <span class="t-key">"visual-bg"</span><span class="t-punc">:     </span><span class="t-str">"#EEEEFF"</span><span class="t-punc">,</span>
+          <span class="t-key">example</span><span class="t-punc">:         </span><span class="t-str">"#F5A623"</span><span class="t-punc">,</span>
+          <span class="t-key">"example-bg"</span><span class="t-punc">:    </span><span class="t-str">"#FEF5E3"</span><span class="t-punc">,</span>
+          <span class="t-key">practical</span><span class="t-punc">:       </span><span class="t-str">"#3D8B71"</span><span class="t-punc">,</span>
+          <span class="t-key">"practical-bg"</span><span class="t-punc">:  </span><span class="t-str">"#EAF5F1"</span><span class="t-punc">,</span>
+          <span class="t-key">interactive</span><span class="t-punc">:     </span><span class="t-str">"#E05252"</span><span class="t-punc">,</span>
+          <span class="t-key">"interactive-bg"</span><span class="t-punc">:</span><span class="t-str">"#FDEEEE"</span><span class="t-punc">,</span>
+        <span class="t-punc">},</span>
+      <span class="t-punc">},</span>
+
+      <span class="t-comment">/* ── BORDER RADIUS ────────────────────────────── */</span>
+      <span class="t-key">borderRadius</span><span class="t-punc">: {</span>
+        <span class="t-key">xs</span><span class="t-punc">:   </span><span class="t-str">"4px"</span><span class="t-punc">,</span>
+        <span class="t-key">sm</span><span class="t-punc">:   </span><span class="t-str">"8px"</span><span class="t-punc">,</span>
+        <span class="t-key">md</span><span class="t-punc">:   </span><span class="t-str">"12px"</span><span class="t-punc">,</span>
+        <span class="t-key">lg</span><span class="t-punc">:   </span><span class="t-str">"16px"</span><span class="t-punc">,</span>
+        <span class="t-key">xl</span><span class="t-punc">:   </span><span class="t-str">"24px"</span><span class="t-punc">,</span>
+        <span class="t-key">full</span><span class="t-punc">: </span><span class="t-str">"9999px"</span><span class="t-punc">,</span>
+      <span class="t-punc">},</span>
+
+      <span class="t-comment">/* ── BOX SHADOWS ──────────────────────────────── */</span>
+      <span class="t-key">boxShadow</span><span class="t-punc">: {</span>
+        <span class="t-key">sm</span><span class="t-punc">:    </span><span class="t-str">"0 1px 3px rgba(28,31,39,0.06), 0 1px 2px rgba(28,31,39,0.04)"</span><span class="t-punc">,</span>
+        <span class="t-key">md</span><span class="t-punc">:    </span><span class="t-str">"0 4px 12px rgba(28,31,39,0.08), 0 2px 4px rgba(28,31,39,0.04)"</span><span class="t-punc">,</span>
+        <span class="t-key">lg</span><span class="t-punc">:    </span><span class="t-str">"0 8px 24px rgba(28,31,39,0.10), 0 4px 8px rgba(28,31,39,0.06)"</span><span class="t-punc">,</span>
+        <span class="t-key">xl</span><span class="t-punc">:    </span><span class="t-str">"0 16px 40px rgba(28,31,39,0.12), 0 8px 16px rgba(28,31,39,0.06)"</span><span class="t-punc">,</span>
+        <span class="t-key">brand</span><span class="t-punc">: </span><span class="t-str">"0 4px 16px rgba(61,139,113,0.25)"</span><span class="t-punc">,</span>
+      <span class="t-punc">},</span>
+
+      <span class="t-comment">/* ── FONT SIZE WITH LINE HEIGHT ───────────────── */</span>
+      <span class="t-key">fontSize</span><span class="t-punc">: {</span>
+        <span class="t-key">xs</span><span class="t-punc">:   [</span><span class="t-str">"12px"</span><span class="t-punc">, { </span><span class="t-key">lineHeight</span><span class="t-punc">: </span><span class="t-str">"1.4"</span> <span class="t-punc">}],</span>
+        <span class="t-key">sm</span><span class="t-punc">:   [</span><span class="t-str">"14px"</span><span class="t-punc">, { </span><span class="t-key">lineHeight</span><span class="t-punc">: </span><span class="t-str">"1.5"</span> <span class="t-punc">}],</span>
+        <span class="t-key">base</span><span class="t-punc">: [</span><span class="t-str">"16px"</span><span class="t-punc">, { </span><span class="t-key">lineHeight</span><span class="t-punc">: </span><span class="t-str">"1.5"</span> <span class="t-punc">}],</span>
+        <span class="t-key">lg</span><span class="t-punc">:   [</span><span class="t-str">"18px"</span><span class="t-punc">, { </span><span class="t-key">lineHeight</span><span class="t-punc">: </span><span class="t-str">"1.65"</span><span class="t-punc">}],</span>
+        <span class="t-key">xl</span><span class="t-punc">:   [</span><span class="t-str">"20px"</span><span class="t-punc">, { </span><span class="t-key">lineHeight</span><span class="t-punc">: </span><span class="t-str">"1.35"</span><span class="t-punc">}],</span>
+        <span class="t-key">"2xl"</span><span class="t-punc">:[</span><span class="t-str">"24px"</span><span class="t-punc">, { </span><span class="t-key">lineHeight</span><span class="t-punc">: </span><span class="t-str">"1.3"</span> <span class="t-punc">}],</span>
+        <span class="t-key">"3xl"</span><span class="t-punc">:[</span><span class="t-str">"32px"</span><span class="t-punc">, { </span><span class="t-key">lineHeight</span><span class="t-punc">: </span><span class="t-str">"1.25"</span><span class="t-punc">}],</span>
+        <span class="t-key">"4xl"</span><span class="t-punc">:[</span><span class="t-str">"40px"</span><span class="t-punc">, { </span><span class="t-key">lineHeight</span><span class="t-punc">: </span><span class="t-str">"1.2"</span> <span class="t-punc">}],</span>
+        <span class="t-key">"5xl"</span><span class="t-punc">:[</span><span class="t-str">"48px"</span><span class="t-punc">, { </span><span class="t-key">lineHeight</span><span class="t-punc">: </span><span class="t-str">"1.15"</span><span class="t-punc">}],</span>
+      <span class="t-punc">},</span>
+
+      <span class="t-comment">/* ── TRANSITION ───────────────────────────────── */</span>
+      <span class="t-key">transitionDuration</span><span class="t-punc">: {</span>
+        <span class="t-key">fast</span><span class="t-punc">:   </span><span class="t-str">"150ms"</span><span class="t-punc">,</span>
+        <span class="t-key">normal</span><span class="t-punc">: </span><span class="t-str">"250ms"</span><span class="t-punc">,</span>
+        <span class="t-key">slow</span><span class="t-punc">:   </span><span class="t-str">"400ms"</span><span class="t-punc">,</span>
+      <span class="t-punc">},</span>
+
+    <span class="t-punc">},</span>
+  <span class="t-punc">},</span>
+  <span class="t-key">plugins</span><span class="t-punc">: [],</span>
+<span class="t-punc">};</span>
+      </pre>
+    </div>
+
+    <!-- Flutter Color Constants -->
+    <div class="ds-subsection">
+      <div class="ds-subsection-title">app_colors.dart — Flutter Token Map</div>
+      <div class="token-block">
+        <pre>
+<span class="t-comment">// lib/core/constants/app_colors.dart</span>
+<span class="t-key">import</span> <span class="t-str">'package:flutter/material.dart'</span><span class="t-punc">;</span>
+
+<span class="t-key">class</span> <span class="t-val">AppColors</span> <span class="t-punc">{</span>
+  <span class="t-key">AppColors</span><span class="t-punc">._();</span>
+
+  <span class="t-comment">// ── Brand ──────────────────────────────────────────</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> brandPrimary    <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFF3D8B71</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> brandDark       <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFF2E6B57</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> brandLight      <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFEAF5F1</span><span class="t-punc">);</span>
+
+  <span class="t-comment">// ── Backgrounds ────────────────────────────────────</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> bgPage          <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFFAF8F4</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> bgSurface       <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFFFFFFF</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> bgElevated      <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFF4F2EE</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> bgDark          <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFF1C1F27</span><span class="t-punc">);</span>
+
+  <span class="t-comment">// ── Text ───────────────────────────────────────────</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> textPrimary     <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFF1C1F27</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> textSecondary   <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFF5C6070</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> textMuted       <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFF9DA3B0</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> textInverse     <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFFFFFFF</span><span class="t-punc">);</span>
+
+  <span class="t-comment">// ── Borders ────────────────────────────────────────</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> borderDefault   <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFE8E4DC</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> borderStrong    <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFC8C3BA</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> borderSubtle    <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFF0EDE7</span><span class="t-punc">);</span>
+
+  <span class="t-comment">// ── Functional ─────────────────────────────────────</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> success         <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFF2E9E6B</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> successSubtle   <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFEAF6F1</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> error           <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFE05252</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> errorSubtle     <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFFDEEEE</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> warning         <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFD4860A</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> warningSubtle   <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFFEF4E3</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> info            <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFF4A7FC1</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> infoSubtle      <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFEAF0FA</span><span class="t-punc">);</span>
+
+  <span class="t-comment">// ── Subjects ───────────────────────────────────────</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> subjectMath     <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFF5A623</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> subjectMathBg   <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFFEF5E3</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> subjectScience  <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFF3D8B71</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> subjectScienceBg<span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFEAF5F1</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> subjectTech     <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFF4A7FC1</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> subjectTechBg   <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFEAF0FA</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> subjectHistory  <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFC4714A</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> subjectHistoryBg<span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFF9EDE6</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> subjectGeo      <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFF5BA3A0</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> subjectGeoBg    <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFEBF5F5</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> subjectEnglish  <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFA06CB0</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> subjectEnglishBg<span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFF4EEF7</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> subjectEcon     <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFD4860A</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> subjectEconBg   <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFFEF4E3</span><span class="t-punc">);</span>
+
+  <span class="t-comment">// ── Learning Styles ────────────────────────────────</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> styleVisual      <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFF6C63FF</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> styleVisualBg    <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFEEEEFF</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> styleExample     <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFF5A623</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> styleExampleBg   <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFFEF5E3</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> stylePractical   <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFF3D8B71</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> stylePracticalBg <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFEAF5F1</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> styleInteractive  <span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFE05252</span><span class="t-punc">);</span>
+  <span class="t-key">static const</span> <span class="t-val">Color</span> styleInteractiveBg<span class="t-punc">=</span> <span class="t-val">Color</span><span class="t-punc">(</span><span class="t-str">0xFFFDEEEE</span><span class="t-punc">);</span>
+<span class="t-punc">}</span>
+        </pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="ds-footer">
+  <div class="ds-container">
+    <p>© 2024 FlexiStudy Education — Design System V2.0 — All 6 review problems fixed</p>
+    <div class="ds-footer-links">
+      <a href="#colors">Colors</a>
+      <a href="#typography">Typography</a>
+      <a href="#buttons">Buttons</a>
+      <a href="#inputs">Inputs</a>
+      <a href="#cards">Cards</a>
+      <a href="#config">Config</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+function toggleStyle(el) {
+  el.classList.toggle('selected');
+}
+
+function copyConfig() {
+  const block = document.getElementById('config-block');
+  const text = block.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target;
+    btn.innerHTML = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg> Copied!';
+    setTimeout(() => btn.innerHTML = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg> Copy Config', 2000);
+  });
+}
+
+// Nav link active scroll highlight
+document.querySelectorAll('.ds-nav a').forEach(a => {
+  a.addEventListener('click', function() {
+    document.querySelectorAll('.ds-nav a').forEach(x => x.style.background = '');
+    this.style.background = 'var(--brand-primary-light)';
+    this.style.color = 'var(--brand-primary)';
+  });
+});
+</script>
+
+</body>
+</html>
