@@ -44,13 +44,21 @@ interface ClosingSeg {
 interface Props {
   lesson: MicroLesson;
   onComplete?: () => void;
+  learningStyle?: string;
 }
+
+const STYLE_BADGE: Record<string, { icon: string; label: string }> = {
+  interactive: { icon: "⚡", label: "Interactive" },
+  example: { icon: "📝", label: "Example" },
+  visual: { icon: "🎨", label: "Visual" },
+  practical: { icon: "🔧", label: "Practical" },
+};
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const W = 1280, H = 720;
 const SEGMENT_COLORS = ["#3D8B71", "#059669", "#dc2626", "#d97706", "#2563eb"];
 
-export function MicroVideoPlayer({ lesson, onComplete }: Props) {
+export function MicroVideoPlayer({ lesson, onComplete, learningStyle }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number | undefined>(undefined);
   const startRef = useRef<number>(0);
@@ -830,6 +838,20 @@ export function MicroVideoPlayer({ lesson, onComplete }: Props) {
         }}>
           {lesson.segments[segIdx]?.id}
         </div>
+        {/* Learning style badge */}
+        {learningStyle && STYLE_BADGE[learningStyle] && (
+          <div style={{
+            position: "absolute", top: 14, left: 14,
+            background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: 10, padding: "5px 12px",
+            fontSize: 11, fontWeight: 600, color: "#e5e7eb",
+            display: "flex", alignItems: "center", gap: 5,
+          }}>
+            <span>{STYLE_BADGE[learningStyle].icon}</span>
+            {STYLE_BADGE[learningStyle].label} Style
+          </div>
+        )}
       </div>
 
       {/* Controls */}

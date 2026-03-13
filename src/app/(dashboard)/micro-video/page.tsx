@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { Zap, Sparkles, BookOpen, Loader2, RotateCcw, Download } from "lucide-react";
 import { MicroVideoPlayer } from "@/components/video/MicroVideoPlayer";
+import { LearningStyleSelector, type LearningStyle } from "@/components/video/LearningStyleSelector";
 
 const SUBJECTS = [
   "Mathematics", "Science", "Technology", "History", "Geography",
@@ -15,23 +16,43 @@ const EXAMPLE_TOPICS = [
   "Supply and Demand", "The French Revolution",
 ];
 
+const STYLE_META: Record<LearningStyle, { icon: string; label: string; color: string; bg: string }> = {
+  interactive: { icon: "⚡", label: "Interactive", color: "#6366f1", bg: "#eef2ff" },
+  example:     { icon: "📝", label: "Example",     color: "#f59e0b", bg: "#fffbeb" },
+  visual:      { icon: "🎨", label: "Visual",      color: "#06b6d4", bg: "#ecfeff" },
+  practical:   { icon: "🔧", label: "Practical",   color: "#10b981", bg: "#ecfdf5" },
+};
+
 export default function MicroVideoPage() {
   const [topic, setTopic] = useState("");
   const [subject, setSubject] = useState("Science");
+  const [learningStyle, setLearningStyle] = useState<LearningStyle | null>(null);
+  const [showStyleSelector, setShowStyleSelector] = useState(false);
   const [lesson, setLesson] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [completed, setCompleted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const generate = async () => {
+  const handleGenerateClick = () => {
     if (!topic.trim()) return;
+    // Show learning style selector instead of generating immediately
+    setShowStyleSelector(true);
+  };
+
+  const handleStyleSelect = (style: LearningStyle) => {
+    setLearningStyle(style);
+    setShowStyleSelector(false);
+    generate(style);
+  };
+
+  const generate = async (style: LearningStyle) => {
     setLoading(true); setError(""); setLesson(null); setCompleted(false);
     try {
       const res = await fetch("/api/generate-microlesson", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic: topic.trim(), subject }),
+        body: JSON.stringify({ topic: topic.trim(), subject, learningStyle: style }),
       });
       if (!res.ok) throw new Error((await res.json()).error || "Generation failed");
       const data = await res.json();
@@ -44,12 +65,17 @@ export default function MicroVideoPage() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") generate();
+    if (e.key === "Enter") handleGenerateClick();
   };
 
   const reset = () => {
-    setLesson(null); setCompleted(false); setError(""); setTopic(""); setSubject("Science");
+    setLesson(null); setCompleted(false); setError(""); setTopic("");
+    setSubject("Science"); setLearningStyle(null); setShowStyleSelector(false);
     setTimeout(() => inputRef.current?.focus(), 100);
+  };
+
+  const handleBackFromStyle = () => {
+    setShowStyleSelector(false);
   };
 
   return (
@@ -202,6 +228,7 @@ export default function MicroVideoPage() {
         .mv-chip-primary { background:#e6f3ee; border:1px solid #b3d9cc; color:#2e6b57; }
         .mv-chip-green   { background:#dcfce7; border:1px solid #86efac; color:#166534; }
         .mv-chip-yellow  { background:#fef9c3; border:1px solid #fde047; color:#854d0e; }
+        .mv-chip-style   { display:flex; align-items:center; gap:5px; }
         .mv-reset-btn {
           padding:10px 18px; border-radius:10px; border:1px solid #e5e7eb;
           background:#f9fafb; color:#6b7280; cursor:pointer;
@@ -260,7 +287,7 @@ export default function MicroVideoPage() {
           border: 1px solid #b3d9cc; position: relative;
         }
         .mv-summary-box::before {
-          content: '“'; position: absolute; top: 10px; left: 15px;
+          content: '\u201C'; position: absolute; top: 10px; left: 15px;
           font-size: 60px; color: rgba(61,139,113,0.1); font-family: serif;
         }
         .mv-summary-text {
@@ -300,18 +327,18 @@ export default function MicroVideoPage() {
             <span className="mv-hero-gradient-text">30 seconds</span>
           </h1>
           <p>
-            Type a topic and AI instantly generates a rich, animated 30-second
-            educational micro-video — complete with interactive fill-in-the-blank,
-            quick quizzes, and concept flow diagrams.
+            Type a topic, choose your learning style, and AI instantly generates
+            a rich, animated 30-second educational micro-video — tailored to how
+            you learn best.
           </p>
 
           {/* Feature chips */}
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             {[
+              { icon: "🎯", label: "4 learning styles" },
               { icon: "✦", label: "5 animated segments" },
-              { icon: "⚡", label: "Fill-in-the-blank" },
-              { icon: "🔀", label: "Concept flow diagrams" },
-              { icon: "❓", label: "Quick questions" },
+              { icon: "⚡", label: "Style-adapted content" },
+              { icon: "🔀", label: "Smart subject detection" },
             ].map((f, i) => (
               <div key={`feature-${i}`} style={{
                 display: "flex", alignItems: "center", gap: 7,
@@ -325,8 +352,18 @@ export default function MicroVideoPage() {
           </div>
         </div>
 
-        {/* Input Card */}
-        {!lesson && !loading && (
+        {/* ── Learning Style Selector ── */}
+        {showStyleSelector && !lesson && !loading && (
+          <LearningStyleSelector
+            topic={topic}
+            subject={subject}
+            onSelect={handleStyleSelect}
+            onBack={handleBackFromStyle}
+          />
+        )}
+
+        {/* Input Card — only when not showing style selector, lesson, or loading */}
+        {!showStyleSelector && !lesson && !loading && (
           <div className="mv-input-card">
             <div>
               <div className="mv-step-label">
@@ -354,7 +391,7 @@ export default function MicroVideoPage() {
                 </select>
                 <button
                   className="mv-generate-btn"
-                  onClick={generate}
+                  onClick={handleGenerateClick}
                   disabled={!topic.trim()}
                 >
                   <Sparkles size={17} />
@@ -373,7 +410,7 @@ export default function MicroVideoPage() {
                   <div
                     key={t}
                     className="mv-example-chip"
-                    onClick={() => { setTopic(t); setTimeout(() => generate(), 50); }}
+                    onClick={() => { setTopic(t); setShowStyleSelector(true); }}
                   >
                     {t}
                   </div>
@@ -398,11 +435,11 @@ export default function MicroVideoPage() {
           <div className="mv-loading">
             <Loader2 size={44} className="mv-loading-icon" />
             <div>
-              <h3>Crafting your 30-second lesson…</h3>
-              <p>AI is building animated segments, interactive moments, and flow diagrams.</p>
+              <h3>Crafting your {learningStyle ? STYLE_META[learningStyle].label + "-style " : ""}lesson…</h3>
+              <p>AI is building animated segments tailored to your learning style.</p>
             </div>
             <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
-              {["Hook", "Concept", "Interactive", "Insight", "Closing"].map((s, i) => (
+              {["Hook", "Concept", learningStyle ? STYLE_META[learningStyle].label : "Interactive", "Insight", "Closing"].map((s, i) => (
                 <div key={`loading-step-${i}`} style={{
                   padding: "4px 12px", borderRadius: 999, fontSize: 12, fontWeight: 600,
                   background: "rgba(61,139,113,0.08)", border: "1px solid rgba(61,139,113,0.25)",
@@ -412,6 +449,17 @@ export default function MicroVideoPage() {
                 </div>
               ))}
             </div>
+            {learningStyle && (
+              <div style={{
+                display: "flex", alignItems: "center", gap: 8, marginTop: 8,
+                padding: "6px 16px", borderRadius: 999,
+                background: STYLE_META[learningStyle].bg,
+                border: `1px solid ${STYLE_META[learningStyle].color}33`,
+                fontSize: 13, fontWeight: 600, color: STYLE_META[learningStyle].color,
+              }}>
+                {STYLE_META[learningStyle].icon} {STYLE_META[learningStyle].label} Style
+              </div>
+            )}
           </div>
         )}
 
@@ -432,6 +480,15 @@ export default function MicroVideoPage() {
                   <span className="mv-chip mv-chip-yellow">
                     ✦ 5 segments
                   </span>
+                  {learningStyle && (
+                    <span className="mv-chip mv-chip-style" style={{
+                      background: STYLE_META[learningStyle].bg,
+                      border: `1px solid ${STYLE_META[learningStyle].color}44`,
+                      color: STYLE_META[learningStyle].color,
+                    }}>
+                      {STYLE_META[learningStyle].icon} {STYLE_META[learningStyle].label}
+                    </span>
+                  )}
                 </div>
               </div>
               <button className="mv-reset-btn" onClick={reset}>
@@ -443,6 +500,7 @@ export default function MicroVideoPage() {
             <MicroVideoPlayer
               lesson={lesson}
               onComplete={() => setCompleted(true)}
+              learningStyle={learningStyle || undefined}
             />
 
             {/* Completion banner */}
@@ -491,13 +549,13 @@ export default function MicroVideoPage() {
           </div>
         )}
 
-        {/* Info grid when no lesson */}
-        {!lesson && !loading && (
+        {/* Info grid when no lesson and not in style selector */}
+        {!lesson && !loading && !showStyleSelector && (
           <div className="mv-cards-grid">
             {[
               { icon: "🪝", label: "Hook", time: "0–3s", desc: "Animated title with glowing rings" },
               { icon: "💡", label: "Concept", time: "3–10s", desc: "Slide-in text & keyword chips" },
-              { icon: "⚡", label: "Interactive", time: "10–20s", desc: "Fill-blank, quiz, or flow chart" },
+              { icon: "⚡", label: "Interactive", time: "10–20s", desc: "Adapts to your learning style" },
               { icon: "🔑", label: "Insight", time: "20–27s", desc: "Key takeaway with emphasis cards" },
               { icon: "✅", label: "Closing", time: "27–30s", desc: "Particle burst & concept lock-in" },
             ].map((card, i) => (

@@ -1241,6 +1241,57 @@ export default function CoursesExplorer() {
           )}
         </div>
 
+        {/* ── Quick Notes Section ── */}
+        {generatedLesson?.quickSummary && (
+          <div className="notes-section" style={{
+            background: "var(--bg-surface)",
+            border: "1.5px solid var(--border-default)",
+            borderRadius: "var(--radius-xl)",
+            padding: "var(--space-6)",
+            marginBottom: "var(--space-6)",
+            animation: "fadeSlideUp .5s ease",
+          }}>
+            <style>{`
+              .notes-header { display:flex; align-items:center; gap:10px; margin-bottom:var(--space-4); }
+              .notes-icon { width:36px; height:36px; border-radius:var(--radius-lg); display:flex; align-items:center; justify-content:center; font-size:18px; }
+              .notes-title { font-family:var(--font-display); font-size:var(--text-lg); font-weight:800; color:var(--text-primary); }
+              .notes-summary { font-size:var(--text-sm); color:var(--text-secondary); line-height:1.6; margin-bottom:var(--space-4); padding:var(--space-3) var(--space-4); background:var(--bg-elevated); border-radius:var(--radius-lg); border-left:3px solid var(--brand-primary); }
+              .notes-list { display:flex; flex-direction:column; gap:10px; }
+              .note-item { display:flex; align-items:flex-start; gap:12px; padding:var(--space-3) var(--space-4); border-radius:var(--radius-lg); background:var(--bg-elevated); transition:all var(--transition-fast); }
+              .note-item:hover { background:var(--bg-page); transform:translateX(4px); }
+              .note-bullet { width:24px; height:24px; border-radius:var(--radius-full); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; flex-shrink:0; margin-top:1px; }
+              .note-text { font-size:var(--text-sm); color:var(--text-primary); line-height:1.55; }
+            `}</style>
+
+            <div className="notes-header">
+              <div className="notes-icon" style={{ background: s.bg, color: s.color }}>📝</div>
+              <div className="notes-title">Quick Notes</div>
+            </div>
+
+            {generatedLesson.quickSummary.summary && (
+              <div className="notes-summary">
+                {generatedLesson.quickSummary.summary}
+              </div>
+            )}
+
+            {generatedLesson.quickSummary.notes?.length > 0 && (
+              <div className="notes-list">
+                {generatedLesson.quickSummary.notes.map((note: string, idx: number) => (
+                  <div className="note-item" key={idx} style={{ animationDelay: `${idx * 80}ms`, animation: "fadeSlideUp .4s ease both" }}>
+                    <div className="note-bullet" style={{
+                      background: s.bg,
+                      color: s.color,
+                    }}>
+                      {idx + 1}
+                    </div>
+                    <div className="note-text">{note}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="lesson-footer">
           <div>
             <div style={{ fontWeight: 700, fontSize: "var(--text-base)", marginBottom: 4 }}>Did you understand the topic?</div>
