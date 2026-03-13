@@ -7,8 +7,10 @@ import {
   Sparkles, Loader2, X, Maximize2,
   ArrowLeft, BookOpen, Zap, RotateCcw,
   Lightbulb, Eye, Headphones, Hand, Clock, Star,
-  TrendingUp, CheckCircle2, Check,
+  TrendingUp, CheckCircle2, Check, Video, Layers
 } from "lucide-react";
+import TopicSelector from "@/components/practice/video/TopicSelector";
+import { useRouter } from "next/navigation";
 
 /* ─────────────────────────────────────────────────────────────
    CONSTANTS
@@ -61,6 +63,7 @@ const EXAMPLE_TOPICS = [
    MAIN PRACTICE PAGE
  ───────────────────────────────────────────────────────────── */
 export default function PracticePage() {
+  const router = useRouter();
   const [topic, setTopic] = useState("");
   const [style, setStyle] = useState("Visual");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -86,40 +89,10 @@ export default function PracticePage() {
   const handleGenerate = async () => {
     if (!topic.trim()) return;
     setIsGenerating(true);
-    setLessonData(null);
     setError("");
-    setGenStep(0);
 
-    // Cycle through generation steps
-    const stepInterval = setInterval(() => {
-      setGenStep(p => (p < GENERATION_STEPS.length - 1 ? p + 1 : p));
-    }, 1600);
-
-    try {
-      const res = await fetch("/api/generate-lesson", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic: topic.trim(), style }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Generation failed");
-      }
-
-      if (!data.slides || !Array.isArray(data.slides) || data.slides.length === 0) {
-        throw new Error("Invalid lesson data received. Please try again.");
-      }
-
-      setLessonData(data);
-    } catch (e: any) {
-      setError(e.message || "Failed to generate lesson. Please try again.");
-    } finally {
-      clearInterval(stepInterval);
-      setIsGenerating(false);
-      setGenStep(0);
-    }
+    // Route to the new video interactive player instead of generating canvas slides
+    router.push(`/practice/video/${encodeURIComponent(topic.trim())}`);
   };
 
   const activeStyleConfig = LEARNING_STYLES.find(s => s.key === style)!;
@@ -240,11 +213,36 @@ export default function PracticePage() {
 
         {/* Content */}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: "100%" }}>
-          <div style={{ width: "100%", maxWidth: (!isGenerating && !lessonData) ? 600 : 960, transition: "max-width 400ms cubic-bezier(0.4,0,0.2,1)", display: "flex", flexDirection: "column", gap: "var(--space-6, 24px)" }}>
+          <div style={{ width: "100%", maxWidth: (!isGenerating && !lessonData) ? 800 : 960, transition: "max-width 400ms cubic-bezier(0.4,0,0.2,1)", display: "flex", flexDirection: "column", gap: "var(--space-10, 48px)" }}>
 
-            {/* ── INPUT VIEW ── */}
+            {/* ── VIDEO LESSONS VIEW ── */}
             {!isGenerating && !lessonData && (
               <div className="a2" style={{ display: "flex", flexDirection: "column", gap: "var(--space-4, 16px)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+                  <div style={{ width: 42, height: 42, background: "var(--bg-surface, #fff)", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--brand-primary, #3D8B71)", boxShadow: "0 1px 3px rgba(28,31,39,0.06)", border: "1px solid rgba(61,139,113,0.15)" }}>
+                    <Video size={20} />
+                  </div>
+                  <div>
+                    <h3 style={{ fontFamily: "var(--font-display, sans-serif)", fontWeight: 800, color: "var(--text-primary, #1C1F27)", fontSize: 20 }}>Interactive Video Lessons</h3>
+                    <p style={{ fontSize: 13, color: "var(--text-muted, #9DA3B0)", marginTop: 2 }}>AI-generated narrated video lessons with visual scenes</p>
+                  </div>
+                </div>
+                <TopicSelector />
+              </div>
+            )}
+
+            {/* ── CANVAS LESSONS VIEW ── */}
+            {!isGenerating && !lessonData && (
+              <div className="a2" style={{ display: "flex", flexDirection: "column", gap: "var(--space-4, 16px)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+                  <div style={{ width: 42, height: 42, background: "var(--bg-surface, #fff)", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", color: "#4A7FC1", boxShadow: "0 1px 3px rgba(28,31,39,0.06)", border: "1px solid rgba(74,127,193,0.15)" }}>
+                    <Layers size={20} />
+                  </div>
+                  <div>
+                    <h3 style={{ fontFamily: "var(--font-display, sans-serif)", fontWeight: 800, color: "var(--text-primary, #1C1F27)", fontSize: 20 }}>Custom Video Lesson</h3>
+                    <p style={{ fontSize: 13, color: "var(--text-muted, #9DA3B0)", marginTop: 2 }}>Generate a tailored video on any specific topic</p>
+                  </div>
+                </div>
                 <div style={{ background: "var(--bg-surface, #fff)", borderRadius: "16px", border: "1px solid var(--border-default, #E8E4DC)", boxShadow: "0 1px 3px rgba(28,31,39,0.06)", overflow: "hidden" }}>
                   {/* Card header */}
                   <div style={{ padding: "20px 24px", background: "linear-gradient(135deg, var(--brand-primary-light, #EAF5F1) 0%, rgba(234,245,241,0.3) 100%)", borderBottom: "1px solid rgba(61,139,113,0.12)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -253,8 +251,8 @@ export default function PracticePage() {
                         <Sparkles size={20} />
                       </div>
                       <div>
-                        <h3 style={{ fontFamily: "var(--font-display, sans-serif)", fontWeight: 800, color: "var(--text-primary, #1C1F27)", fontSize: 15 }}>AI Video Generator</h3>
-                        <p style={{ fontSize: 12, color: "var(--text-muted, #9DA3B0)", marginTop: 1 }}>Personalised 45-second lessons on any topic</p>
+                        <h3 style={{ fontFamily: "var(--font-display, sans-serif)", fontWeight: 800, color: "var(--text-primary, #1C1F27)", fontSize: 15 }}>AI Custom Video Generator</h3>
+                        <p style={{ fontSize: 12, color: "var(--text-muted, #9DA3B0)", marginTop: 1 }}>Personalised interactive video lessons</p>
                       </div>
                     </div>
                     <span style={{ padding: "3px 8px", background: "var(--bg-surface, #fff)", borderRadius: "4px", fontSize: 9, fontWeight: 800, color: "var(--brand-primary, #3D8B71)", border: "1px solid rgba(61,139,113,0.2)", letterSpacing: "0.06em" }}>BETA</span>
