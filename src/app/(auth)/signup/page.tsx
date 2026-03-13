@@ -1,33 +1,48 @@
 "use client";
-import { BookOpen } from "lucide-react";
+import { BookOpen, ArrowRight } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase";
 import Link from "next/link";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
+import { auth, db } from "@/lib/firebase";
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      toast.success("Welcome back!");
+      // 1. Create user in Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // 2. Update profile with display name
+      await updateProfile(user, { displayName: name });
+
+      // 3. Store user data in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        displayName: name,
+        email: email,
+        createdAt: new Date().toISOString(),
+        learningGoals: [],
+        xp: 0,
+        streak: 0
+      });
+
+      toast.success(`Welcome to FlexiStudy, ${name}!`);
       router.push("/dashboard");
     } catch (error: any) {
-      console.error("Login error:", error);
-      if (error.code === "auth/invalid-credential") {
-        toast.error("Invalid email or password. If you don't have an account, please sign up first.");
-      } else {
-        toast.error(error.message || "Failed to sign in");
-      }
+      console.error("Signup error:", error);
+      toast.error(error.message || "Failed to create account");
     } finally {
       setIsLoading(false);
     }
@@ -220,11 +235,6 @@ export default function LoginPage() {
           letter-spacing: 0.2px;
           display: flex; justify-content: space-between; align-items: center;
         }
-        .field-forgot {
-          font-size: 12px; font-weight: 500;
-          color: var(--brand-primary, #3D8B71); text-decoration: none;
-        }
-        .field-forgot:hover { color: var(--brand-primary-dark, #2E6B57); text-decoration: underline; }
 
         .field-input {
           width: 100%; padding: 11px 14px;
@@ -319,8 +329,8 @@ export default function LoginPage() {
               <span className="hero-eyebrow-dot" />
               Adaptive Learning Platform
             </div>
-            <h2>Learn on your<br /><span>own terms.</span></h2>
-            <p>Smart courses, adaptive flashcards, and a study schedule that fits your life — not the other way around.</p>
+            <h2>Start your<br /><span>journey here.</span></h2>
+            <p>Join thousands of students mastering complex topics with ease. Your personal AI tutor is ready.</p>
           </div>
 
           <div className="stat-row">
@@ -350,18 +360,18 @@ export default function LoginPage() {
 
           <div className="form-card">
             <div className="form-header">
-              <h1>Welcome back 👋</h1>
-              <p>Sign in to continue your learning journey.</p>
+              <h1>Create an account ✨</h1>
+              <p>Join FlexiStudy and start learning faster today.</p>
             </div>
 
-            <button type="button" className="btn-google" onClick={handleLogin}>
+            <button type="button" className="btn-google">
               <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
                 <path d="M12.0003 4.75C13.7703 4.75 15.3553 5.36002 16.6053 6.54998L20.0303 3.125C17.9502 1.19 15.2353 0 12.0003 0C7.31028 0 3.25527 2.69 1.28027 6.60998L5.27528 9.70498C6.21525 6.81002 8.87028 4.75 12.0003 4.75Z" fill="#EA4335" />
                 <path d="M23.49 12.275C23.49 11.49 23.415 10.73 23.3 10H12V14.51H18.47C18.18 15.99 17.34 17.25 16.08 18.1L19.945 21.1C22.2 19.01 23.49 15.92 23.49 12.275Z" fill="#4285F4" />
                 <path d="M5.26498 14.2949C5.02498 13.5699 4.88501 12.7999 4.88501 11.9999C4.88501 11.1999 5.01998 10.4299 5.26498 9.7049L1.275 6.60986C0.46 8.22986 0 10.0599 0 11.9999C0 13.9399 0.46 15.7699 1.28 17.3899L5.26498 14.2949Z" fill="#FBBC05" />
                 <path d="M12.0004 24.0001C15.2404 24.0001 17.9654 22.935 19.9454 21.095L16.0804 18.095C15.0054 18.82 13.6204 19.245 12.0004 19.245C8.8704 19.245 6.21537 17.185 5.26538 14.29L1.27539 17.385C3.25539 21.31 7.3104 24.0001 12.0004 24.0001Z" fill="#34A853" />
               </svg>
-              Continue with Google
+              Sign up with Google
             </button>
 
             <div className="divider-row">
@@ -370,7 +380,19 @@ export default function LoginPage() {
               <div className="divider-line" />
             </div>
 
-            <form onSubmit={handleLogin}>
+            <form onSubmit={handleSignup}>
+              <div className="field">
+                <label className="field-label">Full Name</label>
+                <input
+                  type="text"
+                  className="field-input"
+                  placeholder="Priya Sharma"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </div>
+
               <div className="field">
                 <label className="field-label">Email address</label>
                 <input
@@ -384,10 +406,7 @@ export default function LoginPage() {
               </div>
 
               <div className="field">
-                <label className="field-label">
-                  Password
-                  <a href="#" className="field-forgot">Forgot password?</a>
-                </label>
+                <label className="field-label">Password</label>
                 <input
                   type="password"
                   className="field-input"
@@ -395,25 +414,26 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  minLength={6}
                 />
               </div>
 
               <button type="submit" className="btn-submit" disabled={isLoading}>
                 {isLoading
-                  ? <><span className="spinner" />Signing in…</>
-                  : "Sign In"}
+                  ? <><span className="spinner" />Creating account…</>
+                  : "Create Account"}
               </button>
             </form>
 
             <p className="signup-row">
-              New here?{" "}
-              <Link href="/signup">Create a free account</Link>
+              Already have an account?{" "}
+              <Link href="/login">Sign In</Link>
             </p>
 
             <div className="trust-strip">
               <div className="trust-item"><span className="trust-dot" />SSL Secured</div>
-              <div className="trust-item"><span className="trust-dot" />No spam, ever</div>
-              <div className="trust-item"><span className="trust-dot" />Free to start</div>
+              <div className="trust-item"><span className="trust-dot" />Privacy focused</div>
+              <div className="trust-item"><span className="trust-dot" />Free forever</div>
             </div>
           </div>
         </div>
