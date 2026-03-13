@@ -1,20 +1,26 @@
 // app/api/generate-lesson/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import Groq from "groq-sdk";
+
+const groq = new Groq({
+  apiKey: process.env.GROQ_API_KEY,
+});
 
 export async function POST(req: NextRequest) {
-  const { topic, style } = await req.json();
+  try {
+    const { topic, style } = await req.json();
 
-  if (!topic?.trim()) {
-    return NextResponse.json({ error: "Topic is required" }, { status: 400 });
-  }
+    if (!topic?.trim()) {
+      return NextResponse.json({ error: "Topic is required" }, { status: 400 });
+    }
 
-  const styleInstructions: Record<string, string> = {
-    Visual: "Use vivid visual metaphors, diagrams described in text, spatial relationships, and colour-coded concepts. Each slide should paint a picture in the learner's mind.",
-    Auditory: "Use rhythm, storytelling, mnemonics, and conversational language. Write as if narrating aloud. Use analogies that sound natural when spoken.",
-    Kinesthetic: "Use step-by-step processes, hands-on examples, real-world applications, and action verbs. Focus on what the learner can DO with this knowledge.",
-  };
+    const styleInstructions: Record<string, string> = {
+      Visual: "Use vivid visual metaphors, diagrams described in text, spatial relationships, and colour-coded concepts. Each slide should paint a picture in the learner's mind.",
+      Auditory: "Use rhythm, storytelling, mnemonics, and conversational language. Write as if narrating aloud. Use analogies that sound natural when spoken.",
+      Kinesthetic: "Use step-by-step processes, hands-on examples, real-world applications, and action verbs. Focus on what the learner can DO with this knowledge.",
+    };
 
-  const prompt = `You are an expert educational content creator. Generate a structured 5-slide video lesson about: "${topic}"
+    const prompt = `You are an expert educational content creator. Generate a structured 5-slide video lesson about: "${topic}"
 
 Learning style: ${style}
 Style guidance: ${styleInstructions[style] || styleInstructions.Visual}
@@ -92,37 +98,27 @@ Rules:
 - Tailor ALL content specifically to the learning style: ${style}
 - Make it genuinely educational and memorable`;
 
-  try {
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": process.env.ANTHROPIC_API_KEY!,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model: "claude-opus-4-5",
-        max_tokens: 2000,
-        messages: [{ role: "user", content: prompt }],
-      }),
+    const chatCompletion = await groq.chat.completions.create({
+      messages: [{ role: "user", content: prompt }],
+      model: "llama-3.3-70b-versatile",
+      temperature: 0.7,
+      max_tokens: 2000,
+      response_format: { type: "json_object" },
     });
 
-    if (!response.ok) {
-      const err = await response.text();
-      console.error("Anthropic API error:", err);
-      return NextResponse.json({ error: "AI generation failed" }, { status: 500 });
+    const content = chatCompletion.choices[0]?.message?.content;
+    if (!content) {
+      throw new Error("Empty response from AI");
     }
 
-    const data = await response.json();
-    const rawText = data.content?.[0]?.text || "";
-
-    // Strip any markdown fences just in case
-    const cleaned = rawText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-    const lesson = JSON.parse(cleaned);
-
+    const lesson = JSON.parse(content);
     return NextResponse.json(lesson);
-  } catch (error) {
+
+  } catch (error: any) {
     console.error("Generate lesson error:", error);
-    return NextResponse.json({ error: "Failed to generate lesson" }, { status: 500 });
+    return NextResponse.json(
+      { error: error?.message || "Failed to generate lesson" },
+      { status: 500 }
+    );
   }
 }

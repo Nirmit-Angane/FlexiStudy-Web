@@ -18,9 +18,23 @@ export interface UserProfile {
   role?: string;
 }
 
+export interface Lesson {
+  id: string;
+  userId: string;
+  topic: string;
+  subject: string;
+  difficulty: string;
+  style: string;
+  status: string;
+  slideCount: number;
+  finalScore: number;
+  createdAt: string;
+}
+
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,18 +42,34 @@ export function useAuth() {
       setUser(firebaseUser);
       
       if (firebaseUser) {
-        // Fetch extended user profile from Firestore
+        // Fetch extended user profile and lessons
         try {
+          // Profile
           const docRef = doc(db, "users", firebaseUser.uid);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
             setProfile(docSnap.data() as UserProfile);
           }
+
+          // Lessons
+          const { collection, query, where, getDocs, orderBy } = await import("firebase/firestore");
+          const lessonsRef = collection(db, "users", firebaseUser.uid, "lessons");
+          const q = query(
+            lessonsRef, 
+            orderBy("createdAt", "desc")
+          );
+          const querySnapshot = await getDocs(q);
+          const lessonsData = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          } as Lesson));
+          setLessons(lessonsData);
         } catch (error) {
-          console.error("Error fetching user profile:", error);
+          console.error("Error fetching user data:", error);
         }
       } else {
         setProfile(null);
+        setLessons([]);
       }
       
       setLoading(false);
@@ -48,5 +78,5 @@ export function useAuth() {
     return () => unsubscribe();
   }, []);
 
-  return { user, profile, loading };
+  return { user, profile, lessons, loading };
 }

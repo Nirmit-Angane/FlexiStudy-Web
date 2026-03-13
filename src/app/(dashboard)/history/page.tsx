@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { mockLessons } from "@/lib/mock-data";
 import { formatDistanceToNow, format } from "date-fns";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Loader2 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 const STYLES = ["All", "Visual", "Auditory", "Kinesthetic"];
 const SUBJECTS = ["All", "Science", "Mathematics", "Technology", "History", "English", "Geography", "Economics"];
@@ -26,10 +26,19 @@ const STYLE_ICONS: Record<string, string> = {
 };
 
 export default function HistoryPage() {
+  const { lessons, loading } = useAuth();
   const [activeStyle, setActiveStyle] = useState("All");
   const [activeSubject, setActiveSubject] = useState("All");
 
-  const filteredLessons = mockLessons.filter(lesson => {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-brand-primary" />
+      </div>
+    );
+  }
+
+  const filteredLessons = lessons.filter(lesson => {
     const matchStyle = activeStyle === "All" || lesson.style === activeStyle;
     const matchSubject = activeSubject === "All" || lesson.subject === activeSubject;
     return matchStyle && matchSubject;
