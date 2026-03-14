@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { Zap, Sparkles, BookOpen, Loader2, RotateCcw, Download } from "lucide-react";
 import { MicroVideoPlayer } from "@/components/video/MicroVideoPlayer";
 import { LearningStyleSelector, type LearningStyle } from "@/components/video/LearningStyleSelector";
@@ -24,6 +25,19 @@ const STYLE_META: Record<LearningStyle, { icon: string; label: string; color: st
 };
 
 export default function MicroVideoPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex h-screen w-full items-center justify-center bg-[#13161C]">
+        <Loader2 className="h-8 w-8 animate-spin text-[#3D8B71]" />
+      </div>
+    }>
+      <MicroVideoContent />
+    </Suspense>
+  );
+}
+
+function MicroVideoContent() {
+  const searchParams = useSearchParams();
   const [topic, setTopic] = useState("");
   const [subject, setSubject] = useState("Science");
   const [learningStyle, setLearningStyle] = useState<LearningStyle | null>(null);
@@ -33,6 +47,15 @@ export default function MicroVideoPage() {
   const [error, setError] = useState("");
   const [completed, setCompleted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Initialize from search params
+  useEffect(() => {
+    const topicParam = searchParams.get('topic');
+    if (topicParam) {
+      setTopic(topicParam);
+      setShowStyleSelector(true);
+    }
+  }, [searchParams]);
 
   const handleGenerateClick = () => {
     if (!topic.trim()) return;

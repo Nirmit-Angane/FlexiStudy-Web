@@ -114,17 +114,17 @@ export default function FlashcardsPage() {
   const isMastered = activeDeck?.mastered.includes(currentCardIdx) ?? false;
 
   return (
-    <div className="flex flex-col gap-8 pb-12 w-full max-w-6xl mx-auto">
+    <div className="flex flex-col gap-4 sm:gap-8 pb-8 sm:pb-12 w-full max-w-6xl mx-auto px-4 sm:px-0">
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-bold text-gray-900 mb-1">Flashcards</h1>
-          <p className="text-gray-500">Generate AI-powered Q&amp;A decks on any topic.</p>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-gray-900 mb-1">Flashcards</h1>
+          <p className="text-gray-500 text-sm sm:text-base">Generate AI-powered Q&amp;A decks on any topic.</p>
         </div>
         <button
           onClick={() => setShowGenerator(true)}
-          className="flex items-center gap-2 px-5 py-2.5 bg-[#3D8B71] hover:bg-[#2e6854] text-white rounded-xl font-bold shadow-sm transition-all hover:scale-105 active:scale-95"
+          className="flex items-center justify-center gap-2 px-5 py-2.5 bg-[#3D8B71] hover:bg-[#2e6854] text-white rounded-xl font-bold shadow-sm transition-all hover:scale-105 active:scale-95 w-full sm:w-auto"
         >
           <Sparkles size={18} />
           Generate Deck
@@ -139,7 +139,7 @@ export default function FlashcardsPage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
             transition={{ duration: 0.2 }}
-            className="bg-white border border-gray-200 rounded-2xl shadow-md p-6 flex flex-col gap-5"
+            className="bg-white border border-gray-200 rounded-2xl shadow-md p-4 sm:p-6 flex flex-col gap-4 sm:gap-5"
           >
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
@@ -201,7 +201,7 @@ export default function FlashcardsPage() {
 
       {/* Empty State */}
       {decks.length === 0 && !showGenerator && (
-        <div className="flex flex-col items-center justify-center min-h-[400px] bg-white rounded-3xl border border-dashed border-gray-300 gap-5">
+        <div className="flex flex-col items-center justify-center min-h-[300px] sm:min-h-[400px] bg-white rounded-3xl border border-dashed border-gray-300 gap-5 p-6 text-center">
           <div className="w-16 h-16 rounded-2xl bg-[#f0faf6] border border-[#3D8B71]/30 flex items-center justify-center">
             <Sparkles size={28} className="text-[#3D8B71]" />
           </div>
@@ -211,7 +211,7 @@ export default function FlashcardsPage() {
           </div>
           <button
             onClick={() => setShowGenerator(true)}
-            className="px-6 py-3 bg-[#3D8B71] text-white rounded-xl font-bold hover:bg-[#2e6854] transition-all shadow-sm"
+            className="px-6 py-3 bg-[#3D8B71] text-white rounded-xl font-bold hover:bg-[#2e6854] transition-all shadow-sm w-full sm:w-auto"
           >
             + Generate First Deck
           </button>
@@ -220,7 +220,7 @@ export default function FlashcardsPage() {
 
       {/* Decks + Card View */}
       {decks.length > 0 && (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 sm:gap-8">
 
           {/* Decks Sidebar */}
           <div className="lg:col-span-1 flex flex-col gap-4">
@@ -273,28 +273,28 @@ export default function FlashcardsPage() {
           </div>
 
           {/* Main Card Area */}
-          <div className="lg:col-span-3 flex flex-col items-center justify-center bg-white rounded-3xl border border-gray-100 shadow-sm p-8 min-h-[520px]">
+          <div className="lg:col-span-3 flex flex-col items-center justify-center bg-white rounded-3xl border border-gray-100 shadow-sm p-4 sm:p-8 min-h-[400px] sm:min-h-[520px]">
 
             {activeDeck && currentCard ? (
               <>
                 {/* Top Controls */}
-                <div className="w-full flex justify-between items-center mb-6">
+                <div className="w-full flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-0 mb-6">
                   <div className="flex items-center gap-2">
-                    <span className="text-[13px] font-bold text-gray-500 bg-gray-100 px-3 py-1 rounded-lg">
+                    <span className="text-[12px] sm:text-[13px] font-bold text-gray-500 bg-gray-100 px-3 py-1 rounded-lg">
                       {currentCardIdx + 1} / {totalCards}
                     </span>
                     {isMastered && (
-                      <span className="text-[13px] font-bold text-[#3D8B71] bg-[#f0faf6] px-3 py-1 rounded-lg border border-[#3D8B71]/20">
+                      <span className="text-[12px] sm:text-[13px] font-bold text-[#3D8B71] bg-[#f0faf6] px-3 py-1 rounded-lg border border-[#3D8B71]/20">
                         ✓ Mastered
                       </span>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
                     {/* Progress */}
-                    <span className="text-[12px] text-gray-400 font-medium">{masteredCount}/{totalCards} done</span>
+                    <span className="text-[11px] sm:text-[12px] text-gray-400 font-medium">{masteredCount}/{totalCards} done</span>
                     <button
                       onClick={handleRestart}
-                      className="flex items-center gap-1.5 text-[13px] font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg hover:bg-gray-200 transition-colors"
+                      className="flex items-center gap-1.5 text-[12px] sm:text-[13px] font-bold text-gray-500 bg-gray-100 px-3 py-1.5 rounded-lg hover:bg-gray-200 transition-colors"
                     >
                       <RotateCcw size={13} /> Restart
                     </button>
@@ -315,16 +315,16 @@ export default function FlashcardsPage() {
                   >
                     {/* Front */}
                     <div
-                      className="absolute inset-0 w-full h-full bg-white rounded-3xl border-2 border-gray-100 flex flex-col items-center justify-center p-8 text-center"
+                      className="absolute inset-0 w-full h-full bg-white rounded-3xl border-2 border-gray-100 flex flex-col items-center justify-center p-6 sm:p-8 text-center"
                       style={{ backfaceVisibility: "hidden" }}
                     >
-                      <span className="absolute top-6 left-6 text-gray-300"><BookOpen size={22} /></span>
-                      <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest absolute top-7 right-0 left-0 text-center">Question</span>
-                      <h3 className="font-display text-xl md:text-2xl font-bold text-gray-900 leading-snug">
+                      <span className="absolute top-4 sm:top-6 left-4 sm:left-6 text-gray-300"><BookOpen size={20} className="sm:w-[22px]" /></span>
+                      <span className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-widest absolute top-5 sm:top-7 right-0 left-0 text-center">Question</span>
+                      <h3 className="font-display text-lg sm:text-xl md:text-2xl font-bold text-gray-900 leading-snug px-2">
                         {currentCard.front}
                       </h3>
-                      <span className="absolute bottom-6 text-xs text-gray-400 font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                        Click to reveal answer
+                      <span className="absolute bottom-4 sm:bottom-6 text-[11px] sm:text-xs text-gray-400 font-medium opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                        Tap to reveal answer
                       </span>
                     </div>
 
@@ -338,19 +338,19 @@ export default function FlashcardsPage() {
                       }}
                     >
                       <span
-                        className="text-[11px] font-bold uppercase tracking-widest absolute top-7 right-0 left-0 text-center"
+                        className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest absolute top-5 sm:top-7 right-0 left-0 text-center"
                         style={{ color: activeDeck.color }}
                       >
                         Answer
                       </span>
                       <h3
-                        className="font-display text-xl md:text-2xl font-bold leading-snug"
+                        className="font-display text-lg sm:text-xl md:text-2xl font-bold leading-snug px-2"
                         style={{ color: activeDeck.color }}
                       >
                         {currentCard.back}
                       </h3>
-                      <span className="absolute bottom-6 text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: activeDeck.color + "99" }}>
-                        Click to flip back
+                      <span className="absolute bottom-4 sm:bottom-6 text-[11px] sm:text-xs font-medium opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: activeDeck.color + "99" }}>
+                        Tap to flip back
                       </span>
                     </div>
                   </motion.div>

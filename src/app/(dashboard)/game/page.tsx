@@ -54,8 +54,8 @@ export default function GamePage() {
         }
       } else if (event.data.type === 'watch_video') {
          toast.loading("Transferring to AI Video Generator...");
-         // Using the new video topic route logic
-         router.push(`/practice/video/${encodeURIComponent(event.data.topic || 'Maths and Programming')}`);
+         // Redirect to our actual micro-video page with the topic as a query param
+         router.push(`/micro-video?topic=${encodeURIComponent(event.data.topic || 'Maths and Programming')}`);
       }
     };
 
@@ -87,7 +87,7 @@ export default function GamePage() {
         key={key}
         src="/game.html"
         className="w-full h-full border-none"
-        title="CodeQuest Game"
+        title="FlexiQuest Game"
         allow="autoplay; fullscreen"
       />
         

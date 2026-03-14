@@ -8,6 +8,8 @@ import {
   Loader2, RotateCcw
 } from "lucide-react";
 import { MicroVideoPlayer } from "@/components/video/MicroVideoPlayer";
+import { useAuth } from "@/hooks/useAuth";
+import { saveQuizResult, updateUserStats } from "@/lib/firebase-actions";
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 const SUBJECTS = [
@@ -711,6 +713,8 @@ export default function CoursesExplorer() {
   const [search, setSearch] = useState("");
 
   const { getProgress, getModuleStatus, markComplete } = useProgress();
+  const { user } = useAuth();
+  const [learningStyle, setLearningStyle] = useState("Interactive");
 
   // AI Micro-Video States
   const [generatedLesson, setGeneratedLesson] = useState<any>(null);
@@ -765,7 +769,8 @@ export default function CoursesExplorer() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           topic: mod.name, 
-          subject: subj.name 
+          subject: subj.name,
+          learningStyle: learningStyle
         }),
       });
       if (!res.ok) {
@@ -1182,8 +1187,25 @@ export default function CoursesExplorer() {
       goBack(); // Return to modules page
     };
 
+    const handleQuizComplete = async (score: number, total: number) => {
+      setVideoWatched(true);
+      if (user) {
+        // 1. Save results to Firebase
+        await saveQuizResult(user.uid, {
+          topic: m.name,
+          subject: s.name,
+          style: learningStyle,
+          score,
+          total
+        });
+
+        // 2. Update user stats (XP, streaks)
+        await updateUserStats(user.uid, score * 10);
+      }
+    };
+
     return (
-      <div className="page-wrap" style={{ maxWidth: 860, margin: "0 auto", animation: "fadeSlideUp .4s ease" }}>
+      <div className="page-wrap" style={{ maxWidth: 1200, margin: "0 auto", animation: "fadeSlideUp .4s ease" }}>
         <style>{`
           .lesson-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--space-6); }
           .back-btn { display:inline-flex; align-items:center; gap:var(--space-2); font-size:var(--text-sm); font-weight:600; color:var(--text-secondary); cursor:pointer; background:none; border:none; padding:0; transition:color var(--transition-fast); }
@@ -1234,7 +1256,9 @@ export default function CoursesExplorer() {
           ) : generatedLesson ? (
             <MicroVideoPlayer 
               lesson={generatedLesson} 
+              learningStyle={learningStyle}
               onComplete={() => setVideoWatched(true)} 
+              onQuizComplete={handleQuizComplete}
             />
           ) : (
             <div style={{ color: "var(--text-muted)" }}>Initializing player...</div>

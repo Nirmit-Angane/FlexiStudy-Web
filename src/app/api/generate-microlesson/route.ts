@@ -65,14 +65,19 @@ export async function POST(req: NextRequest) {
     const prompt = `You are MicroLearnAI, an expert at creating 30-second micro-learning videos.
 Generate a structured JSON micro-lesson for the topic: "${topic}" (subject: ${subject || "General"}).
 
-The micro-lesson MUST have exactly 5 segments:
+The micro-lesson MUST have exactly 5 segments (30 seconds total) PLUS a 5-6 question MCQ quiz.
+
+VIDEO SEGMENTS (30s):
 1. "hook"        — 3 seconds  — catchy eye-catching title intro
 2. "concept"     — 7 seconds  — animated concept explanation with highlighted keywords
 3. "interactive" — 10 seconds — learning moment adapted to the learner's style (see below)
 4. "insight"     — 7 seconds  — key insight / takeaway with emphasis
 5. "closing"     — 3 seconds  — smooth outro reinforcing main concept
 
-TOTAL DURATION = exactly 30 seconds.
+QUIZ SECTION:
+- Generate 5-6 multiple-choice questions (MCQs) based ONLY on the content of this 30-second video.
+- Each MCQ must have exactly 4 choices and 1 correctIdx (0-3).
+- Focus on key takeaways and concepts explained in the video.
 
 ${styleBlock}
 
@@ -90,8 +95,8 @@ Return ONLY valid JSON matching this EXACT schema:
   "secondaryColor": "#hex",
   "accentColor": "#hex",
   "segments": [
-    { "id": "hook", "durationSeconds": 3, "title": string, "subtitle": string, "emoji": string },
-    { "id": "concept", "durationSeconds": 7, "heading": string, "body": string, "keywords": [string, string, string], "icon": string },
+    { "id": "hook", "durationSeconds": 3, "title": string, "subtitle": string, "emoji": string, "narration": string },
+    { "id": "concept", "durationSeconds": 7, "heading": string, "body": string, "keywords": [string, string, string], "icon": string, "narration": string },
     { 
       "id": "interactive", 
       "durationSeconds": 10, 
@@ -99,16 +104,30 @@ Return ONLY valid JSON matching this EXACT schema:
       "prompt": string,
       "fillBlank": { "sentence": string, "answer": string } | null,
       "quickQuestion": { "question": string, "choices": [string, string], "correctIdx": number } | null,
-      "flowDiagram": { "nodes": [{"id": "n1", "label": string}], "edges": [{"from": "n1", "to": "n2", "label": string}] } | null
+      "flowDiagram": { "nodes": [{"id": "n1", "label": string}], "edges": [{"from": "n1", "to": "n2", "label": string}] } | null,
+      "narration": string
     },
-    { "id": "insight", "durationSeconds": 7, "heading": string, "takeaway": string, "supportingPoints": [string, string] },
-    { "id": "closing", "durationSeconds": 3, "mainConcept": string, "tagline": string, "emoji": string }
+    { "id": "insight", "durationSeconds": 7, "heading": string, "takeaway": string, "supportingPoints": [string, string], "narration": string },
+    { "id": "closing", "durationSeconds": 3, "mainConcept": string, "tagline": string, "emoji": string, "narration": string }
   ],
+  "quiz": [
+    {
+      "question": string,
+      "choices": [string, string, string, string],
+      "correctIdx": number
+    }
+  ],
+  "script": string,
   "quickSummary": {
     "summary": string,
     "notes": [string, string, string, string]
   }
 }
+
+The "narration" field in each segment should be a natural script for that part. 
+The "script" field should be the FULL concatenated narration of all segments combined.
+The narration should be human-like, engaging, and fit the duration (approx 15 words per 5 seconds).
+
  (Return ONLY the JSON, exactly following this schema)
 `;
 
@@ -118,7 +137,7 @@ Return ONLY valid JSON matching this EXACT schema:
       return NextResponse.json({ error: "API configuration error: Key missing" }, { status: 500 });
     }
 
-    console.log("Generating lesson for topic:", topic, "subject:", subject, "style:", styleKey);
+    console.log("Generating lesson + quiz for topic:", topic, "subject:", subject, "style:", styleKey);
     
     let completion;
     try {
@@ -126,7 +145,7 @@ Return ONLY valid JSON matching this EXACT schema:
         messages: [{ role: "user", content: prompt }],
         model: "llama-3.3-70b-versatile",
         temperature: 0.65,
-        max_tokens: 1500,
+        max_tokens: 2000,
         response_format: { type: "json_object" },
       });
     } catch (primaryError: any) {

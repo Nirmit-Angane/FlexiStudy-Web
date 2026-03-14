@@ -1,6 +1,10 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { Volume2, VolumeX, Settings, Play as PlayIcon, Pause, RotateCcw, FastForward, Loader2 } from "lucide-react";
+import { getBestVoice } from "@/lib/video/TTSUtils";
+import { CaptionDisplay } from "../practice/video/CaptionDisplay";
+import { MicroQuizOverlay } from "./MicroQuizOverlay";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface FlowNode { id: string; label: string; }
@@ -12,6 +16,11 @@ interface MicroLesson {
   secondaryColor: string;
   accentColor: string;
   segments: Segment[];
+  quiz?: {
+    question: string;
+    choices: string[];
+    correctIdx: number;
+  }[];
 }
 type Segment =
   | HookSeg | ConceptSeg | InteractiveSeg | InsightSeg | ClosingSeg;
@@ -19,10 +28,12 @@ type Segment =
 interface HookSeg {
   id: "hook"; durationSeconds: number;
   title: string; subtitle: string; emoji: string;
+  narration: string;
 }
 interface ConceptSeg {
   id: "concept"; durationSeconds: number;
   heading: string; body: string; keywords: string[]; icon: string;
+  narration: string;
 }
 interface InteractiveSeg {
   id: "interactive"; durationSeconds: number;
@@ -31,19 +42,23 @@ interface InteractiveSeg {
   fillBlank: { sentence: string; answer: string } | null;
   quickQuestion: { question: string; choices: string[]; correctIdx: number } | null;
   flowDiagram: { nodes: FlowNode[]; edges: FlowEdge[] } | null;
+  narration: string;
 }
 interface InsightSeg {
   id: "insight"; durationSeconds: number;
   heading: string; takeaway: string; supportingPoints: string[];
+  narration: string;
 }
 interface ClosingSeg {
   id: "closing"; durationSeconds: number;
   mainConcept: string; tagline: string; emoji: string;
+  narration: string;
 }
 
 interface Props {
   lesson: MicroLesson;
   onComplete?: () => void;
+  onQuizComplete?: (score: number, total: number) => void;
   learningStyle?: string;
 }
 
@@ -58,7 +73,7 @@ const STYLE_BADGE: Record<string, { icon: string; label: string }> = {
 const W = 1280, H = 720;
 const SEGMENT_COLORS = ["#3D8B71", "#059669", "#dc2626", "#d97706", "#2563eb"];
 
-export function MicroVideoPlayer({ lesson, onComplete, learningStyle }: Props) {
+export function MicroVideoPlayer({ lesson, onComplete, onQuizComplete, learningStyle }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number | undefined>(undefined);
   const startRef = useRef<number>(0);
@@ -66,12 +81,99 @@ export function MicroVideoPlayer({ lesson, onComplete, learningStyle }: Props) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const [segIdx, setSegIdx] = useState(0);
-  const segIdxRef = useRef(0); // ← ref so animate closure never stales
+  const segIdxRef = useRef(0);
+  const [showQuiz, setShowQuiz] = useState(false);
+
+  // TTS States
+  const [showCaptions, setShowCaptions] = useState(true);
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isAudioLoading, setIsAudioLoading] = useState(false);
+  const audioCacheRef = useRef<Record<number, HTMLAudioElement>>({});
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
+  const lastSpokenIdxRef = useRef<number>(-1);
 
   const totalMs = lesson.segments.reduce((a, s) => a + (Number(s.durationSeconds) || 0) * 1000, 0) || 30000;
   const p1 = lesson.primaryColor || "#7c6cff";
   const p2 = lesson.secondaryColor || "#06d6a0";
   const acc = lesson.accentColor || "#ffd166";
+
+  // Voice setup
+  const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null);
+  useEffect(() => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
+    const load = () => {
+      const all = window.speechSynthesis.getVoices();
+      setSelectedVoice(all.find(v =>
+        (v.name.includes("Google") || v.name.includes("Natural")) &&
+        (v.name.includes("Female") || v.name.includes("Zira") ||
+          v.name.includes("Samantha") || v.name.includes("Google US English"))
+      ) || all[0] || null);
+    };
+    load();
+    window.speechSynthesis.onvoiceschanged = load;
+    return () => { window.speechSynthesis.onvoiceschanged = null; };
+  }, []);
+
+
+
+  const stopSpeech = useCallback(() => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+  }, []);
+
+
+
+
+
+
+  const speakSegment = useCallback((index: number) => {
+    if (isMuted || typeof window === "undefined" || !window.speechSynthesis) return;
+    
+    stopSpeech();
+    const segment = lesson.segments[index];
+    if (!segment) return;
+
+    let textToSpeak = "";
+    if (segment.narration) {
+      textToSpeak = segment.narration;
+    } else if (segment.id === "concept") {
+      textToSpeak = (segment as ConceptSeg).heading + ". " + ((segment as ConceptSeg).body || "");
+    } else if (segment.id === "insight") {
+      textToSpeak = (segment as InsightSeg).heading + ". " + ((segment as InsightSeg).takeaway || "");
+    } else if (segment.id === "hook") {
+      textToSpeak = (segment as HookSeg).title + ". " + ((segment as HookSeg).subtitle || "");
+    } else if (segment.id === "interactive") {
+      textToSpeak = (segment as InteractiveSeg).prompt;
+    } else if (segment.id === "closing") {
+      textToSpeak = (segment as ClosingSeg).mainConcept + ". " + ((segment as ClosingSeg).tagline || "");
+    }
+
+    if (!textToSpeak) return;
+
+    // Enhance text for more natural speech
+    const enhancedText = textToSpeak.replace(/([.?!])\s*/g, "$1 ... ");
+    const utterance = new SpeechSynthesisUtterance(enhancedText);
+
+    utterance.voice = selectedVoice;
+    utterance.rate = 0.95 * playbackRate;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    
+    // GC protection
+    (window as any)._currentMicroUtterance = utterance;
+    window.speechSynthesis.speak(utterance);
+  }, [lesson.segments, selectedVoice, playbackRate, isMuted, stopSpeech]);
+
+
+  useEffect(() => {
+    if (!isPlaying) {
+      stopSpeech();
+    }
+  }, [isPlaying, stopSpeech]);
+
+
 
   // ─── PALETTE ──────────────────────────────────────────────────────────────
   const bg = "#ffffff", s1 = "#f9fafb", s2 = "#f3f4f6";
@@ -85,11 +187,22 @@ export function MicroVideoPlayer({ lesson, onComplete, learningStyle }: Props) {
     easeOut(clamp((t - delay) / dur, 0, 1));
 
   const hex2rgba = (hex: string, a: number) => {
-    const r = parseInt(hex.slice(1,3), 16);
-    const g = parseInt(hex.slice(3,5), 16);
-    const b = parseInt(hex.slice(5,7), 16);
+    if (!hex || typeof hex !== "string") return `rgba(0,0,0,${a})`;
+    let r = 0, g = 0, b = 0;
+    const h = hex.startsWith("#") ? hex.slice(1) : hex;
+    if (h.length === 3) {
+      r = parseInt(h[0] + h[0], 16);
+      g = parseInt(h[1] + h[1], 16);
+      b = parseInt(h[2] + h[2], 16);
+    } else if (h.length === 6) {
+      r = parseInt(h.slice(0, 2), 16);
+      g = parseInt(h.slice(2, 4), 16);
+      b = parseInt(h.slice(4, 6), 16);
+    }
+    if (isNaN(r) || isNaN(g) || isNaN(b)) return `rgba(128,128,128,${a})`;
     return `rgba(${r},${g},${b},${a})`;
   };
+
 
   const drawRRect = useCallback((
     ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number,
@@ -251,7 +364,7 @@ export function MicroVideoPlayer({ lesson, onComplete, learningStyle }: Props) {
     ctx.fillStyle = ulGrad; ctx.fillRect(56, 156, 420*uw, 3);
 
     // Body text
-    const lines = wrapText(ctx, seg.body, `400 26px "Inter"`, 620);
+    const lines = wrapText(ctx, seg.body, `400 26px "Inter"`, 900);
     lines.forEach((line, i) => {
       const ba = slideIn(t, 0.6 + i * 0.12);
       ctx.save(); ctx.globalAlpha = ba; ctx.translate((1-ba)*-18, 0);
@@ -573,7 +686,7 @@ export function MicroVideoPlayer({ lesson, onComplete, learningStyle }: Props) {
 
     // Star icon  
     drawTxt(ctx, "★", 140, 260, `28px serif`, acc, "left");
-    const takeaway = wrapText(ctx, seg.takeaway, `500 26px "Inter"`, W - 320);
+    const takeaway = wrapText(ctx, seg.takeaway, `500 26px "Inter"`, 1000);
     takeaway.forEach((l, i) =>
       drawTxt(ctx, l, 180, 242 + i * 40, `500 26px "Inter"`, wh)
     );
@@ -694,7 +807,13 @@ export function MicroVideoPlayer({ lesson, onComplete, learningStyle }: Props) {
       pauseRef.current = totalMs;
       const last = lesson.segments[lesson.segments.length - 1];
       renderSegment(ctx, last, last.durationSeconds);
+      
       onComplete?.();
+      
+      // If quiz exists, show it after a tiny delay for the "completed" frame to sink in
+      if (lesson.quiz && lesson.quiz.length > 0) {
+        setTimeout(() => setShowQuiz(true), 800);
+      }
       return;
     }
 
@@ -711,6 +830,11 @@ export function MicroVideoPlayer({ lesson, onComplete, learningStyle }: Props) {
     if (foundIdx !== segIdxRef.current) {
       segIdxRef.current = foundIdx;
       setSegIdx(foundIdx);
+    }
+
+    if (foundIdx !== lastSpokenIdxRef.current) {
+      lastSpokenIdxRef.current = foundIdx;
+      speakSegment(foundIdx);
     }
 
     const localT = (el - acc2) / 1000;
@@ -744,14 +868,27 @@ export function MicroVideoPlayer({ lesson, onComplete, learningStyle }: Props) {
     }
     setElapsed(0); setSegIdx(0);
     startRef.current = 0; pauseRef.current = 0;
+    lastSpokenIdxRef.current = -1;
   }, [lesson, renderSegment]);
-
   const handlePlayPause = () => {
     if (isPlaying) { pauseRef.current = elapsed; setIsPlaying(false); }
     else {
-      if (elapsed >= totalMs) { pauseRef.current = 0; setElapsed(0); }
+      if (isAudioLoading) return;
+      if (elapsed >= totalMs) { 
+        pauseRef.current = 0; 
+        setElapsed(0); 
+        lastSpokenIdxRef.current = -1;
+      }
       setIsPlaying(true);
     }
+  };
+
+  const handleRestart = () => {
+    pauseRef.current = 0;
+    setElapsed(0);
+    lastSpokenIdxRef.current = -1;
+    stopSpeech();
+    setIsPlaying(true);
   };
 
   const handleScrub = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -760,6 +897,10 @@ export function MicroVideoPlayer({ lesson, onComplete, learningStyle }: Props) {
     const target = pct * totalMs;
     pauseRef.current = target; setElapsed(target);
     startRef.current = 0;
+    lastSpokenIdxRef.current = -1;
+    
+    stopSpeech();
+
     // Find segment and render still frame
     let acc2 = 0, idx = 0;
     for (let i = 0; i < lesson.segments.length; i++) {
@@ -798,35 +939,73 @@ export function MicroVideoPlayer({ lesson, onComplete, learningStyle }: Props) {
         background: "#000", borderRadius: 18, overflow: "hidden",
         boxShadow: "0 12px 50px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.06)",
       }}>
-        <canvas
-          ref={canvasRef} width={W} height={H}
-          style={{ width: "100%", height: "100%", objectFit: "contain", display: "block", cursor: "pointer" }}
-          onClick={handlePlayPause}
-        />
-        {/* Play overlay */}
-        {!isPlaying && elapsed === 0 && (
-          <div
-            onClick={handlePlayPause}
-            style={{
-              position: "absolute", inset: 0, display: "flex",
-              alignItems: "center", justifyContent: "center",
-              background: "rgba(0,0,0,0.42)", backdropFilter: "blur(8px)",
-              cursor: "pointer",
-            }}
-          >
-            <div style={{
-              width: 80, height: 80,
-              background: `linear-gradient(135deg, ${p1}, ${p2})`,
-              borderRadius: "50%", display: "flex", alignItems: "center",
-              justifyContent: "center",
-              boxShadow: `0 0 40px ${p1}55`,
-            }}>
-              <svg width={28} height={28} viewBox="0 0 24 24" fill="white">
-                <polygon points="5,3 19,12 5,21" />
-              </svg>
+        {isAudioLoading && (
+          <div style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "rgba(255,255,255,0.7)",
+            zIndex: 100,
+            backdropFilter: "blur(4px)"
+          }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+              <Loader2 className="animate-spin" size={48} color={p1} />
+              <span style={{ fontWeight: 600, color: wh }}>Preparing Narration...</span>
             </div>
           </div>
         )}
+
+        <canvas
+          ref={canvasRef}
+          width={W}
+          height={H}
+          style={{ width: "100%", height: "100%", objectFit: "contain", cursor: "pointer", display: "block", background: s2 }}
+          onClick={handlePlayPause}
+        />
+        {/* Captions Overlay */}
+        {showCaptions && (
+          <div style={{
+            position: "absolute",
+            bottom: "40px",
+            left: "0",
+            right: "0",
+            display: "flex",
+            justifyContent: "center",
+            padding: "0 40px",
+            pointerEvents: "none",
+            zIndex: 10
+          }}>
+            <CaptionDisplay 
+              caption={lesson.segments[segIdx]?.narration || ""} 
+              isVisible={isPlaying} 
+            />
+          </div>
+        )}
+
+        {/* Play Overlay */}
+        {!isPlaying && elapsed < totalMs && (
+          <div 
+            onClick={handlePlayPause}
+            style={{
+              position: "absolute", inset: 0,
+              background: "rgba(0,0,0,0.3)", backdropFilter: "blur(4px)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              cursor: "pointer", zIndex: 20
+            }}
+          >
+            <div style={{
+              width: 80, height: 80, borderRadius: "50%",
+              background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              backdropFilter: "blur(12px)", color: "#fff"
+            }}>
+              <PlayIcon fill="currentColor" size={32} />
+            </div>
+          </div>
+        )}
+
         {/* Segment name badge */}
         <div style={{
           position: "absolute", top: 14, right: 14,
@@ -835,99 +1014,126 @@ export function MicroVideoPlayer({ lesson, onComplete, learningStyle }: Props) {
           borderRadius: 10, padding: "5px 12px",
           fontSize: 12, fontWeight: 600, color: SEGMENT_COLORS[segIdx],
           textTransform: "uppercase", letterSpacing: "0.08em",
+          zIndex: 30
         }}>
           {lesson.segments[segIdx]?.id}
         </div>
-        {/* Learning style badge */}
-        {learningStyle && STYLE_BADGE[learningStyle] && (
-          <div style={{
-            position: "absolute", top: 14, left: 14,
-            background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)",
-            border: "1px solid rgba(255,255,255,0.1)",
-            borderRadius: 10, padding: "5px 12px",
-            fontSize: 11, fontWeight: 600, color: "#e5e7eb",
-            display: "flex", alignItems: "center", gap: 5,
-          }}>
-            <span>{STYLE_BADGE[learningStyle].icon}</span>
-            {STYLE_BADGE[learningStyle].label} Style
-          </div>
-        )}
       </div>
 
-      {/* Controls */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {/* Progress bar with segment markers */}
-        <div
-          onClick={handleScrub}
-          style={{
-            position: "relative", height: 8, background: "rgba(255,255,255,0.06)",
-            borderRadius: 4, cursor: "pointer", overflow: "hidden",
-          }}
-        >
-          <div style={{
-            position: "absolute", left: 0, top: 0, bottom: 0,
-            width: `${elapsedPct}%`,
-            background: `linear-gradient(90deg, ${p1}, ${p2})`,
-            borderRadius: 4, transition: "none",
-          }} />
-          {/* Segment tick marks */}
-          {segMarks.map((m, i) => (
-            <div
-              key={`mark-${i}`}
-              style={{
-                position: "absolute", left: `${m.pct}%`, top: 0, bottom: 0,
-                width: 2, background: "rgba(0,0,0,0.1)", 
-                zIndex: 2,
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Playback row */}
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <button
+      {/* Controls Bar */}
+      <div style={{
+        background: "var(--bg-surface)",
+        border: "1.5px solid var(--border-default)",
+        borderRadius: "var(--radius-xl)",
+        padding: "12px 20px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 12,
+        boxShadow: "var(--shadow-md)"
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <button 
             onClick={handlePlayPause}
+            className="hover:scale-110 transition-transform"
             style={{
-              width: 42, height: 42, borderRadius: 12,
-              background: `linear-gradient(135deg, ${p1}, ${p2})`,
-              border: "none", cursor: "pointer", display: "flex",
-              alignItems: "center", justifyContent: "center",
-              boxShadow: `0 4px 15px ${p1}44`, flexShrink: 0,
+              background: "none", border: "none", cursor: "pointer",
+              color: "var(--text-primary)", display: "flex", alignItems: "center"
             }}
           >
-            {isPlaying ? (
-              <svg width={16} height={16} viewBox="0 0 24 24" fill="white">
-                <rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" />
-              </svg>
-            ) : (
-              <svg width={16} height={16} viewBox="0 0 24 24" fill="white">
-                <polygon points="5,3 19,12 5,21" />
-              </svg>
-            )}
+            {isPlaying ? <Pause size={24} fill="currentColor" /> : <PlayIcon size={24} fill="currentColor" />}
           </button>
 
-          {/* Time */}
-          <span style={{ fontSize: 14, color: "#9ca3af", fontWeight: 600, minWidth: 72 }}>
-            {fmtTime(elapsed)} / {fmtTime(totalMs)}
-          </span>
+          <button 
+            onClick={() => { setElapsed(0); pauseRef.current = 0; startRef.current = 0; setIsPlaying(true); }}
+            className="hover:rotate-[-45deg] transition-transform"
+            style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-primary)" }}
+          >
+            <RotateCcw size={20} />
+          </button>
 
-          {/* Segment pills */}
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", flex: 1 }}>
-            {lesson.segments.map((s, i) => (
-              <div key={`seg-pill-${s.id}-${i}`} style={{
-                padding: "3px 10px", borderRadius: 8, fontSize: 11, fontWeight: 700,
-                background: segIdx === i ? SEGMENT_COLORS[i] + "22" : "rgba(255,255,255,0.04)",
-                border: `1px solid ${segIdx === i ? SEGMENT_COLORS[i] + "60" : "rgba(255,255,255,0.06)"}`,
-                color: segIdx === i ? SEGMENT_COLORS[i] : "#6b7280",
-                textTransform: "uppercase", letterSpacing: "0.06em",
-                transition: "all 0.2s",
-              }}>
-                {s.id} · {Number(s.durationSeconds) || 0}s
-              </div>
+          <div style={{ flex: 1, height: 6, position: "relative", cursor: "pointer", background: "var(--bg-elevated)", borderRadius: 3 }} onClick={handleScrub}>
+            {/* Segment Marks */}
+            {segMarks.map((m, i) => (
+              <div key={i} style={{ position: "absolute", left: `${m.pct}%`, top: 0, bottom: 0, width: 2, background: "rgba(0,0,0,0.1)", zIndex: 1 }} />
             ))}
+            <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: `${elapsedPct}%`, background: p1, borderRadius: 3, transition: isPlaying ? "none" : "width 0.1s linear" }} />
+          </div>
+
+          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-secondary)", minWidth: 65, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
+            {fmtTime(elapsed)} / {fmtTime(totalMs)}
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 8, borderLeft: "1px solid var(--border-subtle)", paddingLeft: 16 }}>
+            <button 
+              onClick={() => setIsMuted(!isMuted)}
+              style={{ background: "none", border: "none", cursor: "pointer", color: isMuted ? "var(--error)" : "var(--text-primary)" }}
+            >
+              {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+            </button>
+
+            <button 
+              onClick={() => {
+                const rates = [0.75, 1, 1.25, 1.5];
+                const next = rates[(rates.indexOf(playbackRate) + 1) % rates.length];
+                setPlaybackRate(next);
+              }}
+              style={{
+                background: "var(--bg-elevated)", border: "1.5px solid var(--border-default)",
+                borderRadius: "var(--radius-full)", padding: "4px 10px",
+                fontSize: 11, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", gap: 4
+              }}
+            >
+              <FastForward size={12} /> {playbackRate}x
+            </button>
+
+            <button 
+              onClick={() => setShowCaptions(!showCaptions)}
+              style={{
+                background: showCaptions ? "var(--brand-primary)" : "var(--bg-elevated)",
+                color: showCaptions ? "#fff" : "var(--text-primary)",
+                border: "none", borderRadius: "var(--radius-full)",
+                padding: "4px 12px", fontSize: 11, fontWeight: 700, cursor: "pointer"
+              }}
+            >
+              CC
+            </button>
           </div>
         </div>
+
+        {/* Segment info row */}
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {lesson.segments.map((s, i) => (
+            <div key={i} style={{
+              padding: "4px 10px", borderRadius: 8, fontSize: 11, fontWeight: 700,
+              background: segIdx === i ? SEGMENT_COLORS[i] + "15" : "var(--bg-elevated)",
+              border: `1.5px solid ${segIdx === i ? SEGMENT_COLORS[i] + "40" : "var(--border-subtle)"}`,
+              color: segIdx === i ? SEGMENT_COLORS[i] : "var(--text-tertiary)",
+              textTransform: "uppercase", letterSpacing: "0.06em"
+            }}>
+              {s.id} · {s.durationSeconds}s
+            </div>
+          ))}
+        </div>
       </div>
+
+      {/* Quiz Overlay */}
+      {showQuiz && lesson.quiz && (
+        <MicroQuizOverlay 
+          quiz={lesson.quiz}
+          topic={lesson.topic}
+          primaryColor={p1}
+          learningStyle={learningStyle}
+          onRestart={() => {
+            setShowQuiz(false);
+            handleRestart();
+          }}
+          onComplete={(score, total) => {
+            setShowQuiz(false);
+            onQuizComplete?.(score, total);
+          }}
+        />
+      )}
     </div>
   );
 }
+

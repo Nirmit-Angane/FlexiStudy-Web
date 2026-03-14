@@ -140,18 +140,44 @@ export default function DashboardPage() {
         .style-card-grid {
           grid-template-columns: repeat(3, 1fr) !important;
         }
-        /* Keep the grid responsive on small screens */
-        @media (max-width: 640px) {
-          .style-card-grid {
-            grid-template-columns: 1fr !important;
-          }
+
+        /* ─── RESPONSIVE DASHBOARD GRIDS ─── */
+        .dash-page { padding: var(--space-8); }
+        .dash-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-5); gap: var(--space-3); }
+        .dash-topbar-right { display: flex; align-items: center; gap: var(--space-3); }
+        .dash-hero-inner { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--space-6); }
+        .dash-hero-stats { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+        .dash-stat-strip { display: grid; grid-template-columns: repeat(4,1fr); gap: var(--space-4); margin-bottom: var(--space-5); }
+        .dash-main-grid { display: grid; grid-template-columns: 1fr 340px; gap: var(--space-6); align-items: start; }
+        .dash-lessons-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: var(--space-4); }
+        .dash-topics-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: var(--space-4); }
+
+        @media (max-width: 767px) {
+          .dash-page { padding: var(--space-4); }
+          .dash-topbar { flex-wrap: wrap; }
+          .dash-topbar-right { display: none; }
+          .dash-hero-inner { flex-direction: column; align-items: flex-start; }
+          .dash-hero-stats { width: 100%; }
+          .dash-hero-stats > div { flex: 1; min-width: 0; }
+          .dash-stat-strip { grid-template-columns: repeat(2,1fr); }
+          .dash-main-grid { grid-template-columns: 1fr; }
+          .dash-lessons-grid { grid-template-columns: 1fr; }
+          .dash-topics-grid { grid-template-columns: 1fr; }
+          .style-card-grid { grid-template-columns: 1fr !important; }
+        }
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .dash-stat-strip { grid-template-columns: repeat(2,1fr); }
+          .dash-main-grid { grid-template-columns: 1fr; }
+          .dash-lessons-grid { grid-template-columns: repeat(2,1fr); }
+          .dash-topics-grid { grid-template-columns: repeat(2,1fr); }
+          .style-card-grid { grid-template-columns: repeat(3, 1fr) !important; }
         }
       `}</style>
 
-      <div style={{ background: "var(--bg-page)", minHeight: "100vh", padding: "var(--space-8)", fontFamily: "var(--font-body)" }}>
+      <div className="dash-page" style={{ background: "var(--bg-page)", minHeight: "100vh", fontFamily: "var(--font-body)" }}>
 
         {/* ══ TOP BAR ══════════════════════════════════════ */}
-        <div className="anim-1" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "var(--space-5)" }}>
+        <div className="anim-1 dash-topbar">
           <div>
             <p style={{ fontSize: "var(--text-xs)", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 4 }}>
               Friday, March 13 · Spring Term
@@ -160,7 +186,7 @@ export default function DashboardPage() {
               Good morning, {firstName} 👋
             </h1>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "var(--space-3)" }}>
+          <div className="dash-topbar-right">
             <div style={{ display: "flex", alignItems: "center", gap: 8, background: "var(--bg-surface)", border: "1px solid var(--border-default)", borderRadius: "var(--radius-full)", padding: "8px 16px", boxShadow: "var(--shadow-sm)", cursor: "text" }}>
               <Search size={14} color="var(--text-muted)" />
               <span style={{ fontSize: 13, color: "var(--text-muted)" }}>Search courses…</span>
@@ -190,7 +216,7 @@ export default function DashboardPage() {
           <div style={{ position: "absolute", right: 60, bottom: -60, width: 200, height: 200, borderRadius: "50%", background: "rgba(255,255,255,0.04)", pointerEvents: "none" }} />
           <div style={{ position: "absolute", left: -40, top: -40, width: 180, height: 180, borderRadius: "50%", background: "rgba(255,255,255,0.04)", pointerEvents: "none" }} />
 
-          <div style={{ position: "relative", zIndex: 1, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "var(--space-6)" }}>
+          <div className="dash-hero-inner" style={{ position: "relative", zIndex: 1 }}>
             <div>
               <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.14)", borderRadius: "var(--radius-full)", padding: "5px 14px", marginBottom: "var(--space-4)", backdropFilter: "blur(8px)" }}>
                 <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#5BFF9F", display: "inline-block" }} className="live-dot" />
@@ -218,7 +244,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div style={{ display: "flex", gap: "var(--space-3)" }}>
+            <div className="dash-hero-stats">
               {[
                 { emoji: "🔥", val: userStreak.toString(), lbl: "Day Streak" },
                 { emoji: "⭐", val: userXP.toLocaleString(), lbl: "Total XP" },
@@ -235,7 +261,7 @@ export default function DashboardPage() {
         </div>
 
         {/* ══ STAT STRIP ═══════════════════════════════════ */}
-        <div className="anim-3" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "var(--space-4)", marginBottom: "var(--space-5)" }}>
+        <div className="anim-3 dash-stat-strip">
           {[
             { icon: <TrendingUp size={18} />, label: "Weekly XP", value: derivedWeeklyXP.reduce((a, c) => a + c.xp, 0).toLocaleString(), delta: "Last 7 days", iconBg: "var(--success-subtle)", iconClr: "var(--success)" },
             { icon: <BookOpen size={18} />, label: "Lessons Done", value: lessons.length.toString(), delta: lessons.length > 0 ? "Fantastic start" : "Start your journey", iconBg: "var(--info-subtle)", iconClr: "var(--info)" },
@@ -254,7 +280,7 @@ export default function DashboardPage() {
         </div>
 
         {/* ══ MAIN GRID ════════════════════════════════════ */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: "var(--space-6)", alignItems: "start" }}>
+        <div className="dash-main-grid">
 
           {/* ── LEFT COLUMN ── */}
           <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-6)" }}>
@@ -306,7 +332,7 @@ export default function DashboardPage() {
                   View History <ArrowRight size={14} />
                 </Link>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "var(--space-4)" }}>
+              <div className="dash-lessons-grid">
                 {recentLessons.length > 0 ? (
                   recentLessons.map((c, i) => (
                     <div key={i} className="course-card hover-lift">
@@ -427,7 +453,7 @@ export default function DashboardPage() {
                   Browse all <ArrowRight size={14} />
                 </Link>
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "var(--space-4)" }}>
+              <div className="dash-topics-grid">
                 {[
                   { emoji: "🧬", title: "Cell Division", subject: "Biology", difficulty: "Medium", duration: "15 min", thumbBg: "linear-gradient(135deg,#EAF5F1,#C3E8D8)", tagClr: "var(--brand-primary)", tagBg: "var(--brand-primary-light)" },
                   { emoji: "⚛️", title: "Atomic Structure", subject: "Chemistry", difficulty: "Hard", duration: "20 min", thumbBg: "linear-gradient(135deg,#EAF0FB,#C8D8F7)", tagClr: "var(--info)", tagBg: "var(--info-subtle)" },

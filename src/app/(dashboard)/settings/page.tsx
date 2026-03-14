@@ -115,7 +115,7 @@ export default function AccountPage() {
         .pw-eye:hover { color:var(--text-primary); }
         .stat-pill { display:flex;align-items:center;gap:var(--space-2);padding:var(--space-3) var(--space-4);background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);transition:all var(--transition-fast); }
         .stat-pill:hover { border-color:var(--brand-primary);background:var(--brand-primary-light); }
-        .danger-row { display:flex;align-items:center;justify-content:space-between;padding:var(--space-5);border-bottom:1px solid var(--border-subtle); }
+        .danger-row { display:flex;align-items:center;justify-content:space-between;padding:var(--space-5);border-bottom:1px solid var(--border-subtle);gap:var(--space-4);flex-wrap:wrap; }
         .danger-row:last-child { border-bottom:none; }
         .av-wrap { position:relative;cursor:pointer;width:fit-content; }
         .av-overlay { position:absolute;inset:0;border-radius:50%;background:rgba(61,139,113,.75);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity var(--transition-fast); }
@@ -125,19 +125,19 @@ export default function AccountPage() {
         .swatch.chosen { border-color:var(--text-primary); }
       `}</style>
 
-      <div className="acc-page" style={{ maxWidth: 940, margin: "0 auto" }}>
+      <div className="acc-page px-4 md:px-0" style={{ maxWidth: 940, margin: "0 auto" }}>
 
         {/* Page header */}
-        <div style={{ marginBottom: "var(--space-8)" }}>
+        <div style={{ marginBottom: "var(--space-6) md:var(--space-8)" }}>
           <div className="ds-section-label">Account</div>
-          <h1 style={{ fontFamily: "var(--font-display)", fontSize: "var(--text-3xl)", fontWeight: 800, color: "var(--text-primary)", lineHeight: "var(--leading-tight)", marginBottom: "var(--space-1)" }}>My Account</h1>
-          <p style={{ fontSize: "var(--text-base)", color: "var(--text-secondary)" }}>Manage your profile, security settings, and preferences.</p>
+          <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(1.5rem, 5vw, 1.875rem)", fontWeight: 800, color: "var(--text-primary)", lineHeight: "var(--leading-tight)", marginBottom: "var(--space-1)" }}>My Account</h1>
+          <p style={{ fontSize: "var(--text-sm) md:var(--text-base)", color: "var(--text-secondary)" }}>Manage your profile, security settings, and preferences.</p>
         </div>
 
-        <div style={{ display: "flex", gap: "var(--space-6)", alignItems: "flex-start" }}>
+        <div className="flex flex-col md:flex-row gap-6 items-start">
 
           {/* Sidebar */}
-          <div style={{ width: 220, flexShrink: 0, display: "flex", flexDirection: "column", gap: "var(--space-1)", position: "sticky", top: 80 }}>
+          <div className="w-full md:w-[220px] flex shrink-0 flex-col gap-1 md:sticky md:top-20">
             {/* Mini card */}
             <div style={{ background: "var(--bg-surface)", border: "1px solid var(--border-default)", borderRadius: "var(--radius-lg)", padding: "var(--space-4)", marginBottom: "var(--space-4)", display: "flex", alignItems: "center", gap: "var(--space-3)", boxShadow: "var(--shadow-sm)" }}>
               <img src={photoURL} alt="avatar" style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover", border: "2px solid var(--brand-primary-light)", flexShrink: 0, animation: "ringPulse 3s infinite" }} />
@@ -170,9 +170,9 @@ export default function AccountPage() {
           </div>
 
           {/* Content panel */}
-          <div style={{ flex: 1, background: "var(--bg-surface)", borderRadius: "var(--radius-xl)", border: "1px solid var(--border-default)", boxShadow: "var(--shadow-md)", overflow: "hidden", minWidth: 0 }}>
+          <div className="flex-1 min-w-0 bg-white border border-gray-100 rounded-[20px] md:rounded-[24px] shadow-md overflow-hidden">
             {/* Panel header */}
-            <div style={{ padding: "var(--space-6) var(--space-8)", borderBottom: "1px solid var(--border-subtle)", background: "linear-gradient(to right, var(--bg-surface), var(--bg-elevated))" }}>
+            <div className="px-5 md:px-8 py-4 md:py-6 border-bottom border-gray-100 bg-gradient-to-r from-white to-gray-50">
               <div style={{ fontFamily: "var(--font-display)", fontSize: "var(--text-xl)", fontWeight: 700, color: "var(--text-primary)", marginBottom: 3 }}>
                 {TABS.find(t => t.id === activeTab)?.label}
               </div>
@@ -187,18 +187,18 @@ export default function AccountPage() {
 
             {/* ── PROFILE ── */}
             {activeTab === "profile" && (
-              <div style={{ padding: "var(--space-8)" }}>
+              <div className="p-5 md:p-8">
                 {/* Avatar row */}
-                <div style={{ display: "flex", alignItems: "center", gap: "var(--space-6)", padding: "var(--space-5)", background: "var(--bg-elevated)", borderRadius: "var(--radius-lg)", border: "1px solid var(--border-subtle)", marginBottom: "var(--space-6)" }}>
+                <div className="flex flex-col sm:flex-row items-center gap-5 md:gap-6 p-5 bg-gray-50 rounded-2xl border border-gray-100 mb-6">
                   <div className="av-wrap">
                     <img src={photoURL} alt="Avatar" style={{ width: 80, height: 80, borderRadius: "50%", objectFit: "cover", border: "3px solid var(--bg-surface)", boxShadow: "var(--shadow-md)", display: "block" }} />
                     <div className="av-overlay"><Camera size={20} color="#fff" /></div>
                     <div style={{ position: "absolute", bottom: 4, right: 4, width: 14, height: 14, borderRadius: "50%", background: "var(--success)", border: "2.5px solid var(--bg-surface)" }} />
                   </div>
-                  <div style={{ flex: 1 }}>
+                  <div className="flex-1 text-center sm:text-left">
                     <div style={{ fontFamily: "var(--font-display)", fontSize: "var(--text-lg)", fontWeight: 700, color: "var(--text-primary)", marginBottom: 3 }}>{fullName}</div>
                     <div style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", marginBottom: "var(--space-3)" }}>{user?.email}</div>
-                    <div style={{ display: "flex", gap: "var(--space-2)" }}>
+                    <div className="flex justify-center sm:justify-start gap-2">
                       <button style={{ fontSize: "var(--text-xs)", fontWeight: 600, padding: "6px 14px", borderRadius: "var(--radius-sm)", border: "1.5px solid var(--border-strong)", background: "var(--bg-surface)", color: "var(--text-primary)", cursor: "pointer", display: "flex", alignItems: "center", gap: 5, transition: "all var(--transition-fast)", fontFamily: "var(--font-body)" }}
                         onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.borderColor = "var(--brand-primary)"; b.style.color = "var(--brand-primary)"; b.style.background = "var(--brand-primary-light)"; }}
                         onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.borderColor = "var(--border-strong)"; b.style.color = "var(--text-primary)"; b.style.background = "var(--bg-surface)"; }}
@@ -213,7 +213,7 @@ export default function AccountPage() {
                 </div>
 
                 {/* Stats */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "var(--space-3)", marginBottom: "var(--space-6)" }}>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
                   {[
                     { icon: <Zap size={14} />, val: userXP.toLocaleString(), lbl: "Total XP", color: "var(--brand-primary)", bg: "var(--brand-primary-light)" },
                     { icon: <Flame size={14} />, val: `${userStreak}d`, lbl: "Streak", color: "#E84B2A", bg: "#FFF1EB" },
@@ -230,7 +230,7 @@ export default function AccountPage() {
                 </div>
 
                 {/* Form */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "var(--space-4)" }}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div><label className="fl">Display Name</label><input className="fi" value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="Your name" /></div>
                   <div><label className="fl">Email Address</label><input className="fi" defaultValue={user?.email || ""} type="email" disabled /></div>
                   <div><label className="fl">Grade / Level</label>
@@ -259,7 +259,7 @@ export default function AccountPage() {
 
             {/* ── SECURITY ── */}
             {activeTab === "security" && (
-              <div style={{ padding: "var(--space-8)" }}>
+              <div className="p-5 md:p-8">
                 <SectionLabel>Change Password</SectionLabel>
                 <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-4)", maxWidth: 420 }}>
                   <div><label className="fl">Current Password</label>
@@ -310,7 +310,7 @@ export default function AccountPage() {
 
             {/* ── NOTIFICATIONS ── */}
             {activeTab === "notifications" && (
-              <div style={{ padding: "var(--space-8)" }}>
+              <div className="p-5 md:p-8">
                 <SectionLabel>Learning Alerts</SectionLabel>
                 <div style={{ display: "flex", flexDirection: "column", gap: "var(--space-3)" }}>
                   <SettingRow icon={Flame} title="Daily Streak Reminder" desc="Get nudged before your streak expires" end={<Toggle on={notifs.streakReminder} onChange={v => setNotifs(p => ({ ...p, streakReminder: v }))} />} />
@@ -331,7 +331,7 @@ export default function AccountPage() {
 
             {/* ── APPEARANCE ── */}
             {activeTab === "appearance" && (
-              <div style={{ padding: "var(--space-8)" }}>
+              <div className="p-5 md:p-8">
                 <SectionLabel>Theme</SectionLabel>
                 <div style={{ display: "flex", gap: "var(--space-3)", marginBottom: "var(--space-6)" }}>
                   {[{ id: "light", label: "Light", preview: "#FAF8F4", bar: "#3D8B71", locked: false }, { id: "dark", label: "Dark (Pro)", preview: "#1C1F27", bar: "#56C99A", locked: true }].map(t => (
@@ -363,7 +363,7 @@ export default function AccountPage() {
 
             {/* ── DANGER ZONE ── */}
             {activeTab === "danger" && (
-              <div style={{ padding: "var(--space-8)" }}>
+              <div className="p-5 md:p-8">
                 <div style={{ fontSize: "var(--text-sm)", color: "var(--text-secondary)", lineHeight: "var(--leading-relaxed)", padding: "var(--space-4) var(--space-5)", background: "var(--error-subtle)", borderRadius: "var(--radius-md)", border: "1px solid rgba(224,82,82,.25)", marginBottom: "var(--space-6)" }}>
                   ⚠️ The actions below are <strong style={{ color: "var(--error-text)" }}>permanent and irreversible</strong>. Please read carefully before proceeding.
                 </div>
@@ -394,14 +394,14 @@ export default function AccountPage() {
 
             {/* Panel footer */}
             {showFooter && (
-              <div style={{ padding: "var(--space-5) var(--space-8)", borderTop: "1px solid var(--border-subtle)", background: "var(--bg-elevated)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-5 md:px-8 py-5 bg-gray-50 border-t border-gray-100">
                 {saved
                   ? <div className="saved-pop" style={{ display: "flex", alignItems: "center", gap: "var(--space-2)", fontSize: "var(--text-sm)", fontWeight: 600, color: "var(--success-text)" }}>
                     <div style={{ width: 8, height: 8, borderRadius: "50%", background: "var(--success)" }} /> Changes saved successfully
                   </div>
-                  : <span style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)" }}>Changes are saved to your account instantly.</span>
+                  : <span style={{ fontSize: "var(--text-xs)", color: "var(--text-muted)", textAlign: "center" }}>Changes are saved to your account instantly.</span>
                 }
-                <button className="save-btn" onClick={handleSave}>
+                <button className="save-btn w-full sm:w-auto" onClick={handleSave}>
                   {saved ? <><Check size={15} /> Saved!</> : "Save Changes"}
                 </button>
               </div>

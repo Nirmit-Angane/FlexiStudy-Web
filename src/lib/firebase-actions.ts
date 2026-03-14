@@ -67,3 +67,43 @@ export async function updateUserStats(userId: string, xpGain: number) {
     lastActivity: serverTimestamp(),
   });
 }
+
+/**
+ * Saves a quiz result to the user's history and updates their average style performance.
+ */
+export async function saveQuizResult(userId: string, quizData: {
+  topic: string;
+  subject: string;
+  style: string;
+  score: number;
+  total: number;
+}) {
+  // 1. Save to history
+  const historyRef = collection(db, "users", userId, "quiz_history");
+  await setDoc(doc(historyRef), {
+    ...quizData,
+    timestamp: serverTimestamp(),
+  });
+
+  // 2. Update style performance stats
+  const statsRef = doc(db, "users", userId, "stats", "style_performance");
+  const statsSnap = await getDoc(statsRef);
+  
+  const currentStats = statsSnap.exists() ? statsSnap.data() : {};
+  const styleKey = quizData.style || "Interactive";
+  const existing = currentStats[styleKey] || { totalScore: 0, count: 0 };
+  
+  await setDoc(statsRef, {
+    [styleKey]: {
+      totalScore: existing.totalScore + (quizData.score / quizData.total),
+      count: existing.count + 1,
+      avgScore: (existing.totalScore + (quizData.score / quizData.total)) / (existing.count + 1)
+    }
+  }, { merge: true });
+
+  // 3. Update subject counts
+  const subjectRef = doc(db, "users", userId, "stats", "subjects");
+  await setDoc(subjectRef, {
+    [quizData.subject]: increment(1)
+  }, { merge: true });
+}

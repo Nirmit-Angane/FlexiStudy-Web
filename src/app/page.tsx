@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, ArrowRight, CheckCircle2, Star, Users, Brain, Zap, Globe, ChevronDown } from "lucide-react";
+import { BookOpen, ArrowRight, CheckCircle2, Star, Users, Brain, Zap, Globe, ChevronDown, Gamepad2 } from "lucide-react";
 
 /* ─────────────────────────────────────────────────────────────
    SPLASH SCREEN COMPONENT
@@ -361,6 +361,12 @@ export default function LandingPage() {
                 desc: "Connect with peers worldwide, share resources, and participate in collaborative study sessions.",
                 icon: Globe,
                 color: "bg-blue-100 text-blue-600"
+              },
+              {
+                title: "FlexiQuest RPG",
+                desc: "Play an immersive isometric RPG where you complete missions by solving educational challenges in Kenney City.",
+                icon: Gamepad2,
+                color: "bg-emerald-100 text-emerald-600"
               }
             ].map((feature, idx) => (
               <Link href="/login" key={idx} className="card p-5 sm:p-6 md:p-8 hover:-translate-y-2 transition-transform duration-300">
@@ -459,6 +465,7 @@ export default function LandingPage() {
               <input
                 type="email"
                 placeholder="Email address"
+                suppressHydrationWarning
                 className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-sm flex-1 min-w-0 focus:outline-none focus:border-brand-primary"
               />
               <button className="bg-brand-primary p-2 rounded-lg hover:bg-brand-primary-dark transition-colors shrink-0">

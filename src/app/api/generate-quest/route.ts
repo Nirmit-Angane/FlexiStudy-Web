@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { subject, difficulty } = body;
 
-    const prompt = `You are an AI mission generator for a cyberpunk isometric RPG called "CodeQuest". 
+    const prompt = `You are an AI mission generator for a cyberpunk isometric RPG called "FlexiQuest". 
     Create a fun, short educational trivia challenge about the subject: "${subject}" at a "${difficulty}" level.
     Make the description immersive and mention "Kenney City" or hackers/agents occasionally.
     
