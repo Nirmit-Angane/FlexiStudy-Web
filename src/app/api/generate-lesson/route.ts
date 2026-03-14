@@ -1,10 +1,5 @@
-// app/api/generate-lesson/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import Groq from "groq-sdk";
-
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+import { generateChatCompletion, QUALITY_MODEL } from "@/lib/groq";
 
 export async function POST(req: NextRequest) {
   try {
@@ -104,15 +99,15 @@ Return ONLY valid JSON matching this exact schema (no markdown, no backticks):
   }
 }`;
 
-    const chatCompletion = await groq.chat.completions.create({
-      messages: [{ role: "user", content: prompt }],
-      model: "llama-3.3-70b-versatile",
-      temperature: 0.7,
-      max_tokens: 2000,
-      response_format: { type: "json_object" },
-    });
-
-    const content = chatCompletion.choices[0]?.message?.content;
+    const content = await generateChatCompletion(
+      [{ role: "user", content: prompt }],
+      {
+        model: QUALITY_MODEL,
+        temperature: 0.7,
+        max_tokens: 2000,
+        response_format: { type: "json_object" },
+      }
+    );
     if (!content) {
       throw new Error("Empty response from AI");
     }

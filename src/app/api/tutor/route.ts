@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import Groq from "groq-sdk";
-
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+import { generateChatCompletion, DEFAULT_MODEL } from "@/lib/groq";
 
 export async function POST(req: NextRequest) {
   try {
@@ -33,14 +29,11 @@ Current date: ${new Date().toLocaleDateString()}
       { role: "user", content: message },
     ];
 
-    const completion = await groq.chat.completions.create({
-      messages,
-      model: "llama-3.3-70b-versatile",
+    const answer = await generateChatCompletion(messages as any, {
+      model: DEFAULT_MODEL,
       temperature: 0.7,
       max_tokens: 1000,
     });
-
-    const answer = completion.choices[0]?.message?.content || "I'm sorry, I couldn't process that request.";
 
     return NextResponse.json({ answer });
   } catch (error: any) {

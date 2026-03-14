@@ -5,6 +5,10 @@ import { useSearchParams } from "next/navigation";
 import { Zap, Sparkles, BookOpen, Loader2, RotateCcw, Download } from "lucide-react";
 import { MicroVideoPlayer } from "@/components/video/MicroVideoPlayer";
 import { LearningStyleSelector, type LearningStyle } from "@/components/video/LearningStyleSelector";
+import { MicroQuizOverlay } from "@/components/video/MicroQuizOverlay";
+import { useAuth } from "@/hooks/useAuth";
+import { analyticsService } from "@/services/analyticsService";
+
 
 const SUBJECTS = [
   "Mathematics", "Science", "Technology", "History", "Geography",
@@ -37,6 +41,7 @@ export default function MicroVideoPage() {
 }
 
 function MicroVideoContent() {
+  const { user } = useAuth();
   const searchParams = useSearchParams();
   const [topic, setTopic] = useState("");
   const [subject, setSubject] = useState("Science");
@@ -46,6 +51,8 @@ function MicroVideoContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [completed, setCompleted] = useState(false);
+  const [showQuizView, setShowQuizView] = useState(false);
+  const [quizScore, setQuizScore] = useState<{ score: number, total: number } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Initialize from search params
@@ -94,6 +101,7 @@ function MicroVideoContent() {
   const reset = () => {
     setLesson(null); setCompleted(false); setError(""); setTopic("");
     setSubject("Science"); setLearningStyle(null); setShowStyleSelector(false);
+    setShowQuizView(false); setQuizScore(null);
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
@@ -112,9 +120,9 @@ function MicroVideoContent() {
         @keyframes spin { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
 
         .mv-page { 
-          max-width: 960px; margin: 0 auto; padding: 0 0 64px; 
+          max-width: 1100px; margin: 0 auto; padding: 0 0 64px; 
           font-family: 'Inter', sans-serif; animation: fadeUp .4s ease;
-          display: flex; flex-direction: column; gap: 32px;
+          display: flex; flex-direction: column; gap: 24px;
         }
 
         /* ── Hero ── */
@@ -122,6 +130,10 @@ function MicroVideoContent() {
           position: relative; border-radius: 24px; overflow: hidden;
           padding: 52px 48px; border: 1.5px solid #b3d9cc;
           background: linear-gradient(135deg, #f0faf5 0%, #e8f5ef 50%, #f0faf5 100%);
+          transition: all 0.4s ease;
+        }
+        .mv-hero.compact {
+          padding: 24px 32px; border-radius: 16px;
         }
         .mv-hero::before {
           content:''; position:absolute; inset:0; pointer-events:none;
@@ -133,12 +145,18 @@ function MicroVideoContent() {
           padding:6px 16px; border-radius:999px; border:1px solid rgba(61,139,113,.45);
           background:rgba(61,139,113,.1); color:#2e6b57;
           font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
-          margin-bottom:20px;
+          margin-bottom:20px; transition: margin 0.4s;
+        }
+        .mv-hero.compact .mv-hero-badge {
+          margin-bottom: 12px;
         }
         .mv-hero h1 {
           font-family:'Plus Jakarta Sans',sans-serif; font-weight:800;
           font-size:clamp(28px,4vw,48px); color:#111827; line-height:1.1;
-          margin:0 0 12px;
+          margin:0 0 12px; transition: font-size 0.4s;
+        }
+        .mv-hero.compact h1 {
+          font-size: clamp(24px, 3vw, 32px); margin: 0;
         }
         .mv-hero-gradient-text {
           background: linear-gradient(135deg,#3D8B71,#06d6a0);
@@ -147,6 +165,10 @@ function MicroVideoContent() {
         }
         .mv-hero p {
           color:#4b7a66; font-size:16px; line-height:1.6; margin:0 0 32px; max-width:580px;
+          transition: all 0.4s;
+        }
+        .mv-hero.compact p {
+          display: none;
         }
 
         /* ── Step labels ── */
@@ -279,6 +301,28 @@ function MicroVideoContent() {
           display:flex; align-items:center; gap:6px; transition:all .18s;
         }
         .mv-btn-ghost:hover { background:#e6f3ee; border-color:#3D8B71; color:#2e6b57; }
+        .mv-btn-primary {
+          padding: 10px 24px; border-radius: 12px; border: none;
+          color: white; cursor: pointer;
+          font-size: 14px; font-weight: 700; font-family: 'Inter', sans-serif;
+          display: flex; align-items: center; gap: 8px; transition: all .2s;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          box-sizing: border-box;
+        }
+        .mv-btn-primary:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+          filter: brightness(1.1);
+        }
+        .mv-btn-primary:active { transform: translateY(0); }
+        .mv-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .mv-quiz-fullscreen-container {
+          position: relative; width: 100%; border-radius: 20px;
+          overflow: hidden; background: #0a0a0f;
+          min-height: 520px; display: flex; flex-direction: column;
+        }
+
 
         /* ── Info cards ── */
         .mv-cards-grid {
@@ -299,9 +343,8 @@ function MicroVideoContent() {
 
         /* ── Notes section ── */
         .mv-notes-container {
-          display: flex; flex-direction: column; gap: 24px;
-          padding: 32px; border-radius: 20px; background: #fff;
-          border: 1.5px solid #e5e7eb; box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+          display: flex; flex-direction: column; gap: 20px;
+          padding-top: 16px; border-top: 1.5px solid #f3f4f6;
           animation: fadeUp .5s ease;
         }
         .mv-summary-box {
@@ -340,7 +383,7 @@ function MicroVideoContent() {
       <div className="mv-page">
 
         {/* Hero */}
-        <div className="mv-hero" style={{ position: "relative" }}>
+        <div className={`mv-hero ${lesson ? "compact" : ""}`} style={{ position: "relative" }}>
           <div className="mv-hero-badge">
             <Zap size={13} />
             AI Micro-Video Generator
@@ -356,23 +399,25 @@ function MicroVideoContent() {
           </p>
 
           {/* Feature chips */}
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            {[
-              { icon: "🎯", label: "4 learning styles" },
-              { icon: "✦", label: "5 animated segments" },
-              { icon: "⚡", label: "Style-adapted content" },
-              { icon: "🔀", label: "Smart subject detection" },
-            ].map((f, i) => (
-              <div key={`feature-${i}`} style={{
-                display: "flex", alignItems: "center", gap: 7,
-                padding: "6px 14px", borderRadius: 999,
-                background: "rgba(61,139,113,0.07)", border: "1px solid rgba(61,139,113,0.2)",
-                fontSize: 13, color: "#2e6b57", fontWeight: 500,
-              }}>
-                <span>{f.icon}</span> {f.label}
-              </div>
-            ))}
-          </div>
+          {!lesson && (
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              {[
+                { icon: "🎯", label: "4 learning styles" },
+                { icon: "✦", label: "5 animated segments" },
+                { icon: "⚡", label: "Style-adapted content" },
+                { icon: "🔀", label: "Smart subject detection" },
+              ].map((f, i) => (
+                <div key={`feature-${i}`} style={{
+                  display: "flex", alignItems: "center", gap: 7,
+                  padding: "6px 14px", borderRadius: 999,
+                  background: "rgba(61,139,113,0.07)", border: "1px solid rgba(61,139,113,0.2)",
+                  fontSize: 13, color: "#2e6b57", fontWeight: 500,
+                }}>
+                  <span>{f.icon}</span> {f.label}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* ── Learning Style Selector ── */}
@@ -520,14 +565,56 @@ function MicroVideoContent() {
             </div>
 
             {/* Player */}
-            <MicroVideoPlayer
-              lesson={lesson}
-              onComplete={() => setCompleted(true)}
-              learningStyle={learningStyle || undefined}
-            />
+            {!showQuizView && (
+              <MicroVideoPlayer
+                lesson={lesson}
+                onComplete={() => {
+                  setCompleted(true);
+                  if (user && lesson) {
+                    analyticsService.saveLessonCompletion(user.uid, {
+                      topic: lesson.topic,
+                      subject: subject,
+                      primaryColor: lesson.primaryColor || "#7c6cff",
+                      duration: lesson.segments.reduce((acc: number, s: any) => acc + (s.durationSeconds || 0), 0),
+                      learningStyle: learningStyle || "Interactive"
+                    }).catch(console.error);
+                  }
+                }}
+                learningStyle={learningStyle || undefined}
+              />
+            )}
+
+            {/* Quiz View */}
+            {showQuizView && lesson.quiz && (
+              <div className="mv-quiz-fullscreen-container" style={{ animation: "fadeIn .4s ease" }}>
+                <MicroQuizOverlay
+                  quiz={lesson.quiz}
+                  topic={lesson.topic}
+                  primaryColor={lesson.primaryColor || "#7c6cff"}
+                  learningStyle={learningStyle || "interactive"}
+                  onRestart={() => {
+                    setShowQuizView(false);
+                    setCompleted(false);
+                  }}
+                  onComplete={(score, total) => {
+                    setQuizScore({ score, total });
+                    if (user && lesson) {
+                      analyticsService.saveQuizResult(user.uid, {
+                        topic: lesson.topic,
+                        subject: subject, // Using current state subject
+                        score: score,
+                        totalQuestions: total,
+                        style: learningStyle || "Interactive",
+                        difficulty: "Medium"
+                      }).catch(console.error);
+                    }
+                  }}
+                />
+              </div>
+            )}
 
             {/* Completion banner */}
-            {completed && (
+            {completed && !showQuizView && (
               <div className="mv-complete-banner" style={{ animation: "fadeUp .35s ease" }}>
                 <div className="mv-complete-text">
                   <span className="mv-complete-icon">🎉</span>
@@ -537,18 +624,21 @@ function MicroVideoContent() {
                   </div>
                 </div>
                 <div className="mv-complete-actions">
-                  <button className="mv-btn-ghost" onClick={reset}>
-                    <RotateCcw size={13} /> New Topic
+                  <button className="mv-btn-primary" onClick={() => setShowQuizView(true)} style={{ background: lesson.primaryColor || '#7c6cff', color: 'white' }}>
+                    <Sparkles size={13} /> Start Quiz
                   </button>
                   <button className="mv-btn-ghost" onClick={() => setCompleted(false)}>
                     Watch Again
+                  </button>
+                  <button className="mv-btn-ghost" onClick={reset}>
+                    <RotateCcw size={13} /> New Topic
                   </button>
                 </div>
               </div>
             )}
 
             {/* Quick Summary & Notes */}
-            {lesson.quickSummary && (
+            {lesson.quickSummary && !showQuizView && (
               <div className="mv-notes-container">
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div className="mv-step-dot">✨</div>

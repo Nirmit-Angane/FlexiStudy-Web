@@ -47,12 +47,17 @@ export default function AnalyticsPage() {
       if (!user) return;
       setLoading(true);
       try {
-        // 1. Fetch Style Performance
-        const statsRef = doc(db, "users", user.uid, "stats", "style_performance");
-        const statsSnap = await getDoc(statsRef);
-        if (statsSnap.exists()) {
-          const data = statsSnap.data();
-          const mapped = Object.entries(data).map(([style, val]: [string, any]) => ({
+        const { analyticsService } = await import("@/services/analyticsService");
+        const { localDB } = await import("@/lib/db");
+
+        // 1. Fetch Stats (local first)
+        let stats = await localDB.get("stats", user.uid);
+        if (!stats) {
+          stats = await analyticsService.syncStats(user.uid);
+        }
+
+        if (stats && stats.stylePerformance) {
+          const mapped = Object.entries(stats.stylePerformance).map(([style, val]: [string, any]) => ({
             name: style,
             avgScore: Math.round(val.avgScore * 100),
             fill: STYLE_COLORS[style] || "#000"
@@ -68,30 +73,35 @@ export default function AnalyticsPage() {
           }
         }
 
-        // 2. Fetch Quiz History
-        const historyRef = collection(db, "users", user.uid, "quiz_history");
-        const historyQuery = query(historyRef, orderBy("timestamp", "desc"), limit(10));
-        const historySnap = await getDocs(historyQuery);
-        const historyData = historySnap.docs.map(d => d.data()).reverse();
+        // 2. Fetch Quiz History (local first)
+        let history = await localDB.getAll("quiz_history");
+        if (history.length === 0) {
+          history = await analyticsService.syncQuizHistory(user.uid);
+        }
+
+        // Fix sorting to handle both ISO strings and Firestore Timestamps
+        const sortedHistory = [...history].sort((a, b) => {
+          const timeA = a.timestamp?.toDate ? a.timestamp.toDate().getTime() : new Date(a.timestamp).getTime();
+          const timeB = b.timestamp?.toDate ? b.timestamp.toDate().getTime() : new Date(b.timestamp).getTime();
+          return timeB - timeA;
+        }).slice(0, 10).reverse();
         
-        setQuizHistory(historyData.map((qr, idx) => ({
+        setQuizHistory(sortedHistory.map((qr, idx) => ({
           quiz: `Q${idx + 1}`,
           score: qr.score,
           style: qr.style
         })));
 
-        setTopicsToRevisit(historySnap.docs
-          .map(d => d.data())
+        // Sort topics to revisit by score (lowest first)
+        setTopicsToRevisit(history
           .filter(d => d.score < 3)
+          .sort((a, b) => a.score - b.score)
           .map(d => ({ topic: d.topic, score: d.score }))
           .slice(0, 3));
 
-        // 3. Fetch Subject Counts
-        const subjectRef = doc(db, "users", user.uid, "stats", "subjects");
-        const subjectSnap = await getDoc(subjectRef);
-        if (subjectSnap.exists()) {
-          const data = subjectSnap.data();
-          setSubjects(Object.entries(data).map(([subject, count]) => ({
+        // 3. Fetch Subject Counts from stats
+        if (stats && stats.subjects) {
+          setSubjects(Object.entries(stats.subjects).map(([subject, count]) => ({
             subject,
             count
           })));

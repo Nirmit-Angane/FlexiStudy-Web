@@ -1,4 +1,5 @@
 import { db } from "./firebase";
+import { localDB } from "./db";
 import { 
   doc, 
   setDoc, 
@@ -106,4 +107,29 @@ export async function saveQuizResult(userId: string, quizData: {
   await setDoc(subjectRef, {
     [quizData.subject]: increment(1)
   }, { merge: true });
+
+  // 4. Update local DB for immediate UI update
+  try {
+    const stats = await localDB.get("stats", userId);
+    if (stats) {
+      // Update local style performance
+      if (!stats.stylePerformance) stats.stylePerformance = {};
+      const localExisting = stats.stylePerformance[styleKey] || { totalScore: 0, count: 0 };
+      const newTotalScore = localExisting.totalScore + (quizData.score / quizData.total);
+      const newCount = localExisting.count + 1;
+      stats.stylePerformance[styleKey] = {
+        totalScore: newTotalScore,
+        count: newCount,
+        avgScore: newTotalScore / newCount
+      };
+
+      // Update local subjects
+      if (!stats.subjects) stats.subjects = {};
+      stats.subjects[quizData.subject] = (stats.subjects[quizData.subject] || 0) + 1;
+
+      await localDB.set("stats", stats);
+    }
+  } catch (err) {
+    console.warn("Failed to update local stats:", err);
+  }
 }

@@ -1,9 +1,5 @@
 import { NextResponse } from 'next/server';
-import Groq from "groq-sdk";
-
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+import { generateChatCompletion, DEFAULT_MODEL } from "@/lib/groq";
 
 export async function POST(req: Request) {
   try {
@@ -29,15 +25,16 @@ export async function POST(req: Request) {
     The acceptableAnswers array must contain valid, short text answers that the user might type in. Provide a few variations of the correct answer (e.g. lowercase, slightly different phrasing).
     Keep the string lengths reasonable. Ensure JSON is valid.`;
 
-    const chatCompletion = await groq.chat.completions.create({
-      messages: [{ role: 'user', content: prompt }],
-      model: "llama-3.3-70b-versatile",
-      temperature: 0.7,
-      max_tokens: 1024,
-      response_format: { type: "json_object" },
-    });
+    const responseContent = await generateChatCompletion(
+      [{ role: 'user', content: prompt }],
+      {
+        model: DEFAULT_MODEL,
+        temperature: 0.7,
+        max_tokens: 1024,
+        response_format: { type: "json_object" },
+      }
+    );
 
-    const responseContent = chatCompletion.choices[0]?.message?.content;
     if (!responseContent) throw new Error("No content generated");
 
     const questData = JSON.parse(responseContent);

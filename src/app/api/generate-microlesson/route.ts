@@ -1,8 +1,5 @@
-// app/api/generate-microlesson/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import Groq from "groq-sdk";
-
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+import { generateChatCompletion, QUALITY_MODEL } from "@/lib/groq";
 
 // ── Style-specific prompt sections ──────────────────────────────────────────
 const STYLE_INSTRUCTIONS: Record<string, string> = {
@@ -139,27 +136,15 @@ The narration should be human-like, engaging, and fit the duration (approx 15 wo
 
     console.log("Generating lesson + quiz for topic:", topic, "subject:", subject, "style:", styleKey);
     
-    let completion;
-    try {
-      completion = await groq.chat.completions.create({
-        messages: [{ role: "user", content: prompt }],
-        model: "llama-3.3-70b-versatile",
+    const content = await generateChatCompletion(
+      [{ role: "user", content: prompt }],
+      {
+        model: QUALITY_MODEL,
         temperature: 0.65,
         max_tokens: 2000,
         response_format: { type: "json_object" },
-      });
-    } catch (primaryError: any) {
-      console.warn("Primary model failed, trying fallback llama-3.1-8b-instant:", primaryError.message);
-      completion = await groq.chat.completions.create({
-        messages: [{ role: "user", content: prompt }],
-        model: "llama-3.1-8b-instant",
-        temperature: 0.65,
-        max_tokens: 1500,
-        response_format: { type: "json_object" },
-      });
-    }
-
-    const content = completion.choices[0]?.message?.content;
+      }
+    );
     console.log("AI Response received, length:", content?.length);
     
     if (!content) throw new Error("Empty AI response from both models");

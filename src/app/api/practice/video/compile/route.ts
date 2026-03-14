@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import Groq from "groq-sdk";
-
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+import { generateChatCompletion, QUALITY_MODEL, DEFAULT_MODEL } from "@/lib/groq";
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,14 +15,16 @@ Write a 60-second narration script for an educational video about: "${topic}".
 Structure: intro (10s) → core concept 1 (15s) → core concept 2 (15s) → example/analogy (10s) → summary (10s).
 Output the script ONLY as a raw string. Provide only the spoken text, without any visual cues or headers. Do not use markdown.`;
 
-    const scriptCompletion = await groq.chat.completions.create({
-      messages: [{ role: "user", content: scriptPrompt }],
-      model: "llama-3.3-70b-versatile",
-      temperature: 0.7,
-      max_tokens: 500,
-    });
+    const script = await generateChatCompletion(
+      [{ role: "user", content: scriptPrompt }],
+      {
+        model: QUALITY_MODEL,
+        temperature: 0.7,
+        max_tokens: 500,
+      }
+    );
 
-    const script = scriptCompletion.choices[0]?.message?.content?.trim() || "Script generation failed.";
+    if (!script) throw new Error("Script generation failed.");
 
     // 2. Generate scenes, MCQs, and notes in parallel relying on the generated script
     const [scenesData, mcqData, notesData] = await Promise.all([
@@ -77,15 +75,17 @@ ${script}
 `;
 
   try {
-    const completion = await groq.chat.completions.create({
-      messages: [{ role: "user", content: prompt }],
-      model: "llama-3.3-70b-versatile",
-      temperature: 0.3,
-      max_tokens: 1500,
-      response_format: { type: "json_object" },
-    });
+    const content = await generateChatCompletion(
+      [{ role: "user", content: prompt }],
+      {
+        model: QUALITY_MODEL,
+        temperature: 0.3,
+        max_tokens: 1500,
+        response_format: { type: "json_object" },
+      }
+    );
 
-    const parsed = JSON.parse(completion.choices[0]?.message?.content || '{"scenes":[]}');
+    const parsed = JSON.parse(content || '{"scenes":[]}');
     let scenes = Array.isArray(parsed.scenes) ? parsed.scenes : [];
     
     // Ensure exactly 6 scenes
@@ -128,14 +128,16 @@ Return ONLY a JSON object with an "mcqs" array.
 Schema for each MCQ: { "question": "string", "options": ["A", "B", "C", "D"], "correctAnswer": 0-3 index, "explanation": "string" }`;
 
   try {
-    const completion = await groq.chat.completions.create({
-      messages: [{ role: "user", content: prompt }],
-      model: "llama-3.3-70b-versatile",
-      temperature: 0.4,
-      max_tokens: 800,
-      response_format: { type: "json_object" },
-    });
-    return JSON.parse(completion.choices[0]?.message?.content || '{"mcqs":[]}').mcqs;
+    const content = await generateChatCompletion(
+      [{ role: "user", content: prompt }],
+      {
+        model: DEFAULT_MODEL, // Simple task, 8B is fine
+        temperature: 0.4,
+        max_tokens: 800,
+        response_format: { type: "json_object" },
+      }
+    );
+    return JSON.parse(content || '{"mcqs":[]}').mcqs;
   } catch (e) { return []; }
 }
 
@@ -149,13 +151,15 @@ Return ONLY a JSON object with this schema:
 }`;
 
   try {
-    const completion = await groq.chat.completions.create({
-      messages: [{ role: "user", content: prompt }],
-      model: "llama-3.3-70b-versatile",
-      temperature: 0.4,
-      max_tokens: 800,
-      response_format: { type: "json_object" },
-    });
-    return JSON.parse(completion.choices[0]?.message?.content || '{}');
+    const content = await generateChatCompletion(
+      [{ role: "user", content: prompt }],
+      {
+        model: DEFAULT_MODEL, // Simple task, 8B is fine
+        temperature: 0.4,
+        max_tokens: 800,
+        response_format: { type: "json_object" },
+      }
+    );
+    return JSON.parse(content || '{}');
   } catch (e) { return {}; }
 } 

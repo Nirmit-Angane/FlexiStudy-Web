@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { MicroVideoPlayer } from "@/components/video/MicroVideoPlayer";
 import { useAuth } from "@/hooks/useAuth";
-import { saveQuizResult, updateUserStats } from "@/lib/firebase-actions";
+import { saveQuizResult, updateUserStats, saveLesson } from "@/lib/firebase-actions";
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 const SUBJECTS = [
@@ -1190,7 +1190,16 @@ export default function CoursesExplorer() {
     const handleQuizComplete = async (score: number, total: number) => {
       setVideoWatched(true);
       if (user) {
-        // 1. Save results to Firebase
+        // 1. Save lesson to Firestore
+        await saveLesson(user.uid, `${s.id}_${st.id}_${m.id}`, {
+          topic: m.name,
+          subject: s.name,
+          difficulty: st.name,
+          finalScore: score,
+          status: "done"
+        });
+
+        // 2. Save results to Firebase
         await saveQuizResult(user.uid, {
           topic: m.name,
           subject: s.name,
@@ -1199,7 +1208,7 @@ export default function CoursesExplorer() {
           total
         });
 
-        // 2. Update user stats (XP, streaks)
+        // 3. Update user stats (XP, streaks)
         await updateUserStats(user.uid, score * 10);
       }
     };

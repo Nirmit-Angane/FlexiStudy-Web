@@ -1,25 +1,56 @@
 "use client";
 
-import { useState } from "react";
-import { Flame, Calendar, Trophy, Zap, ChevronLeft, ChevronRight, Star, Target } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Flame, Calendar, Trophy, Zap, ChevronLeft, ChevronRight, Star } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { analyticsService } from "@/services/analyticsService";
 
 export default function StreaksPage() {
-  const currentStreak = 7;
-  const longestStreak = 12;
-  const [currentMonth, setCurrentMonth] = useState("March 2026");
+  const { user } = useAuth();
+  const [streakData, setStreakData] = useState<{
+    currentStreak: number;
+    longestStreak: number;
+    activityDays: string[];
+    totalXp: number;
+  } | null>(null);
 
-  const activityData = Array.from({ length: 31 }, (_, i) => ({
-    date: i + 1,
-    active: i >= 24,
-    partial: i === 20 || i === 22,
-  }));
+  const [viewDate, setViewDate] = useState(new Date());
 
+  useEffect(() => {
+    if (user) {
+      analyticsService.getStreakData(user.uid).then(setStreakData);
+    }
+  }, [user]);
+
+  const currentMonthLabel = viewDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+  // Calendar logic
+  const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
+  const getFirstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
+
+  const daysInMonth = getDaysInMonth(viewDate.getFullYear(), viewDate.getMonth());
+  const firstDay = getFirstDayOfMonth(viewDate.getFullYear(), viewDate.getMonth());
+
+  const activityDates = streakData?.activityDays || [];
+  
   const milestones = [
-    { days: 3, label: "Starter", icon: "⚡", unlocked: true },
-    { days: 7, label: "On Fire", icon: "🔥", unlocked: true },
-    { days: 10, label: "Consistent", icon: "🏅", unlocked: false },
-    { days: 14, label: "Dedicated", icon: "🏆", unlocked: false },
+    { days: 3, label: "Starter", icon: "⚡" },
+    { days: 7, label: "On Fire", icon: "🔥" },
+    { days: 10, label: "Consistent", icon: "🏅" },
+    { days: 14, label: "Dedicated", icon: "🏆" },
   ];
+
+  const currentStreak = streakData?.currentStreak || 0;
+  const nextMilestone = milestones.find(m => m.days > currentStreak) || milestones[milestones.length - 1];
+  const progressPercent = Math.min((currentStreak / nextMilestone.days) * 100, 100);
+
+  const handlePrevMonth = () => {
+    setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
+  };
 
   return (
     <>
@@ -619,7 +650,11 @@ export default function StreaksPage() {
             </div>
             <div className="streak-number">{currentStreak}</div>
             <div className="streak-label">Day Streak</div>
-            <div className="streak-subtext">You're building an unstoppable habit! Log in tomorrow to keep the flame alive.</div>
+            <div className="streak-subtext">
+              {currentStreak > 0 
+                ? "You're building an unstoppable habit! Log in tomorrow to keep the flame alive."
+                : "Start your journey today! Complete a lesson to begin your streak."}
+            </div>
           </div>
 
           {/* Side stats */}
@@ -630,7 +665,7 @@ export default function StreaksPage() {
               </div>
               <div>
                 <div className="stat-meta-label">Longest Streak</div>
-                <div className="stat-meta-value">{longestStreak} Days</div>
+                <div className="stat-meta-value">{streakData?.longestStreak || 0} Days</div>
               </div>
             </div>
 
@@ -640,7 +675,7 @@ export default function StreaksPage() {
               </div>
               <div>
                 <div className="stat-meta-label">Total XP Earned</div>
-                <div className="stat-meta-value">1,250 XP</div>
+                <div className="stat-meta-value">{(streakData?.totalXp || 0).toLocaleString()} XP</div>
               </div>
             </div>
 
@@ -650,12 +685,14 @@ export default function StreaksPage() {
                 <Flame size={16} fill="currentColor" /> Next Milestone
               </div>
               <div className="milestone-desc">
-                Reach <strong>10 days</strong> to unlock the "Consistent" badge!
+                {currentStreak >= nextMilestone.days 
+                  ? `You've reached all current milestones! Keep it up!`
+                  : <>Reach <strong>{nextMilestone.days} days</strong> to unlock the "{nextMilestone.label}" badge!</>}
               </div>
               <div className="milestone-progress-wrap">
-                <div className="milestone-progress-fill" />
+                <div className="milestone-progress-fill" style={{ width: `${progressPercent}%` }} />
               </div>
-              <div className="milestone-fraction">7 / 10 days</div>
+              <div className="milestone-fraction">{currentStreak} / {nextMilestone.days} days</div>
             </div>
           </div>
         </div>
@@ -667,21 +704,26 @@ export default function StreaksPage() {
               <Star size={18} />
             </div>
             <span className="milestones-section-title">Streak Badges</span>
-            <span className="badge badge-success" style={{ marginLeft: "auto" }}>2 / 4 Unlocked</span>
+            <span className="badge badge-success" style={{ marginLeft: "auto" }}>
+              {milestones.filter(m => currentStreak >= m.days).length} / {milestones.length} Unlocked
+            </span>
           </div>
           <div className="milestones-track">
-            {milestones.map((m, i) => (
-              <div
-                key={m.days}
-                className={`milestone-badge ${m.unlocked ? "unlocked" : "locked"}`}
-                style={m.unlocked ? { animationDelay: `${i * 0.3}s` } : {}}
-              >
-                {m.unlocked && <div className="milestone-check">✓</div>}
-                <div className="milestone-badge-emoji">{m.icon}</div>
-                <div className="milestone-badge-days">{m.days} days</div>
-                <div className="milestone-badge-label">{m.label}</div>
-              </div>
-            ))}
+            {milestones.map((m, i) => {
+              const isUnlocked = currentStreak >= m.days;
+              return (
+                <div
+                  key={m.days}
+                  className={`milestone-badge ${isUnlocked ? "unlocked" : "locked"}`}
+                  style={isUnlocked ? { animationDelay: `${i * 0.3}s` } : {}}
+                >
+                  {isUnlocked && <div className="milestone-check">✓</div>}
+                  <div className="milestone-badge-emoji">{m.icon}</div>
+                  <div className="milestone-badge-days">{m.days} days</div>
+                  <div className="milestone-badge-label">{m.label}</div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -695,9 +737,9 @@ export default function StreaksPage() {
               <span className="calendar-section-title">Activity Calendar</span>
             </div>
             <div className="calendar-nav">
-              <button className="cal-nav-btn"><ChevronLeft size={15} /></button>
-              <span className="cal-month-label">{currentMonth}</span>
-              <button className="cal-nav-btn"><ChevronRight size={15} /></button>
+              <button className="cal-nav-btn" onClick={handlePrevMonth}><ChevronLeft size={15} /></button>
+              <span className="cal-month-label">{currentMonthLabel}</span>
+              <button className="cal-nav-btn" onClick={handleNextMonth}><ChevronRight size={15} /></button>
             </div>
           </div>
           <div className="calendar-body">
@@ -708,23 +750,29 @@ export default function StreaksPage() {
             </div>
             <div className="cal-grid">
               {/* Offset */}
-              {Array.from({ length: 5 }).map((_, i) => (
+              {Array.from({ length: firstDay }).map((_, i) => (
                 <div key={`e-${i}`} className="cal-day empty" />
               ))}
-              {activityData.map((day, i) => {
-                const cls = day.active ? "active" : day.partial ? "partial" : "inactive";
-                const delay = day.active ? `${(i % 7) * 0.04}s` : "0s";
+              {Array.from({ length: daysInMonth }).map((_, i) => {
+                const dayNum = i + 1;
+                const dateStr = `${viewDate.getFullYear()}-${String(viewDate.getMonth() + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+                const isActive = activityDates.includes(dateStr);
+                const isToday = new Date().toISOString().split('T')[0] === dateStr;
+                
+                const cls = isActive ? "active" : "inactive";
+                const delay = isActive ? `${(i % 7) * 0.04}s` : "0s";
+                
                 return (
                   <div
-                    key={day.date}
-                    className={`cal-day ${cls}`}
-                    style={day.active ? {
+                    key={dayNum}
+                    className={`cal-day ${cls} ${isToday ? "today" : ""}`}
+                    style={isActive ? {
                       animation: `calDayPop 0.4s cubic-bezier(0.34,1.56,0.64,1) both`,
                       animationDelay: delay,
                     } : {}}
                   >
-                    {day.active && <span className="cal-day-flame">🔥</span>}
-                    {day.date}
+                    {isActive && <span className="cal-day-flame">🔥</span>}
+                    {dayNum}
                   </div>
                 );
               })}

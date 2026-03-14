@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import Groq from "groq-sdk";
-
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+import { generateChatCompletion, DEFAULT_MODEL } from "@/lib/groq";
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,17 +26,17 @@ Important:
 - Cover different aspects of the topic
 - Do NOT use markdown formatting inside the strings`;
 
-    const completion = await groq.chat.completions.create({
-      messages: [{ role: "user", content: prompt }],
-      model: "llama-3.3-70b-versatile",
-      temperature: 0.5,
-      max_tokens: 1200,
-      response_format: { type: "json_object" },
-    });
-
-    const parsed = JSON.parse(
-      completion.choices[0]?.message?.content || '{"cards":[]}'
+    const content = await generateChatCompletion(
+      [{ role: "user", content: prompt }],
+      {
+        model: DEFAULT_MODEL,
+        temperature: 0.5,
+        max_tokens: 1200,
+        response_format: { type: "json_object" },
+      }
     );
+
+    const parsed = JSON.parse(content || '{"cards":[]}');
 
     return NextResponse.json({
       topic,

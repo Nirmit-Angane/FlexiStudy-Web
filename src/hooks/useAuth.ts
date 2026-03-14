@@ -44,26 +44,29 @@ export function useAuth() {
       if (firebaseUser) {
         // Fetch extended user profile and lessons
         try {
-          // Profile
-          const docRef = doc(db, "users", firebaseUser.uid);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            setProfile(docSnap.data() as UserProfile);
+          const { analyticsService } = await import("@/services/analyticsService");
+          const { localDB } = await import("@/lib/db");
+          
+          // Trigger background sync
+          analyticsService.syncAll(firebaseUser.uid).catch(console.error);
+
+          // Initial load from local DB (fast)
+          const localProfile = await localDB.get("profile", firebaseUser.uid);
+          if (localProfile) setProfile(localProfile);
+
+          const localLessons = await localDB.getAll("lessons");
+          if (localLessons.length > 0) setLessons(localLessons);
+
+          // If local is empty or we want to wait for first sync
+          if (!localProfile) {
+            const profileData = await analyticsService.syncProfile(firebaseUser.uid);
+            if (profileData) setProfile(profileData as UserProfile);
           }
 
-          // Lessons
-          const { collection, query, where, getDocs, orderBy } = await import("firebase/firestore");
-          const lessonsRef = collection(db, "users", firebaseUser.uid, "lessons");
-          const q = query(
-            lessonsRef, 
-            orderBy("createdAt", "desc")
-          );
-          const querySnapshot = await getDocs(q);
-          const lessonsData = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          } as Lesson));
-          setLessons(lessonsData);
+          if (localLessons.length === 0) {
+            const lessonsData = await analyticsService.syncLessons(firebaseUser.uid);
+            if (lessonsData) setLessons(lessonsData as Lesson[]);
+          }
         } catch (error) {
           console.error("Error fetching user data:", error);
         }

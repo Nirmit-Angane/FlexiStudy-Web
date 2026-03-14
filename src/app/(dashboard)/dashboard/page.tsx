@@ -20,9 +20,11 @@ function getWeeklyXP(lessons: any[]) {
   const xpMap: Record<string, number> = { "Mon": 0, "Tue": 0, "Wed": 0, "Thu": 0, "Fri": 0, "Sat": 0, "Sun": 0 };
 
   lessons.forEach(l => {
-    const date = new Date(l.createdAt);
+    const rawDate = l.createdAt;
+    const date = rawDate?.toDate ? rawDate.toDate() : new Date(rawDate);
+    if (isNaN(date.getTime())) return;
     const day = days[date.getDay() === 0 ? 6 : date.getDay() - 1];
-    xpMap[day] += (l.finalScore || 0) * 50;
+    xpMap[day] += (l.finalScore || 0) * 10;
   });
 
   return days.map(d => ({ day: d, xp: xpMap[d] }));
@@ -265,7 +267,7 @@ export default function DashboardPage() {
           {[
             { icon: <TrendingUp size={18} />, label: "Weekly XP", value: derivedWeeklyXP.reduce((a, c) => a + c.xp, 0).toLocaleString(), delta: "Last 7 days", iconBg: "var(--success-subtle)", iconClr: "var(--success)" },
             { icon: <BookOpen size={18} />, label: "Lessons Done", value: lessons.length.toString(), delta: lessons.length > 0 ? "Fantastic start" : "Start your journey", iconBg: "var(--info-subtle)", iconClr: "var(--info)" },
-            { icon: <Target size={18} />, label: "Accuracy", value: lessons.length > 0 ? `${Math.round(lessons.reduce((a, l) => a + (l.finalScore || 0), 0) / lessons.length)}%` : "0%", delta: "Avg score", iconBg: "var(--warning-subtle)", iconClr: "var(--warning)" },
+            { icon: <Target size={18} />, label: "Accuracy", value: lessons.length > 0 ? `${Math.round((lessons.reduce((a, l) => a + (l.finalScore || 0), 0) / (lessons.length * 5)) * 100)}%` : "0%", delta: "Avg score", iconBg: "var(--warning-subtle)", iconClr: "var(--warning)" },
             { icon: <Trophy size={18} />, label: "Rank", value: userXP > 0 ? "Novice" : "New", delta: "Level 1", iconBg: "var(--brand-primary-light)", iconClr: "var(--brand-primary)" },
           ].map((s, i) => (
             <div key={i} className="stat-card hover-lift" style={{ gap: "var(--space-2)", padding: "var(--space-5)" }}>
