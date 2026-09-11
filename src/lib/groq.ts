@@ -2,9 +2,9 @@ import Groq from "groq-sdk";
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-// Default to the higher-limit 8B model for standard tasks
-const DEFAULT_MODEL = "llama-3.1-8b-instant";
-// Use the 70B model for more complex tasks requiring higher quality
+// Default to the requested high-performance Groq model
+const DEFAULT_MODEL = "llama-3.3-70b-versatile";
+// Use the same model for higher-quality generation paths
 const QUALITY_MODEL = "llama-3.3-70b-versatile";
 
 interface CompletionOptions {
