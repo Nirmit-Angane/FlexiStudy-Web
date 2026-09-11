@@ -2,10 +2,11 @@ import Groq from "groq-sdk";
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-// Default to the requested high-performance Groq model
-const DEFAULT_MODEL = "llama-3.3-70b-versatile";
-// Use the same model for higher-quality generation paths
+// Prefer the higher-end model when available, but fall back to a stable model if the account
+// does not have access to the 70B variant or the model ID is unavailable in the current environment.
+const DEFAULT_MODEL = "llama-3.1-8b-instant";
 const QUALITY_MODEL = "llama-3.3-70b-versatile";
+const FALLBACK_MODELS = [QUALITY_MODEL, DEFAULT_MODEL];
 
 interface CompletionOptions {
   model?: string;
@@ -18,50 +19,56 @@ export async function generateChatCompletion(
   messages: { role: "user" | "system" | "assistant"; content: string }[],
   options: CompletionOptions = {}
 ) {
-  const primaryModel = options.model || DEFAULT_MODEL;
+  const requestedModel = options.model || QUALITY_MODEL;
+  const modelCandidates = Array.from(new Set([requestedModel, ...FALLBACK_MODELS]));
 
-  try {
-    // Attempt with the primary model
-    const completion = await groq.chat.completions.create({
-      messages,
-      model: primaryModel,
-      temperature: options.temperature ?? 0.7,
-      max_tokens: options.max_tokens ?? 1024,
-      response_format: options.response_format,
-    });
+  for (const model of modelCandidates) {
+    try {
+      const completion = await groq.chat.completions.create({
+        messages,
+        model,
+        temperature: options.temperature ?? 0.7,
+        max_tokens: options.max_tokens ?? 1024,
+        response_format: options.response_format,
+      });
 
-    return completion.choices[0]?.message?.content || "";
-  } catch (error: any) {
-    // If we hit a rate limit (429) or other token-related error and we weren't already using the fallback
-    const isRateLimit = error?.status === 429 || error?.message?.includes("rate_limit_exceeded");
-    
-    if (isRateLimit && primaryModel !== DEFAULT_MODEL) {
-      console.warn(`Primary model ${primaryModel} failed with rate limit, falling back to ${DEFAULT_MODEL}`);
-      
-      try {
-        const fallbackCompletion = await groq.chat.completions.create({
-          messages,
-          model: DEFAULT_MODEL,
-          temperature: options.temperature ?? 0.7,
-          max_tokens: options.max_tokens ?? 1024,
-          response_format: options.response_format,
-        });
+      return completion.choices[0]?.message?.content || "";
+    } catch (error: any) {
+      const isModelUnavailable =
+        error?.status === 404 ||
+        error?.code === "model_not_found" ||
+        error?.message?.includes("model_not_found") ||
+        error?.message?.includes("not exist") ||
+        error?.message?.includes("does not exist");
 
-        return fallbackCompletion.choices[0]?.message?.content || "";
-      } catch (fallbackError: any) {
-        console.error("Fallback model also failed:", fallbackError);
-        throw formatGroqError(fallbackError);
+      const isRateLimit = error?.status === 429 || error?.message?.includes("rate_limit_exceeded");
+
+      if (isModelUnavailable && model !== modelCandidates[modelCandidates.length - 1]) {
+        console.warn(`Model ${model} is unavailable; retrying with fallback model.`);
+        continue;
       }
-    }
 
-    throw formatGroqError(error);
+      if (isRateLimit && model !== DEFAULT_MODEL) {
+        console.warn(`Model ${model} hit a rate limit; retrying with ${DEFAULT_MODEL}.`);
+        continue;
+      }
+
+      throw formatGroqError(error);
+    }
   }
+
+  throw new Error("No Groq model was available to process this request.");
 }
 
 function formatGroqError(error: any) {
+  if (error?.status === 404 || error?.code === "model_not_found" || error?.message?.includes("model_not_found")) {
+    return new Error("The selected Groq model is unavailable on this account. The app has automatically retried with a supported fallback model, or please contact support.");
+  }
+
   if (error?.status === 429 || error?.message?.includes("rate_limit_exceeded")) {
     return new Error("The AI service is currently at daily capacity. Please try again tomorrow or contact support.");
   }
+
   return error;
 }
 
